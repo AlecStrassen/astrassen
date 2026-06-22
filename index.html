@@ -2,35 +2,50 @@
 <html lang="de">
 <head>
   <meta charset="UTF-8">
-  <title>Physikunterricht</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Alec Strassen</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <header>
-    <h1>Physikunterricht</h1>
-    <p>Materialien, Simulationen und Arbeitsblätter</p>
+  <header class="site-header">
+    <nav class="nav">
+      <a class="logo" href="./">
+        <span class="logo-mark">AS</span>
+        <span>Alec Strassen</span>
+      </a>
+      <div class="nav-links">
+        <a class="active" href="./">Start</a>
+        <a class="" href="physik/">Physik</a>
+        <a class="" href="chemie/">Chemie</a>
+      </div>
+    </nav>
+
+    <section class="hero">
+      
+      <span class="eyebrow">Unterrichtsmaterialien</span>
+      <h1>Alec Strassen</h1>
+      <p>Materialien, Simulationen und Arbeitsblätter für den Unterricht.</p>
+    </section>
   </header>
 
-  <main class="grid">
-    <a class="card" href="kinematik/">
-      <h2>Kinematik</h2>
-      <p>Ort, Weg, Geschwindigkeit und Diagramme</p>
-    </a>
-
-    <a class="card" href="energie/">
-      <h2>Energie</h2>
-      <p>Energieformen, Leistung und Wirkungsgrad</p>
-    </a>
-
-    <a class="card" href="simulationen/">
-      <h2>Simulationen</h2>
-      <p>Interaktive HTML-Simulationen</p>
-    </a>
-
-    <a class="card" href="downloads/formelsammlung.pdf" download>
-      <h2>Downloads</h2>
-      <p>Formelsammlung herunterladen</p>
-    </a>
+  <main>
+    <h2 class="section-title">Bereiche</h2>
+    <div class="grid">
+      <a class="card" href="physik/">
+        <span class="tag">Fach</span>
+        <h2>Physik</h2>
+        <p>Kinematik, Simulationen, Elektrizität und weitere Themen.</p>
+      </a>
+      <a class="card" href="chemie/">
+        <span class="tag">Fach</span>
+        <h2>Chemie</h2>
+        <p>Platzhalter für spätere Chemie-Materialien.</p>
+      </a>
+    </div>
   </main>
+
+  <footer class="footer">
+    © Alec Strassen · Unterrichtsmaterialien, Simulationen und Downloads
+  </footer>
 </body>
 </html>
