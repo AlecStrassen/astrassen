@@ -1,0 +1,1425 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Von Beobachtungen zu einem Modell</title>
+  <style>
+    :root {
+      --bg: #f3f5fb;
+      --card: rgba(252, 253, 255, 0.90);
+      --card-solid: #fcfdff;
+      --text: #354158;
+      --muted: #78859a;
+      --line: #dce3ef;
+      --blue: #7f9fe3;
+      --green: #81c9a1;
+      --orange: #e9a078;
+      --cyan: #91c9d5;
+      --dark: #465268;
+      --shadow: 0 20px 48px rgba(72, 86, 112, 0.10);
+      --radius: 24px;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      color: var(--text);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background:
+        radial-gradient(circle at 8% 10%, rgba(163, 184, 230, 0.25), transparent 34%),
+        radial-gradient(circle at 95% 5%, rgba(169, 215, 222, 0.24), transparent 30%),
+        linear-gradient(180deg, #fafbff 0%, var(--bg) 100%);
+    }
+
+    main {
+      width: min(1500px, calc(100vw - 28px));
+      margin: 0 auto;
+      padding: clamp(10px, 1.2vw, 18px) 0;
+    }
+
+    header {
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      gap: 24px;
+      margin-bottom: 12px;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: clamp(1.8rem, 3vw, 2.65rem);
+      line-height: 0.98;
+      letter-spacing: -0.055em;
+    }
+
+    .subtitle {
+      margin: 6px 0 0;
+      max-width: 920px;
+      color: var(--muted);
+      font-size: clamp(0.96rem, 1.35vw, 1.08rem);
+      line-height: 1.35;
+    }
+
+    .layout {
+      display: grid;
+      grid-template-columns: minmax(300px, 370px) minmax(500px, 1fr);
+      gap: 12px;
+      align-items: stretch;
+    }
+
+    .data-panel {
+      grid-column: 1 / -1;
+    }
+
+    .panel {
+      background: var(--card);
+      border: 1px solid rgba(217, 226, 239, 0.96);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(14px);
+      overflow: hidden;
+    }
+
+    .panel-inner {
+      padding: clamp(16px, 2vw, 22px);
+    }
+
+    .panel h2 {
+      margin: 0 0 10px;
+      font-size: 1.06rem;
+      letter-spacing: -0.025em;
+    }
+
+    .small {
+      margin: 0;
+      color: var(--muted);
+      font-size: 0.94rem;
+      line-height: 1.48;
+    }
+
+    .mass-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+      margin: 16px 0 18px;
+    }
+
+    .mass-card {
+      appearance: none;
+      border: 1px solid var(--line);
+      border-radius: 20px;
+      min-height: 72px;
+      padding: 11px;
+      background:
+        radial-gradient(circle at 25% 20%, rgba(255, 255, 255, 0.95), transparent 34%),
+        linear-gradient(145deg, #ffffff, #edf5fb);
+      color: var(--text);
+      display: grid;
+      place-items: center;
+      text-align: center;
+      cursor: grab;
+      box-shadow: 0 10px 24px rgba(15, 23, 42, 0.07);
+      transition: transform 0.16s ease, border-color 0.16s ease, box-shadow 0.16s ease;
+    }
+
+    .mass-card:active {
+      cursor: grabbing;
+    }
+
+    .mass-card:hover {
+      transform: translateY(-2px);
+      border-color: rgba(127, 159, 227, 0.58);
+      box-shadow: 0 16px 30px rgba(127, 159, 227, 0.14);
+    }
+
+    .mass-card.active {
+      border-color: rgba(111, 145, 216, 0.78);
+      background:
+        radial-gradient(circle at 24% 20%, rgba(255, 255, 255, 1), transparent 32%),
+        linear-gradient(145deg, #edf2ff, #ffffff);
+      box-shadow:
+        0 0 0 4px rgba(127, 159, 227, 0.10),
+        0 16px 30px rgba(127, 159, 227, 0.14);
+    }
+
+    .mass-value {
+      display: block;
+      font-size: 1.58rem;
+      font-weight: 950;
+      letter-spacing: -0.045em;
+    }
+
+    .toggle-list {
+      display: grid;
+      gap: 10px;
+      margin: 18px 0;
+    }
+
+    .toggle {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 11px 12px;
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      background: var(--card-solid);
+      font-size: 0.94rem;
+      line-height: 1.25;
+    }
+
+    .toggle input {
+      width: 18px;
+      height: 18px;
+      accent-color: var(--blue);
+    }
+
+    .line-toggle {
+      align-items: flex-start;
+      transition: opacity 0.2s ease, border-color 0.2s ease, background 0.2s ease;
+    }
+
+    .line-toggle small {
+      display: block;
+      margin-top: 3px;
+      color: var(--muted);
+      font-size: 0.72rem;
+      line-height: 1.25;
+    }
+
+    .line-toggle.disabled-control {
+      border-style: dashed;
+      background: #f1f5f9;
+      cursor: not-allowed;
+      opacity: 0.68;
+    }
+
+    .line-toggle.available-control {
+      border-color: rgba(22, 163, 74, 0.38);
+      background: #f0fdf4;
+    }
+
+    .line-toggle.available-control small {
+      color: #15803d;
+      font-weight: 800;
+    }
+
+    .button-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-top: 12px;
+    }
+
+    button.primary,
+    button.secondary {
+      border: 0;
+      border-radius: 16px;
+      padding: 12px 14px;
+      font-weight: 900;
+      cursor: pointer;
+      transition: transform 0.16s ease, filter 0.16s ease, box-shadow 0.16s ease;
+    }
+
+    button.primary {
+      background: linear-gradient(135deg, var(--blue), var(--cyan));
+      color: #ffffff;
+      box-shadow: 0 14px 28px rgba(37, 99, 235, 0.22);
+    }
+
+    button.secondary {
+      background: #eef4fb;
+      color: #334155;
+      border: 1px solid var(--line);
+    }
+
+    button.primary:hover,
+    button.secondary:hover {
+      transform: translateY(-1px);
+      filter: brightness(1.02);
+    }
+
+    .input-card {
+      margin-top: 14px;
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      background: #f8fbff;
+      padding: 13px;
+    }
+
+    .input-card label {
+      display: block;
+      font-size: 0.88rem;
+      font-weight: 800;
+      color: #334155;
+      margin-bottom: 7px;
+    }
+
+    .input-line {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 8px;
+      align-items: center;
+    }
+
+    input[type="number"] {
+      width: 100%;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: 11px 12px;
+      background: #ffffff;
+      color: var(--text);
+      font: inherit;
+      font-weight: 800;
+    }
+
+    .unit-chip {
+      color: var(--muted);
+      font-weight: 900;
+      padding-right: 2px;
+    }
+
+    .custom-mass-line {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto auto;
+      gap: 7px;
+      align-items: center;
+    }
+
+    .custom-mass-apply {
+      border: 1px solid rgba(127, 159, 227, 0.35);
+      border-radius: 12px;
+      padding: 9px 11px;
+      background: #edf2ff;
+      color: #506da9;
+      font: inherit;
+      font-size: 0.78rem;
+      font-weight: 850;
+      cursor: pointer;
+      transition: transform 0.16s ease, background 0.16s ease;
+    }
+
+    .custom-mass-apply:hover {
+      transform: translateY(-1px);
+      background: #e4ebff;
+    }
+
+    .custom-mass-message {
+      margin: 5px 0 0;
+      color: var(--muted);
+      font-size: 0.72rem;
+      line-height: 1.2;
+    }
+
+    .custom-mass-card.invalid {
+      border-color: #e8a6a6;
+      background: #fff7f7;
+    }
+
+    .custom-mass-card.invalid .custom-mass-message {
+      color: #b45f5f;
+      font-weight: 750;
+    }
+
+    .sim-panel {
+      display: grid;
+      grid-template-rows: auto minmax(480px, 1fr) auto;
+      min-height: clamp(590px, calc(100vh - 150px), 840px);
+    }
+
+    .sim-task {
+      padding: 10px 14px;
+      border-bottom: 1px solid var(--line);
+      background: rgba(248, 251, 255, 0.96);
+    }
+
+    .sim-task h2 {
+      margin-bottom: 5px;
+    }
+
+    .sim-task ol {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 3px 18px;
+      margin: 0;
+      padding-left: 19px;
+      color: var(--muted);
+      font-size: 0.76rem;
+      line-height: 1.25;
+    }
+
+    .stage {
+      position: relative;
+      min-height: 480px;
+      background:
+        radial-gradient(circle, rgba(137, 151, 177, 0.18) 1px, transparent 1.2px),
+        radial-gradient(circle at 50% 15%, rgba(158, 184, 234, 0.14), transparent 42%),
+        linear-gradient(180deg, #fbfcff 0%, #f0f3f9 100%);
+      background-size: 26px 26px, auto, auto;
+    }
+
+    .stage.drag-over::after {
+      content: "Masse hier loslassen";
+      position: absolute;
+      inset: 18px;
+      display: grid;
+      place-items: center;
+      border: 3px dashed rgba(37, 99, 235, 0.50);
+      border-radius: 23px;
+      background: rgba(232, 245, 255, 0.73);
+      color: #1d4ed8;
+      font-size: clamp(1rem, 2vw, 1.45rem);
+      font-weight: 950;
+      pointer-events: none;
+    }
+
+    #springSvg {
+      display: block;
+      width: 100%;
+      height: 100%;
+      min-height: 480px;
+    }
+
+    .dashboard {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 10px;
+      padding: 13px;
+      border-top: 1px solid var(--line);
+      background: rgba(248, 250, 255, 0.84);
+    }
+
+    .metric {
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      background: rgba(253, 253, 255, 0.92);
+      padding: 11px 12px;
+      box-shadow: 0 5px 16px rgba(15, 23, 42, 0.04);
+    }
+
+    .metric span {
+      display: block;
+      margin-bottom: 3px;
+      color: var(--muted);
+      font-size: 0.78rem;
+    }
+
+    .metric strong {
+      font-size: 1.06rem;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .hide-values .value-text,
+    .hide-values .value-number {
+      opacity: 0;
+      user-select: none;
+    }
+
+    .value-text,
+    .value-number {
+      transition: opacity 0.2s ease;
+    }
+
+    .legend {
+      display: grid;
+      gap: 9px;
+      margin-top: 14px;
+    }
+
+    .legend-item {
+      display: grid;
+      grid-template-columns: 28px 1fr;
+      gap: 9px;
+      align-items: center;
+      color: var(--muted);
+      font-size: 0.92rem;
+      line-height: 1.3;
+    }
+
+    .legend-line {
+      width: 28px;
+      border-top: 3px dashed currentColor;
+    }
+
+    .blue { color: var(--blue); }
+    .green { color: var(--green); }
+    .orange { color: var(--orange); }
+
+    .task-box {
+      margin-top: 14px;
+      padding: 14px;
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      background: #f8fbff;
+    }
+
+    .task-box ol {
+      margin: 9px 0 0;
+      padding-left: 20px;
+      color: var(--muted);
+      line-height: 1.48;
+    }
+
+    .task-box p {
+      margin: 0;
+      color: var(--muted);
+      line-height: 1.48;
+      font-size: 0.94rem;
+    }
+
+    .data-layout {
+      display: grid;
+      grid-template-columns: minmax(280px, 0.72fr) minmax(480px, 1.28fr);
+      gap: 14px;
+      align-items: start;
+    }
+
+    .chart-column,
+    .insight-stack {
+      display: grid;
+      gap: 12px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      overflow: hidden;
+      border-radius: 16px;
+      background: #ffffff;
+      border: 1px solid var(--line);
+    }
+
+    th, td {
+      padding: 10px 11px;
+      border-bottom: 1px solid var(--line);
+      text-align: left;
+      font-size: 0.92rem;
+    }
+
+    th {
+      background: #f1f6fb;
+      color: #334155;
+      font-size: 0.82rem;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+
+    tr:last-child td {
+      border-bottom: 0;
+    }
+
+    .empty-row td {
+      color: var(--muted);
+      text-align: center;
+      padding: 17px 10px;
+    }
+
+    .chart-card {
+      border: 1px solid var(--line);
+      border-radius: 20px;
+      background: #ffffff;
+      overflow: hidden;
+    }
+
+    #chartSvg {
+      display: block;
+      width: 100%;
+      height: auto;
+      aspect-ratio: 1.25 / 1;
+      min-height: 0;
+    }
+
+    .notice {
+      margin-top: 10px;
+      color: var(--muted);
+      font-size: 0.86rem;
+      line-height: 1.42;
+    }
+
+    @media (min-width: 1101px) and (min-height: 740px) {
+      body {
+        overflow: hidden;
+      }
+
+      main {
+        height: 100dvh;
+        display: grid;
+        grid-template-rows: auto minmax(0, 1fr);
+        padding: 10px 0;
+      }
+
+      h1 {
+        font-size: 2.15rem;
+      }
+
+      .layout,
+      .panel {
+        min-height: 0;
+      }
+
+      .layout {
+        height: 320px;
+        grid-template-columns: 370px minmax(0, 1fr);
+        grid-template-rows: minmax(0, 1fr);
+        gap: 10px;
+        align-self: start;
+      }
+
+      .sim-panel {
+        grid-template-rows: auto minmax(0, 1fr) auto;
+      }
+
+      .sim-panel .stage,
+      .sim-panel #springSvg {
+        min-height: 0;
+      }
+
+      .subtitle {
+        max-width: none;
+        font-size: 0.9rem;
+        white-space: nowrap;
+      }
+
+      .controls-panel .panel-inner,
+      .data-panel .panel-inner {
+        padding: 10px;
+      }
+
+      .controls-panel {
+        align-self: start;
+      }
+
+      .controls-panel .small {
+        font-size: 0.78rem;
+        line-height: 1.3;
+      }
+
+      .controls-panel .mass-grid {
+        grid-template-columns: repeat(5, minmax(0, 1fr));
+        gap: 6px;
+        margin: 6px 0 8px;
+      }
+
+      .controls-panel .mass-card:nth-child(-n + 3) {
+        grid-column: auto;
+      }
+
+      .controls-panel .mass-card:nth-child(n + 4) {
+        grid-column: auto;
+      }
+
+      .controls-panel .mass-card {
+        min-height: 42px;
+        padding: 5px 3px;
+        border-radius: 13px;
+      }
+
+      .controls-panel .mass-value {
+        font-size: 1rem;
+        letter-spacing: -0.03em;
+      }
+
+      .controls-panel .toggle-list {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 5px;
+        margin: 6px 0;
+      }
+
+      .controls-panel .toggle {
+        gap: 5px;
+        padding: 4px 5px;
+        border-radius: 10px;
+        font-size: 0.66rem;
+        line-height: 1.15;
+      }
+
+      .controls-panel .toggle input {
+        width: 15px;
+        height: 15px;
+      }
+
+      .controls-panel .input-card {
+        margin-top: 6px;
+        padding: 5px 8px;
+      }
+
+      .controls-panel .input-card label {
+        margin-bottom: 3px;
+        font-size: 0.72rem;
+      }
+
+      .controls-panel input[type="number"] {
+        padding: 5px 8px;
+      }
+
+      .controls-panel .custom-mass-line {
+        gap: 5px;
+      }
+
+      .controls-panel .custom-mass-apply {
+        padding: 5px 7px;
+        font-size: 0.68rem;
+      }
+
+      .controls-panel .custom-mass-message {
+        margin-top: 3px;
+        font-size: 0.64rem;
+      }
+
+      .controls-panel .notice {
+        margin: 3px 0 0;
+        font-size: 0.66rem;
+        line-height: 1.2;
+      }
+
+      .controls-panel .button-row {
+        margin-top: 6px;
+      }
+
+      .controls-panel button.primary,
+      .controls-panel button.secondary {
+        padding: 7px 8px;
+        font-size: 0.72rem;
+      }
+
+      .controls-panel .panel-inner > h2 {
+        margin-bottom: 5px;
+        font-size: 0.94rem;
+      }
+
+      .data-panel .small {
+        font-size: 0.72rem;
+        line-height: 1.2;
+      }
+
+      .data-panel .toggle-list {
+        gap: 5px;
+        margin: 6px 0;
+      }
+
+      .data-panel .toggle {
+        padding: 5px 7px;
+        font-size: 0.7rem;
+      }
+
+      .data-panel th,
+      .data-panel td {
+        padding: 4px 7px;
+        font-size: 0.72rem;
+      }
+
+      .data-panel .task-box {
+        margin-top: 0;
+        padding: 8px;
+        border-radius: 13px;
+      }
+
+      .data-panel .task-box ol {
+        margin-top: 6px;
+        padding-left: 17px;
+        font-size: 0.78rem;
+        line-height: 1.3;
+      }
+
+      .data-panel .task-box p {
+        font-size: 0.72rem;
+        line-height: 1.22;
+      }
+
+      .sim-task {
+        padding: 6px 10px;
+      }
+
+      .sim-task ol {
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        font-size: 0.64rem;
+        gap: 2px 12px;
+        line-height: 1.15;
+      }
+
+      .sim-task h2 {
+        margin-bottom: 3px;
+        font-size: 0.9rem;
+      }
+
+      .sim-panel #springSvg {
+        max-width: 700px;
+        margin: 0 auto;
+      }
+
+      .dashboard {
+        gap: 7px;
+        padding: 7px 10px;
+      }
+
+      .metric {
+        padding: 6px 9px;
+        border-radius: 12px;
+      }
+
+      .metric span {
+        font-size: 0.68rem;
+      }
+
+      .metric strong {
+        font-size: 0.9rem;
+      }
+
+      .data-layout {
+        height: 100%;
+        grid-template-columns: minmax(300px, 0.72fr) minmax(0, 1.7fr);
+        gap: 12px;
+      }
+
+      .chart-column {
+        min-height: 0;
+        grid-template-columns: minmax(480px, 1.45fr) minmax(260px, 0.75fr);
+        gap: 10px;
+      }
+
+      .chart-area,
+      .insight-stack {
+        min-height: 0;
+      }
+
+      .chart-area {
+        display: grid;
+        grid-template-rows: auto minmax(0, 1fr);
+      }
+
+      .insight-stack {
+        grid-template-rows: repeat(2, minmax(0, 1fr));
+        gap: 8px;
+      }
+
+      .data-panel h2 {
+        margin-bottom: 5px;
+        font-size: 0.9rem;
+      }
+
+      #chartSvg {
+        height: 100%;
+        max-height: 235px;
+        aspect-ratio: auto;
+      }
+    }
+
+    @media (max-width: 1100px) {
+      .layout {
+        grid-template-columns: 310px minmax(480px, 1fr);
+      }
+
+      .data-panel {
+        grid-column: 1 / -1;
+      }
+
+      .data-layout {
+        grid-template-columns: minmax(280px, 0.85fr) minmax(360px, 1.15fr);
+        align-items: start;
+      }
+    }
+
+    @media (max-width: 880px) {
+      main {
+        width: min(100vw - 18px, 1500px);
+      }
+
+      header {
+        display: block;
+      }
+
+      .layout {
+        grid-template-columns: 1fr;
+      }
+
+      .sim-panel {
+        min-height: auto;
+      }
+
+      .sim-task ol {
+        grid-template-columns: 1fr;
+      }
+
+      .data-layout {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 560px) {
+      .mass-grid,
+      .button-row,
+      .dashboard {
+        grid-template-columns: 1fr;
+      }
+
+      .panel-inner {
+        padding: 14px;
+      }
+
+      h1 {
+        font-size: 1.9rem;
+      }
+
+      #springSvg {
+        min-height: 440px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <header>
+      <div>
+        <h1>Von Beobachtungen zu einem Modell</h1>
+        <p class="subtitle">
+          Hängen Sie verschiedene Massen an die Feder. Beobachten Sie, wie weit sich die Feder verlängert
+          und wo sie anschliessend zur Ruhe kommt.
+        </p>
+      </div>
+    </header>
+
+    <div class="layout">
+      <section class="panel controls-panel">
+        <div class="panel-inner">
+          <h2>1. Masse auswählen</h2>
+          <p class="small">Klicken Sie auf eine Masse oder ziehen Sie sie direkt auf die Feder.</p>
+
+          <div class="mass-grid" id="massGrid">
+            <button class="mass-card active" draggable="true" data-g="0">
+              <span class="mass-value">0 g</span>
+            </button>
+            <button class="mass-card" draggable="true" data-g="50">
+              <span class="mass-value">50 g</span>
+            </button>
+            <button class="mass-card" draggable="true" data-g="100">
+              <span class="mass-value">100 g</span>
+            </button>
+            <button class="mass-card" draggable="true" data-g="200">
+              <span class="mass-value">200 g</span>
+            </button>
+            <button class="mass-card" draggable="true" data-g="500">
+              <span class="mass-value">500 g</span>
+            </button>
+          </div>
+
+          <div class="input-card custom-mass-card" id="customMassCard">
+            <label for="customMassInput">Eigene Masse einstellen</label>
+            <div class="custom-mass-line">
+              <input id="customMassInput" type="number" min="0" max="500" step="0.1" value="0" inputmode="decimal" />
+              <span class="unit-chip">g</span>
+              <button class="custom-mass-apply" id="customMassBtn" type="button">Anwenden</button>
+            </div>
+            <p class="custom-mass-message" id="customMassMessage">Erlaubter Bereich: 0 bis 500 g</p>
+          </div>
+
+          <h2>2. Anzeigen</h2>
+          <div class="toggle-list">
+            <label class="toggle">
+              <input id="showNatural" type="checkbox" />
+              natürliche Federlänge anzeigen
+            </label>
+            <label class="toggle">
+              <input id="showBalance" type="checkbox" />
+              Gleichgewicht anzeigen
+            </label>
+            <label class="toggle">
+              <input id="showNumbers" type="checkbox" />
+              Zahlenwerte anzeigen
+            </label>
+            <label class="toggle">
+              <input id="animateMotion" type="checkbox" checked />
+              Bewegung animieren
+            </label>
+          </div>
+
+        </div>
+      </section>
+
+      <section class="panel sim-panel hide-values" id="simPanel">
+        <div class="sim-task">
+          <h2>Arbeitsauftrag</h2>
+          <ol>
+            <li>Wählen Sie nacheinander 0 g, 50 g, 100 g, 200 g und 500 g.</li>
+            <li>Lesen Sie die Verlängerung am Lineal ab.</li>
+            <li>Tragen Sie die Messwerte auf dem Arbeitsblatt ein.</li>
+            <li>Zeichnen und beschreiben Sie das Diagramm auf Papier.</li>
+          </ol>
+        </div>
+        <div class="stage" id="stage">
+          <svg id="springSvg" viewBox="0 0 760 660" role="img" aria-label="Feder mit angehängter Masse">
+            <defs>
+              <linearGradient id="springGradient" x1="0" x2="1">
+                <stop offset="0%" stop-color="#66758c" />
+                <stop offset="48%" stop-color="#c1ccdc" />
+                <stop offset="100%" stop-color="#7c8aa0" />
+              </linearGradient>
+
+              <linearGradient id="massGradient" x1="0" x2="1">
+                <stop offset="0%" stop-color="#789be4" />
+                <stop offset="52%" stop-color="#a7c1f2" />
+                <stop offset="100%" stop-color="#718fd3" />
+              </linearGradient>
+
+              <filter id="softShadow" x="-25%" y="-25%" width="150%" height="170%">
+                <feDropShadow dx="0" dy="9" stdDeviation="10" flood-color="#667da8" flood-opacity="0.18" />
+              </filter>
+
+              <marker id="arrowOrange" markerWidth="9" markerHeight="9" refX="4" refY="4" viewBox="0 0 8 8" orient="auto-start-reverse" markerUnits="userSpaceOnUse">
+                <path d="M 1 1 L 7 4 L 1 7" fill="none" stroke="#e79b74" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"></path>
+              </marker>
+            </defs>
+
+            <rect x="278" y="49" width="204" height="20" rx="10" fill="#59677e" />
+            <rect x="313" y="44" width="134" height="7" rx="4" fill="#bac6d8" />
+            <text x="380" y="31" text-anchor="middle" font-size="16" font-weight="850" fill="#6c7a90">Feder</text>
+
+            <g id="naturalGroup" style="display: none">
+              <line id="naturalLine" x1="126" x2="622" y1="0" y2="0" stroke="#8eadeb" stroke-width="2.2" stroke-dasharray="8 8" />
+              <text id="naturalText" x="440" y="0" font-size="14" font-weight="850" fill="#6488d5">natürliche Länge</text>
+            </g>
+
+            <g id="balanceGroup" style="display: none">
+              <line id="balanceLine" x1="126" x2="622" y1="0" y2="0" stroke="#8fd2aa" stroke-width="2.2" stroke-dasharray="8 8" />
+              <text id="balanceText" x="440" y="0" font-size="14" font-weight="850" fill="#56a878">Gleichgewichtslage</text>
+            </g>
+
+            <g id="rulerGroup">
+              <rect id="rulerBack" x="60" y="0" width="96" height="0" rx="11" fill="#fffdf9" stroke="#e9c78c" stroke-width="1.5" opacity="0.94" />
+              <text id="rulerTitle" x="108" y="0" text-anchor="middle" font-size="14" font-weight="900" fill="#a97b46">cm</text>
+            </g>
+
+            <path id="springPath" d="" fill="none" stroke="url(#springGradient)" stroke-width="6.5" stroke-linecap="round" stroke-linejoin="round" />
+            <line id="connector" x1="380" x2="380" y1="0" y2="0" stroke="#718097" stroke-width="4" stroke-linecap="round" />
+            <circle id="hook" cx="380" cy="0" r="7" fill="#fbfcff" stroke="#718097" stroke-width="3" />
+
+            <g id="massGroup" filter="url(#softShadow)">
+              <rect id="massRect" x="335" y="0" width="90" height="74" rx="18" fill="url(#massGradient)" stroke="#6f89c5" stroke-width="1.5" />
+              <text id="massLabel" x="380" y="45" text-anchor="middle" font-size="23" font-weight="900" fill="#ffffff">0 g</text>
+            </g>
+
+            <g id="stretchGroup" style="display: none">
+              <line id="stretchArrow" x1="610" x2="610" y1="0" y2="0" stroke="#e79b74" stroke-width="2" marker-start="url(#arrowOrange)" marker-end="url(#arrowOrange)" />
+              <rect id="stretchLabelBack" x="626" y="0" width="112" height="30" rx="15" fill="#fff8f4" stroke="#f0c9b4" />
+              <text id="stretchText" class="value-text" x="682" y="0" text-anchor="middle" dominant-baseline="middle" font-size="14" font-weight="800" fill="#a46143">Δx = 0.0 cm</text>
+            </g>
+
+          </svg>
+        </div>
+
+        <div class="dashboard">
+          <div class="metric">
+            <span>ausgewählte Masse</span>
+            <strong id="massMetric">0 g</strong>
+          </div>
+          <div class="metric">
+            <span>Verlängerung</span>
+            <strong id="stretchMetric" class="value-number">0.0 cm</strong>
+          </div>
+          <div class="metric">
+            <span>Beobachtung</span>
+            <strong id="observationMetric">keine</strong>
+          </div>
+        </div>
+      </section>
+
+    </div>
+  </main>
+
+  <script>
+    const settings = {
+      selectedGrams: 0,
+      topX: 380,
+      topY: 72,
+      naturalLengthPx: 210,
+      pxPerCm: 5.2,
+      displayedPx: 0,
+      displayedEquilibriumPx: 0,
+      targetPx: 0,
+      animate: true
+    };
+
+    const stretchByMass = {
+      0: 0.0,
+      50: 4.2,
+      100: 8.4,
+      200: 16.8,
+      500: 42.0
+    };
+
+    const stretchCmPerGram = 0.084;
+
+    const oscillation = {
+      dampingPerSecond: 4.5,
+      angularFrequency: 12,
+      maxDurationSeconds: 1.8,
+      settleThresholdPx: 0.15
+    };
+
+    const massCards = Array.from(document.querySelectorAll(".mass-card"));
+
+    const els = {
+      stage: document.getElementById("stage"),
+      simPanel: document.getElementById("simPanel"),
+      springSvg: document.getElementById("springSvg"),
+      springPath: document.getElementById("springPath"),
+      connector: document.getElementById("connector"),
+      hook: document.getElementById("hook"),
+      massGroup: document.getElementById("massGroup"),
+      massRect: document.getElementById("massRect"),
+      massLabel: document.getElementById("massLabel"),
+
+      naturalGroup: document.getElementById("naturalGroup"),
+      naturalLine: document.getElementById("naturalLine"),
+      naturalText: document.getElementById("naturalText"),
+
+      balanceGroup: document.getElementById("balanceGroup"),
+      balanceLine: document.getElementById("balanceLine"),
+      balanceText: document.getElementById("balanceText"),
+
+      stretchGroup: document.getElementById("stretchGroup"),
+      stretchArrow: document.getElementById("stretchArrow"),
+      stretchLabelBack: document.getElementById("stretchLabelBack"),
+      stretchText: document.getElementById("stretchText"),
+
+      rulerGroup: document.getElementById("rulerGroup"),
+      rulerBack: document.getElementById("rulerBack"),
+      rulerTitle: document.getElementById("rulerTitle"),
+
+      massMetric: document.getElementById("massMetric"),
+      stretchMetric: document.getElementById("stretchMetric"),
+      observationMetric: document.getElementById("observationMetric"),
+
+      showNatural: document.getElementById("showNatural"),
+      showBalance: document.getElementById("showBalance"),
+      showNumbers: document.getElementById("showNumbers"),
+      animateMotion: document.getElementById("animateMotion"),
+
+      customMassCard: document.getElementById("customMassCard"),
+      customMassInput: document.getElementById("customMassInput"),
+      customMassBtn: document.getElementById("customMassBtn"),
+      customMassMessage: document.getElementById("customMassMessage")
+    };
+
+    let animationId = null;
+    let equilibriumAnimationId = null;
+
+    function currentStretchCm() {
+      return settings.selectedGrams * stretchCmPerGram;
+    }
+
+    function formatGrams(grams) {
+      return Number.isInteger(grams) ? String(grams) : grams.toFixed(1);
+    }
+
+    function observationForMass(grams) {
+      if (grams === 0) return "keine";
+      if (grams <= 75) return "klein";
+      if (grams <= 150) return "grösser";
+      if (grams <= 300) return "deutlich";
+      return "sehr gross";
+    }
+
+    function clearCustomMassError() {
+      els.customMassCard.classList.remove("invalid");
+      els.customMassInput.removeAttribute("aria-invalid");
+      els.customMassMessage.textContent = "Erlaubter Bereich: 0 bis 500 g";
+    }
+
+    function springPath(x, y1, y2) {
+      const turns = 12;
+      const halfTurns = turns * 2;
+      const amplitude = 42;
+      const length = Math.max(80, y2 - y1);
+      const step = length / halfTurns;
+      let d = `M ${x} ${y1}`;
+      for (let i = 1; i <= halfTurns; i++) {
+        const y = y1 + step * i;
+        const side = i % 2 === 1 ? amplitude : -amplitude;
+        d += ` C ${x + side} ${y - step * 0.68}, ${x + side} ${y - step * 0.32}, ${x} ${y}`;
+      }
+      return d;
+    }
+
+    function clearGroup(group) {
+      while (group.firstChild) group.removeChild(group.firstChild);
+    }
+
+    function makeSvgEl(tag, attrs, text) {
+      const el = document.createElementNS("http://www.w3.org/2000/svg", tag);
+      Object.entries(attrs).forEach(([key, value]) => el.setAttribute(key, value));
+      if (text !== undefined) el.textContent = text;
+      return el;
+    }
+
+    function drawRuler(naturalY) {
+      const maxCm = 55;
+      const h = maxCm * settings.pxPerCm;
+
+      els.rulerBack.setAttribute("y", naturalY);
+      els.rulerBack.setAttribute("height", h);
+      els.rulerTitle.setAttribute("y", naturalY - 13);
+
+      const old = Array.from(els.rulerGroup.querySelectorAll(".tick"));
+      old.forEach(node => node.remove());
+
+      for (let cm = 0; cm <= maxCm; cm++) {
+        const y = naturalY + cm * settings.pxPerCm;
+        const major = cm % 5 === 0;
+        els.rulerGroup.appendChild(makeSvgEl("line", {
+          class: "tick",
+          x1: major ? 96 : 110,
+          x2: 148,
+          y1: y,
+          y2: y,
+          stroke: major ? "#b98950" : "#d5ad76",
+          "stroke-width": major ? 1.7 : 0.9
+        }));
+
+        if (major) {
+          els.rulerGroup.appendChild(makeSvgEl("text", {
+            class: "tick",
+            x: 88,
+            y: y + 5,
+            "text-anchor": "end",
+            "font-size": 13,
+            "font-weight": 800,
+            fill: "#a47849"
+          }, String(cm)));
+        }
+      }
+    }
+
+    function drawSimulation(stretchPx) {
+      const naturalY = settings.topY + settings.naturalLengthPx;
+      const endY = naturalY + stretchPx;
+      const connectorEnd = endY + 23;
+      const massY = connectorEnd + 3;
+      const equilibriumY = naturalY + settings.displayedEquilibriumPx;
+      const stretchCm = settings.targetPx / settings.pxPerCm;
+      const selected = settings.selectedGrams;
+      const viewHeight = Math.max(590, massY + 90);
+
+      els.springSvg.setAttribute("viewBox", `0 0 760 ${viewHeight}`);
+
+      els.springPath.setAttribute("d", springPath(settings.topX, settings.topY, endY));
+
+      els.connector.setAttribute("y1", endY);
+      els.connector.setAttribute("y2", connectorEnd);
+      els.hook.setAttribute("cy", connectorEnd);
+
+      const scale = 1 + (selected / 500) * 0.16;
+      const width = 90 * scale;
+      els.massRect.setAttribute("x", settings.topX - width / 2);
+      els.massRect.setAttribute("width", width);
+      els.massGroup.setAttribute("transform", `translate(0 ${massY})`);
+      els.massLabel.setAttribute("x", settings.topX);
+      els.massLabel.textContent = `${formatGrams(selected)} g`;
+
+      els.naturalLine.setAttribute("y1", naturalY);
+      els.naturalLine.setAttribute("y2", naturalY);
+      els.naturalText.setAttribute("y", naturalY - 11);
+
+      els.balanceLine.setAttribute("y1", equilibriumY);
+      els.balanceLine.setAttribute("y2", equilibriumY);
+      els.balanceText.setAttribute("y", equilibriumY + 23);
+
+      els.stretchArrow.setAttribute("y1", naturalY);
+      els.stretchArrow.setAttribute("y2", equilibriumY);
+      const stretchLabelY = settings.displayedEquilibriumPx < 12
+        ? naturalY + 30
+        : naturalY + settings.displayedEquilibriumPx / 2;
+      els.stretchLabelBack.setAttribute("y", stretchLabelY - 15);
+      els.stretchText.setAttribute("y", stretchLabelY);
+      els.stretchText.textContent = `Δx = ${stretchCm.toFixed(1)} cm`;
+
+      els.massMetric.textContent = `${formatGrams(selected)} g`;
+      els.stretchMetric.textContent = `${stretchCm.toFixed(1)} cm`;
+      els.observationMetric.textContent = observationForMass(selected);
+
+      drawRuler(naturalY);
+    }
+
+    function animateToTarget() {
+      settings.targetPx = currentStretchCm() * settings.pxPerCm;
+
+      if (animationId !== null) {
+        cancelAnimationFrame(animationId);
+        animationId = null;
+      }
+
+      if (!settings.animate) {
+        settings.displayedPx = settings.targetPx;
+        drawSimulation(settings.displayedPx);
+        return;
+      }
+
+      const startPx = settings.displayedPx;
+      const initialDisplacement = startPx - settings.targetPx;
+
+      if (Math.abs(initialDisplacement) < 0.01) {
+        settings.displayedPx = settings.targetPx;
+        drawSimulation(settings.displayedPx);
+        return;
+      }
+
+      const startTime = performance.now();
+
+      function step(now) {
+        const elapsed = (now - startTime) / 1000;
+        const envelope = Math.exp(-oscillation.dampingPerSecond * elapsed);
+        const displacement = initialDisplacement
+          * envelope
+          * Math.cos(oscillation.angularFrequency * elapsed);
+
+        settings.displayedPx = settings.targetPx + displacement;
+        drawSimulation(settings.displayedPx);
+
+        const remainingAmplitude = Math.abs(initialDisplacement) * envelope;
+        if (
+          elapsed < oscillation.maxDurationSeconds
+          && remainingAmplitude > oscillation.settleThresholdPx
+        ) {
+          animationId = requestAnimationFrame(step);
+        } else {
+          settings.displayedPx = settings.targetPx;
+          drawSimulation(settings.displayedPx);
+          animationId = null;
+        }
+      }
+
+      animationId = requestAnimationFrame(step);
+    }
+
+    function glideEquilibriumToTarget() {
+      if (equilibriumAnimationId !== null) {
+        cancelAnimationFrame(equilibriumAnimationId);
+        equilibriumAnimationId = null;
+      }
+
+      const startPx = settings.displayedEquilibriumPx;
+      const delta = settings.targetPx - startPx;
+
+      if (Math.abs(delta) < 0.01) {
+        settings.displayedEquilibriumPx = settings.targetPx;
+        drawSimulation(settings.displayedPx);
+        return;
+      }
+
+      const duration = 320;
+      const startTime = performance.now();
+
+      function step(now) {
+        const progress = Math.min(1, (now - startTime) / duration);
+        const eased = 1 - Math.pow(1 - progress, 3);
+        settings.displayedEquilibriumPx = startPx + delta * eased;
+        drawSimulation(settings.displayedPx);
+
+        if (progress < 1) {
+          equilibriumAnimationId = requestAnimationFrame(step);
+        } else {
+          settings.displayedEquilibriumPx = settings.targetPx;
+          equilibriumAnimationId = null;
+          drawSimulation(settings.displayedPx);
+        }
+      }
+
+      equilibriumAnimationId = requestAnimationFrame(step);
+    }
+
+    function selectMass(grams) {
+      settings.selectedGrams = grams;
+      massCards.forEach(card => {
+        card.classList.toggle("active", Number(card.dataset.g) === grams);
+      });
+      els.customMassInput.value = formatGrams(grams);
+      clearCustomMassError();
+      animateToTarget();
+      glideEquilibriumToTarget();
+    }
+
+    function applyCustomMass() {
+      const rawValue = els.customMassInput.value.trim();
+      const parsedValue = Number(rawValue);
+
+      if (rawValue === "" || !Number.isFinite(parsedValue) || parsedValue < 0 || parsedValue > 500) {
+        els.customMassCard.classList.add("invalid");
+        els.customMassInput.setAttribute("aria-invalid", "true");
+        els.customMassMessage.textContent = "Bitte eine Masse zwischen 0 und 500 g eingeben.";
+        return;
+      }
+
+      const grams = Math.round(parsedValue * 10) / 10;
+      selectMass(grams);
+    }
+
+    function updateVisibility() {
+      const showStretch = els.showNatural.checked && els.showBalance.checked;
+      const showNumbers = els.showNumbers.checked;
+
+      els.naturalGroup.style.display = els.showNatural.checked ? "block" : "none";
+      els.balanceGroup.style.display = els.showBalance.checked ? "block" : "none";
+      els.stretchGroup.style.display = showStretch ? "block" : "none";
+      els.stretchLabelBack.style.display = showStretch && showNumbers ? "block" : "none";
+      els.stretchText.style.display = showStretch && showNumbers ? "block" : "none";
+      els.simPanel.classList.toggle("hide-values", !showNumbers);
+      settings.animate = els.animateMotion.checked;
+
+      if (!settings.animate && animationId !== null) {
+        cancelAnimationFrame(animationId);
+        animationId = null;
+        settings.displayedPx = settings.targetPx;
+        drawSimulation(settings.displayedPx);
+      }
+    }
+
+    massCards.forEach(card => {
+      card.addEventListener("click", () => selectMass(Number(card.dataset.g)));
+      card.addEventListener("dragstart", event => {
+        event.dataTransfer.setData("text/plain", card.dataset.g);
+        event.dataTransfer.effectAllowed = "copy";
+      });
+    });
+
+    els.customMassBtn.addEventListener("click", applyCustomMass);
+    els.customMassInput.addEventListener("keydown", event => {
+      if (event.key === "Enter") applyCustomMass();
+    });
+    els.customMassInput.addEventListener("input", () => {
+      if (els.customMassCard.classList.contains("invalid")) clearCustomMassError();
+    });
+
+    els.stage.addEventListener("dragover", event => {
+      event.preventDefault();
+      els.stage.classList.add("drag-over");
+    });
+
+    els.stage.addEventListener("dragleave", () => {
+      els.stage.classList.remove("drag-over");
+    });
+
+    els.stage.addEventListener("drop", event => {
+      event.preventDefault();
+      els.stage.classList.remove("drag-over");
+      const grams = Number(event.dataTransfer.getData("text/plain"));
+      if (Object.prototype.hasOwnProperty.call(stretchByMass, grams)) selectMass(grams);
+    });
+
+    [
+      els.showNatural,
+      els.showBalance,
+      els.showNumbers,
+      els.animateMotion
+    ].forEach(el => el.addEventListener("change", updateVisibility));
+
+    settings.displayedPx = currentStretchCm() * settings.pxPerCm;
+    settings.targetPx = settings.displayedPx;
+    settings.displayedEquilibriumPx = settings.targetPx;
+    drawSimulation(settings.displayedPx);
+    updateVisibility();
+  </script>
+</body>
+</html>
