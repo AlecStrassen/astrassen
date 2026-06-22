@@ -107,12 +107,18 @@ a { color: inherit; }
   isolation: isolate;
   position: relative;
   overflow: hidden;
+  display: flex;
+  min-height: clamp(270px, 30vw, 340px);
+  box-sizing: border-box;
+  justify-content: center;
+  flex-direction: column;
   padding: clamp(24px, 4vw, 40px);
   border: 1px solid rgba(var(--hero-accent), 0.3);
   border-radius: 22px;
   background:
-    radial-gradient(circle at 84% 48%, rgba(var(--hero-accent), 0.25), transparent 34%),
-    linear-gradient(115deg, rgba(var(--hero-accent), 0.1), transparent 44%),
+    radial-gradient(ellipse at 82% 46%, rgba(var(--hero-accent), 0.22), transparent 34%),
+    radial-gradient(ellipse at 56% 105%, rgba(var(--hero-accent), 0.08), transparent 42%),
+    linear-gradient(115deg, rgba(var(--hero-accent), 0.09), transparent 46%),
     linear-gradient(135deg, rgba(16, 35, 49, 0.94), rgba(8, 20, 30, 0.94));
   box-shadow: var(--shadow), inset 0 1px 0 rgba(var(--hero-accent), 0.1);
   backdrop-filter: blur(16px);
@@ -122,36 +128,33 @@ a { color: inherit; }
 .hero::before {
   position: absolute;
   z-index: 0;
-  inset: 0 0 0 46%;
+  inset: 0;
   content: "";
   background-image:
-    linear-gradient(rgba(var(--hero-accent), 0.055) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(var(--hero-accent), 0.055) 1px, transparent 1px);
-  background-size: 25px 25px;
-  mask-image: linear-gradient(90deg, transparent, #000 30%);
-  -webkit-mask-image: linear-gradient(90deg, transparent, #000 30%);
+    radial-gradient(circle, rgba(var(--hero-accent), 0.22) 0 1px, transparent 1.25px),
+    linear-gradient(90deg, transparent 49.85%, rgba(var(--hero-accent), 0.06) 50%, transparent 50.15%),
+    linear-gradient(transparent 49.85%, rgba(var(--hero-accent), 0.05) 50%, transparent 50.15%);
+  background-size: 24px 24px, 100% 100%, 100% 100%;
+  mask-image: linear-gradient(90deg, transparent 27%, rgba(0, 0, 0, 0.28) 48%, #000 76%);
+  -webkit-mask-image: linear-gradient(90deg, transparent 27%, rgba(0, 0, 0, 0.28) 48%, #000 76%);
+  opacity: 0.5;
   pointer-events: none;
 }
 
 .hero::after {
   position: absolute;
   z-index: 0;
-  top: -118px;
-  right: -70px;
-  width: 540px;
-  height: 380px;
-  border: 0;
-  border-radius: 50%;
-  background: repeating-radial-gradient(
-    ellipse at center,
-    transparent 0 62px,
-    rgba(var(--hero-accent), 0.17) 63px 64px,
-    transparent 65px 108px
-  );
-  box-shadow: none;
+  inset: 0 0 0 38%;
   content: "";
-  opacity: 0.72;
-  transform: rotate(-14deg);
+  background: linear-gradient(
+    90deg,
+    rgba(var(--hero-accent), 0.06),
+    rgba(var(--hero-accent), 0.48) 54%,
+    rgba(var(--hero-accent), 0.14)
+  );
+  -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 900 360' preserveAspectRatio='none'%3E%3Cg fill='none' stroke='white'%3E%3Cellipse cx='705' cy='92' rx='330' ry='205' transform='rotate(-18 705 92)' stroke-width='1.1' stroke-opacity='.38'/%3E%3Cellipse cx='706' cy='92' rx='235' ry='147' transform='rotate(-18 706 92)' stroke-width='1' stroke-opacity='.28'/%3E%3Cellipse cx='706' cy='92' rx='145' ry='91' transform='rotate(-18 706 92)' stroke-width='.9' stroke-opacity='.2'/%3E%3Cpath d='M-25 294 C130 142 236 324 390 224 S668 102 925 258' stroke-width='1.5' stroke-opacity='.9'/%3E%3Cpath d='M-25 314 C128 178 246 332 402 246 S676 136 925 276' stroke-width='.85' stroke-opacity='.4'/%3E%3Cpath d='M-25 274 C126 112 226 310 378 202 S660 72 925 238' stroke-width='.75' stroke-opacity='.3'/%3E%3Cpath d='M575 86h18M584 77v18M790 157h14M797 150v14M324 183h12M330 177v12' stroke-width='1' stroke-opacity='.4'/%3E%3C/g%3E%3C/svg%3E") center / 100% 100% no-repeat;
+  mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 900 360' preserveAspectRatio='none'%3E%3Cg fill='none' stroke='white'%3E%3Cellipse cx='705' cy='92' rx='330' ry='205' transform='rotate(-18 705 92)' stroke-width='1.1' stroke-opacity='.38'/%3E%3Cellipse cx='706' cy='92' rx='235' ry='147' transform='rotate(-18 706 92)' stroke-width='1' stroke-opacity='.28'/%3E%3Cellipse cx='706' cy='92' rx='145' ry='91' transform='rotate(-18 706 92)' stroke-width='.9' stroke-opacity='.2'/%3E%3Cpath d='M-25 294 C130 142 236 324 390 224 S668 102 925 258' stroke-width='1.5' stroke-opacity='.9'/%3E%3Cpath d='M-25 314 C128 178 246 332 402 246 S676 136 925 276' stroke-width='.85' stroke-opacity='.4'/%3E%3Cpath d='M-25 274 C126 112 226 310 378 202 S660 72 925 238' stroke-width='.75' stroke-opacity='.3'/%3E%3Cpath d='M575 86h18M584 77v18M790 157h14M797 150v14M324 183h12M330 177v12' stroke-width='1' stroke-opacity='.4'/%3E%3C/g%3E%3C/svg%3E") center / 100% 100% no-repeat;
+  opacity: 0.78;
   pointer-events: none;
 }
 
@@ -162,11 +165,7 @@ a { color: inherit; }
 
 .hero-home {
   isolation: isolate;
-  display: flex;
-  min-height: 0;
   align-items: flex-start;
-  justify-content: center;
-  flex-direction: column;
 }
 
 .hero-physics {
@@ -256,6 +255,13 @@ h1 {
   letter-spacing: 0.025em;
 }
 
+.hero .eyebrow,
+.hero h1,
+.hero p,
+.hero-signature {
+  max-width: min(660px, 58%);
+}
+
 main {
   width: min(1120px, calc(100% - 32px));
   margin: 0 auto;
@@ -316,17 +322,11 @@ main {
   backdrop-filter: blur(14px);
   -webkit-backdrop-filter: blur(14px);
   counter-increment: subject-card;
-  transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
+  transition: box-shadow 0.2s ease, border-color 0.2s ease;
 }
 
 .card:hover {
-  transform: translateY(-4px);
   border-color: rgba(var(--card-accent), 0.62);
-  background:
-    var(--card-art) calc(100% - 8px) center / var(--card-art-size) auto no-repeat,
-    radial-gradient(circle at 8% 0%, rgba(var(--card-accent), 0.22), transparent 42%),
-    linear-gradient(135deg, rgba(var(--card-accent), 0.1), transparent 56%),
-    linear-gradient(145deg, rgba(21, 43, 55, 0.92), rgba(11, 27, 37, 0.86));
   box-shadow: 0 22px 50px rgba(0, 0, 0, 0.28), 0 0 32px rgba(var(--card-accent), 0.15);
 }
 
@@ -375,7 +375,6 @@ main {
   --card-accent: 54, 181, 165;
   --card-accent-text: #7bddb9;
   --card-radius: 22px 16px 22px 22px;
-  --badge-radius: 999px 12px 999px 999px;
   --card-art: url("assets/illustrations/chemistry-flasks.png");
   --card-art-size: clamp(158px, 44%, 220px);
 }
@@ -384,7 +383,6 @@ main {
   --card-accent: 116, 143, 222;
   --card-accent-text: #aebfff;
   --card-radius: 24px 18px 24px 18px;
-  --badge-radius: 10px 999px 999px 10px;
   --card-art: url("assets/illustrations/physics-prism.png");
 }
 
@@ -392,7 +390,6 @@ main {
   --card-accent: 44, 167, 156;
   --card-accent-text: #79d9cf;
   --card-radius: 18px 24px 18px 24px;
-  --badge-radius: 999px 10px 999px 10px;
   --card-art: url("assets/illustrations/physics-prism.png");
 }
 
@@ -400,7 +397,6 @@ main {
   --card-accent: 25, 182, 202;
   --card-accent-text: #77dfeb;
   --card-radius: 22px 16px 22px 16px;
-  --badge-radius: 9px 999px 999px 9px;
   --card-art: url("assets/illustrations/kinematics-trajectory.png");
   --card-art-size: clamp(166px, 50%, 235px);
 }
@@ -409,7 +405,6 @@ main {
   --card-accent: 130, 122, 218;
   --card-accent-text: #bbb5ff;
   --card-radius: 16px 22px 22px 16px;
-  --badge-radius: 999px 9px 9px 999px;
   --card-art: url("assets/illustrations/simulation-wave.png");
   --card-art-size: clamp(156px, 46%, 220px);
 }
@@ -418,7 +413,6 @@ main {
   --card-accent: 240, 164, 60;
   --card-accent-text: #ffc472;
   --card-radius: 18px 24px 18px 24px;
-  --badge-radius: 9px 999px 9px 999px;
   --card-art: url("assets/illustrations/electricity-circuit.png");
   --card-art-size: clamp(160px, 48%, 230px);
 }
@@ -541,14 +535,21 @@ main {
   }
 
   .hero::before {
-    left: 62%;
-    opacity: 0.55;
+    left: 0;
+    opacity: 0.38;
   }
 
   .hero::after {
-    right: -190px;
-    opacity: 0.34;
-    transform: scale(0.78) rotate(-14deg);
+    inset: 0 0 0 44%;
+    opacity: 0.48;
+    transform: none;
+  }
+
+  .hero .eyebrow,
+  .hero h1,
+  .hero p,
+  .hero-signature {
+    max-width: 68%;
   }
 
   .card {
@@ -570,6 +571,17 @@ main {
   .hero::before,
   .hero::after {
     display: none;
+  }
+
+  .hero {
+    min-height: 0;
+  }
+
+  .hero .eyebrow,
+  .hero h1,
+  .hero p,
+  .hero-signature {
+    max-width: 100%;
   }
 
   .card {
