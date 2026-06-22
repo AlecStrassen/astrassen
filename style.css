@@ -104,6 +104,7 @@ a { color: inherit; }
 .hero {
   --hero-accent: 10, 174, 194;
   --hero-accent-text: #75e0e9;
+  isolation: isolate;
   position: relative;
   overflow: hidden;
   padding: clamp(24px, 4vw, 40px);
@@ -116,6 +117,47 @@ a { color: inherit; }
   box-shadow: var(--shadow), inset 0 1px 0 rgba(var(--hero-accent), 0.1);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
+}
+
+.hero::before {
+  position: absolute;
+  z-index: 0;
+  inset: 0 0 0 46%;
+  content: "";
+  background-image:
+    linear-gradient(rgba(var(--hero-accent), 0.055) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(var(--hero-accent), 0.055) 1px, transparent 1px);
+  background-size: 25px 25px;
+  mask-image: linear-gradient(90deg, transparent, #000 30%);
+  -webkit-mask-image: linear-gradient(90deg, transparent, #000 30%);
+  pointer-events: none;
+}
+
+.hero::after {
+  position: absolute;
+  z-index: 0;
+  top: -118px;
+  right: -70px;
+  width: 540px;
+  height: 380px;
+  border: 0;
+  border-radius: 50%;
+  background: repeating-radial-gradient(
+    ellipse at center,
+    transparent 0 62px,
+    rgba(var(--hero-accent), 0.17) 63px 64px,
+    transparent 65px 108px
+  );
+  box-shadow: none;
+  content: "";
+  opacity: 0.72;
+  transform: rotate(-14deg);
+  pointer-events: none;
+}
+
+.hero > * {
+  position: relative;
+  z-index: 1;
 }
 
 .hero-home {
@@ -255,14 +297,17 @@ main {
   --card-accent-text: #68d9e3;
   --card-radius: 22px 22px 16px 22px;
   --badge-radius: 999px;
+  --card-art: url("assets/illustrations/physics-prism.png");
+  --card-art-size: clamp(168px, 48%, 245px);
   position: relative;
   overflow: hidden;
   display: block;
-  min-height: 152px;
-  padding: 22px;
+  min-height: 198px;
+  padding: 22px 40% 22px 22px;
   border: 1px solid rgba(var(--card-accent), 0.34);
   border-radius: var(--card-radius);
   background:
+    var(--card-art) calc(100% - 12px) center / var(--card-art-size) auto no-repeat,
     radial-gradient(circle at 8% 0%, rgba(var(--card-accent), 0.16), transparent 40%),
     linear-gradient(135deg, rgba(var(--card-accent), 0.06), transparent 54%),
     linear-gradient(145deg, rgba(18, 35, 46, 0.84), rgba(10, 24, 33, 0.76));
@@ -278,6 +323,7 @@ main {
   transform: translateY(-4px);
   border-color: rgba(var(--card-accent), 0.62);
   background:
+    var(--card-art) calc(100% - 8px) center / var(--card-art-size) auto no-repeat,
     radial-gradient(circle at 8% 0%, rgba(var(--card-accent), 0.22), transparent 42%),
     linear-gradient(135deg, rgba(var(--card-accent), 0.1), transparent 56%),
     linear-gradient(145deg, rgba(21, 43, 55, 0.92), rgba(11, 27, 37, 0.86));
@@ -322,6 +368,7 @@ main {
 .card-physics {
   --card-accent: 10, 174, 194;
   --card-accent-text: #68d9e3;
+  --card-art: url("assets/illustrations/physics-prism.png");
 }
 
 .card-chemistry {
@@ -329,6 +376,8 @@ main {
   --card-accent-text: #7bddb9;
   --card-radius: 22px 16px 22px 22px;
   --badge-radius: 999px 12px 999px 999px;
+  --card-art: url("assets/illustrations/chemistry-flasks.png");
+  --card-art-size: clamp(158px, 44%, 220px);
 }
 
 .card-gymnasium {
@@ -336,6 +385,7 @@ main {
   --card-accent-text: #aebfff;
   --card-radius: 24px 18px 24px 18px;
   --badge-radius: 10px 999px 999px 10px;
+  --card-art: url("assets/illustrations/physics-prism.png");
 }
 
 .card-fms {
@@ -343,6 +393,7 @@ main {
   --card-accent-text: #79d9cf;
   --card-radius: 18px 24px 18px 24px;
   --badge-radius: 999px 10px 999px 10px;
+  --card-art: url("assets/illustrations/physics-prism.png");
 }
 
 .card-kinematics {
@@ -350,6 +401,8 @@ main {
   --card-accent-text: #77dfeb;
   --card-radius: 22px 16px 22px 16px;
   --badge-radius: 9px 999px 999px 9px;
+  --card-art: url("assets/illustrations/kinematics-trajectory.png");
+  --card-art-size: clamp(166px, 50%, 235px);
 }
 
 .card-simulation {
@@ -357,6 +410,8 @@ main {
   --card-accent-text: #bbb5ff;
   --card-radius: 16px 22px 22px 16px;
   --badge-radius: 999px 9px 9px 999px;
+  --card-art: url("assets/illustrations/simulation-wave.png");
+  --card-art-size: clamp(156px, 46%, 220px);
 }
 
 .card-electricity {
@@ -364,6 +419,8 @@ main {
   --card-accent-text: #ffc472;
   --card-radius: 18px 24px 18px 24px;
   --badge-radius: 9px 999px 9px 999px;
+  --card-art: url("assets/illustrations/electricity-circuit.png");
+  --card-art-size: clamp(160px, 48%, 230px);
 }
 
 .card h2 {
@@ -374,6 +431,12 @@ main {
   color: #f0f7f9;
   font-size: 1.45rem;
   letter-spacing: -0.045em;
+}
+
+.card .tag,
+.card h2,
+.card p {
+  max-width: 100%;
 }
 
 .card h2::after {
@@ -477,8 +540,21 @@ main {
     border-radius: 18px;
   }
 
+  .hero::before {
+    left: 62%;
+    opacity: 0.55;
+  }
+
+  .hero::after {
+    right: -190px;
+    opacity: 0.34;
+    transform: scale(0.78) rotate(-14deg);
+  }
+
   .card {
-    min-height: auto;
+    --card-art-size: clamp(145px, 38%, 190px);
+    min-height: 184px;
+    padding-right: 34%;
   }
 }
 
@@ -489,6 +565,17 @@ main {
 
   .nav {
     gap: 10px;
+  }
+
+  .hero::before,
+  .hero::after {
+    display: none;
+  }
+
+  .card {
+    --card-art-size: 135px;
+    min-height: 180px;
+    padding-right: 31%;
   }
 
 }
