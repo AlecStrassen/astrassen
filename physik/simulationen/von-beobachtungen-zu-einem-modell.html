@@ -58,6 +58,32 @@
       margin-bottom: 12px;
     }
 
+    .back-link {
+      display: inline-flex;
+      flex: 0 0 auto;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 10px 14px;
+      border: 1px solid rgba(127, 159, 227, 0.32);
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.72);
+      color: #536da8;
+      box-shadow: 0 10px 24px rgba(72, 86, 112, 0.08);
+      text-decoration: none;
+      font-size: 0.9rem;
+      font-weight: 900;
+      white-space: nowrap;
+      transition: border-color 0.16s ease, background 0.16s ease, color 0.16s ease, box-shadow 0.16s ease;
+    }
+
+    .back-link:hover {
+      border-color: rgba(127, 159, 227, 0.58);
+      background: rgba(255, 255, 255, 0.92);
+      color: #405d9f;
+      box-shadow: 0 14px 30px rgba(72, 86, 112, 0.12);
+    }
+
     h1 {
       margin: 0;
       font-size: clamp(1.8rem, 3vw, 2.65rem);
@@ -846,6 +872,10 @@
         display: block;
       }
 
+      .back-link {
+        margin-top: 12px;
+      }
+
       .layout {
         grid-template-columns: 1fr;
       }
@@ -894,6 +924,7 @@
           und wo sie anschliessend zur Ruhe kommt.
         </p>
       </div>
+      <a class="back-link" id="backLink" href="../">← Zurück zur Physik-Seite</a>
     </header>
 
     <div class="layout">
@@ -1044,6 +1075,36 @@
   </main>
 
   <script>
+    const backLink = document.getElementById("backLink");
+    const backTargets = {
+      gymnasium: {
+        href: "../gymi/simulationen/",
+        label: "← Zurück zu Gymnasium-Simulationen"
+      },
+      fms: {
+        href: "../fms/simulationen/",
+        label: "← Zurück zu FMS-Simulationen"
+      }
+    };
+
+    if (backLink) {
+      const params = new URLSearchParams(window.location.search);
+      let source = params.get("from");
+
+      if (!source && document.referrer.includes("/physik/gymi/simulationen")) {
+        source = "gymnasium";
+      }
+
+      if (!source && document.referrer.includes("/physik/fms/simulationen")) {
+        source = "fms";
+      }
+
+      if (backTargets[source]) {
+        backLink.href = backTargets[source].href;
+        backLink.textContent = backTargets[source].label;
+      }
+    }
+
     const settings = {
       selectedGrams: 0,
       topX: 380,
