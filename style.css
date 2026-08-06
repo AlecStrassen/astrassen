@@ -491,6 +491,37 @@ main {
   box-shadow: 0 12px 30px rgba(0, 0, 0, 0.24), 0 0 24px rgba(10, 174, 194, 0.06);
 }
 
+.list a.download-button {
+  border-color: rgba(117, 228, 237, 0.44);
+  background:
+    linear-gradient(135deg, rgba(10, 174, 194, 0.2), rgba(54, 181, 165, 0.08)),
+    rgba(14, 29, 39, 0.82);
+}
+
+.download-button small {
+  display: block;
+  margin-top: 4px;
+  color: #9fb3bf;
+  font-size: 0.82rem;
+  font-weight: 700;
+}
+
+.download-cta {
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: center;
+  min-height: 40px;
+  padding: 10px 15px;
+  border: 1px solid rgba(117, 228, 237, 0.42);
+  border-radius: 999px;
+  background: rgba(117, 228, 237, 0.15);
+  color: #bff7fb;
+  font-size: 0.82rem;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
 .meta {
   color: var(--muted);
   font-size: 0.9rem;
@@ -595,6 +626,16 @@ main {
     --card-art-size: 135px;
     min-height: 180px;
     padding-right: 31%;
+  }
+
+  .list a,
+  .list .placeholder {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .download-cta {
+    width: 100%;
   }
 
 }
