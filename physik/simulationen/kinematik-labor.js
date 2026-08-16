@@ -155,6 +155,7 @@
         quizTitle: document.getElementById("quizTitle"),
         quizIntro: document.getElementById("quizIntro"),
         quizTypePicker: document.getElementById("quizTypePicker"),
+        quizBody: document.querySelector(".quiz-body"),
         quizScore: document.getElementById("quizScore"),
         quizProgressTrack: document.getElementById("quizProgressTrack"),
         quizProgress: document.getElementById("quizProgress"),
@@ -1865,10 +1866,10 @@
           }
           state.quizType = button.getAttribute("data-quiz-type");
           renderQuiz();
-          var firstAnswer = els.quizAnswers.querySelector("[data-answer]");
-          if (firstAnswer) {
-            firstAnswer.focus();
+          if (els.quizBody) {
+            els.quizBody.scrollTop = 0;
           }
+          button.focus();
         });
 
         els.quizAnswers.addEventListener("click", function (event) {

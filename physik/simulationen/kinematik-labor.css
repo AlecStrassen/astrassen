@@ -212,7 +212,11 @@
 
     .workspace {
       display: grid;
-      grid-template-columns: minmax(250px, 292px) minmax(440px, 1fr) minmax(280px, 324px);
+      grid-template-columns: minmax(238px, 292px) minmax(410px, 1fr) minmax(370px, 560px);
+      grid-template-rows: minmax(310px, 1fr) minmax(185px, 260px);
+      grid-template-areas:
+        "controls simulation diagrams"
+        "controls quiz diagrams";
       gap: 10px;
       min-width: 0;
       min-height: 0;
@@ -228,6 +232,13 @@
       background: var(--card);
       box-shadow: var(--shadow);
       backdrop-filter: blur(14px);
+    }
+
+    .workspace > *,
+    .panel-heading > div,
+    .scene-heading > div,
+    .plots-heading > div {
+      min-width: 0;
     }
 
     .panel-heading {
@@ -268,12 +279,17 @@
       color: var(--muted);
       font-size: 0.77rem;
       line-height: 1.3;
+      overflow-wrap: anywhere;
     }
 
     .controls-panel,
     .quiz-panel {
       display: grid;
       grid-template-rows: auto minmax(0, 1fr);
+    }
+
+    .controls-panel {
+      grid-area: controls;
     }
 
     .panel-scroll {
@@ -488,14 +504,11 @@
     }
 
     .middle-column {
-      display: grid;
-      grid-template-rows: minmax(285px, 1.08fr) minmax(215px, 0.92fr);
-      gap: 10px;
-      min-width: 0;
-      min-height: 0;
+      display: contents;
     }
 
     .simulation-panel {
+      grid-area: simulation;
       display: grid;
       grid-template-rows: auto minmax(118px, 1fr) auto auto;
     }
@@ -564,6 +577,7 @@
       align-items: center;
       justify-content: center;
       gap: 6px;
+      min-width: 0;
       min-height: 34px;
       padding: 6px 10px;
       border: 1px solid var(--line);
@@ -659,12 +673,14 @@
     }
 
     .diagram-panel {
+      grid-area: diagrams;
       display: grid;
       grid-template-rows: auto minmax(0, 1fr);
     }
 
     .plots-heading {
       display: flex;
+      flex-wrap: wrap;
       align-items: center;
       justify-content: space-between;
       gap: 10px;
@@ -690,15 +706,27 @@
 
     .plots-grid {
       display: grid;
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-      gap: 6px;
+      grid-template-columns: minmax(0, 1fr);
+      grid-template-rows: repeat(2, minmax(245px, 1fr));
+      gap: 8px;
       min-height: 0;
-      padding: 6px;
+      overflow-x: hidden;
+      overflow-y: auto;
+      overscroll-behavior: contain;
+      scrollbar-gutter: stable;
+      scrollbar-width: thin;
+      padding: 8px;
       background: #f5f7fb;
     }
 
     .plots-grid[data-count="3"] {
-      grid-template-columns: repeat(3, minmax(0, 1fr));
+      grid-template-columns: minmax(0, 1fr);
+      grid-template-rows: repeat(3, minmax(235px, 1fr));
+    }
+
+    .plots-grid:focus-visible {
+      outline: 3px solid rgba(127, 159, 227, 0.42);
+      outline-offset: -4px;
     }
 
     .plot-card {
@@ -718,6 +746,7 @@
 
     .plot-card-heading {
       display: flex;
+      flex-wrap: wrap;
       align-items: center;
       justify-content: space-between;
       gap: 6px;
@@ -740,7 +769,7 @@
       display: block;
       width: 100%;
       height: 100%;
-      min-height: 105px;
+      min-height: 165px;
     }
 
     .plot-footer {
@@ -753,6 +782,7 @@
     .plot-summary {
       margin: 0;
       overflow: hidden;
+      overflow-wrap: anywhere;
       color: var(--muted);
       font-size: 0.6rem;
       line-height: 1.25;
@@ -762,6 +792,7 @@
 
     .plot-legend {
       display: flex;
+      flex-wrap: wrap;
       flex: 0 0 auto;
       gap: 5px;
       color: var(--muted);
@@ -786,6 +817,7 @@
     }
 
     .quiz-panel {
+      grid-area: quiz;
       grid-template-rows: auto auto minmax(0, 1fr);
     }
 
@@ -809,8 +841,9 @@
       color: var(--muted);
       font-size: 0.67rem;
       font-weight: 900;
-      text-overflow: ellipsis;
-      white-space: nowrap;
+      line-height: 1.15;
+      overflow-wrap: anywhere;
+      white-space: normal;
       cursor: pointer;
     }
 
@@ -834,10 +867,14 @@
 
     .quiz-body {
       display: grid;
-      grid-template-rows: auto auto minmax(0, 1fr) auto auto;
+      grid-template-rows: auto auto auto auto auto;
+      align-content: start;
       gap: 10px;
       min-height: 0;
       overflow: auto;
+      overscroll-behavior: contain;
+      scrollbar-gutter: stable;
+      scroll-padding-block: 12px;
       padding: 12px 14px 14px;
       scrollbar-width: thin;
     }
@@ -859,6 +896,7 @@
 
     .quiz-meta {
       display: flex;
+      flex-wrap: wrap;
       align-items: center;
       justify-content: space-between;
       gap: 10px;
@@ -873,6 +911,7 @@
       font-size: clamp(0.9rem, 1vw, 1rem);
       line-height: 1.35;
       letter-spacing: -0.018em;
+      overflow-wrap: anywhere;
     }
 
     .quiz-visual {
@@ -971,6 +1010,13 @@
       color: var(--muted);
       font-size: 0.7rem;
       line-height: 1.38;
+      overflow-wrap: anywhere;
+    }
+
+    .answer-button,
+    .quiz-feedback,
+    .next-question {
+      scroll-margin-block: 12px;
     }
 
     .quiz-feedback.success {
@@ -1021,7 +1067,7 @@
       border: 0;
     }
 
-    @media (min-width: 1180px) and (min-height: 700px) {
+    @media (min-width: 1180px) and (min-height: 760px) {
       html,
       body {
         height: 100%;
@@ -1035,7 +1081,6 @@
       }
 
       .workspace,
-      .middle-column,
       .panel {
         height: 100%;
       }
@@ -1075,11 +1120,6 @@
         padding-top: 9px;
       }
 
-      .middle-column {
-        grid-template-rows: minmax(260px, 1.02fr) minmax(190px, 0.82fr);
-        gap: 8px;
-      }
-
       .simulation-panel {
         grid-template-rows: auto minmax(86px, 1fr) auto auto;
       }
@@ -1104,19 +1144,42 @@
       }
     }
 
-    @media (max-width: 1179px) {
+    @media (max-width: 1079px) {
       .workspace {
         grid-template-columns: minmax(250px, 292px) minmax(0, 1fr);
+        grid-template-rows: auto auto auto;
+        grid-template-areas:
+          "controls simulation"
+          "diagrams diagrams"
+          "quiz quiz";
+      }
+
+      .simulation-panel {
+        min-height: 360px;
+      }
+
+      .diagram-panel {
+        grid-template-rows: auto auto;
+      }
+
+      .plots-grid,
+      .plots-grid[data-count="3"] {
+        --plot-row-size: clamp(320px, 36vw, 410px);
+        grid-template-columns: minmax(0, 1fr);
+        grid-template-rows: none;
+        grid-auto-rows: minmax(var(--plot-row-size), auto);
+        overflow: visible;
       }
 
       .quiz-panel {
-        grid-column: 1 / -1;
-        min-height: 360px;
+        height: auto;
+        min-height: 0;
       }
 
       .quiz-body {
         grid-template-columns: minmax(0, 1.2fr) minmax(260px, 0.8fr);
-        grid-template-rows: auto auto minmax(0, 1fr) auto;
+        grid-template-rows: auto auto auto auto;
+        overflow: visible;
       }
 
       .progress-track,
@@ -1161,10 +1224,12 @@
 
       .workspace {
         grid-template-columns: 1fr;
-      }
-
-      .middle-column {
-        grid-template-rows: auto auto;
+        grid-template-rows: auto;
+        grid-template-areas:
+          "controls"
+          "simulation"
+          "diagrams"
+          "quiz";
       }
 
       .controls-panel,
@@ -1173,7 +1238,7 @@
       }
 
       .quiz-panel {
-        grid-column: auto;
+        height: auto;
       }
 
       .panel-scroll,
@@ -1186,16 +1251,17 @@
       }
 
       .plots-grid {
-        min-height: 230px;
+        --plot-row-size: clamp(280px, 72vw, 360px);
+        min-height: 0;
       }
 
       .plots-grid[data-count="3"] {
-        grid-template-columns: repeat(2, minmax(0, 1fr));
+        grid-template-columns: minmax(0, 1fr);
       }
 
       .plots-grid[data-count="3"] .plot-card:last-child {
-        grid-column: 1 / -1;
-        min-height: 190px;
+        grid-column: auto;
+        min-height: var(--plot-row-size);
       }
 
       .quiz-body {
