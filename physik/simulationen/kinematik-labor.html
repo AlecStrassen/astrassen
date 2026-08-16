@@ -1,0 +1,2980 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#f3f5fb" />
+  <title>Kinematik-Labor · Bewegung verstehen</title>
+  <link rel="icon" href="../../favicon.svg" type="image/svg+xml" />
+  <style>
+    :root {
+      --bg: #f3f5fb;
+      --card: rgba(252, 253, 255, 0.9);
+      --card-solid: #fcfdff;
+      --text: #354158;
+      --muted: #68768d;
+      --line: #dce3ef;
+      --blue: #7f9fe3;
+      --blue-dark: #5574b8;
+      --green: #81c9a1;
+      --green-dark: #39845b;
+      --orange: #e9a078;
+      --orange-dark: #b96f49;
+      --cyan: #91c9d5;
+      --cyan-dark: #4f91a0;
+      --red: #df8c89;
+      --dark: #465268;
+      --shadow: 0 20px 48px rgba(72, 86, 112, 0.1);
+      --radius: 24px;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html,
+    body {
+      min-height: 100%;
+      width: 100%;
+    }
+
+    body {
+      margin: 0;
+      color: var(--text);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background:
+        radial-gradient(circle at 8% 10%, rgba(163, 184, 230, 0.25), transparent 34%),
+        radial-gradient(circle at 95% 5%, rgba(169, 215, 222, 0.24), transparent 30%),
+        linear-gradient(180deg, #fafbff 0%, var(--bg) 100%);
+    }
+
+    button,
+    input,
+    select {
+      font: inherit;
+    }
+
+    button {
+      color: inherit;
+    }
+
+    button:focus-visible,
+    input:focus-visible,
+    select:focus-visible,
+    a:focus-visible {
+      outline: 3px solid rgba(127, 159, 227, 0.42);
+      outline-offset: 2px;
+    }
+
+    .app-shell {
+      width: min(1540px, calc(100vw - 24px));
+      margin: 0 auto;
+      padding: clamp(8px, 1.15vw, 16px) 0;
+      display: grid;
+      gap: 10px;
+    }
+
+    .app-header {
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      gap: 22px;
+      min-width: 0;
+    }
+
+    .title-wrap {
+      min-width: 0;
+    }
+
+    .eyebrow {
+      display: block;
+      margin-bottom: 4px;
+      color: var(--blue-dark);
+      font-size: 0.73rem;
+      font-weight: 950;
+      letter-spacing: 0.13em;
+      text-transform: uppercase;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: clamp(1.72rem, 2.5vw, 2.5rem);
+      line-height: 1;
+      letter-spacing: -0.052em;
+    }
+
+    .subtitle {
+      margin: 5px 0 0;
+      color: var(--muted);
+      font-size: clamp(0.84rem, 1.05vw, 1rem);
+      line-height: 1.32;
+    }
+
+    .back-link {
+      display: inline-flex;
+      flex: 0 0 auto;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      min-height: 42px;
+      padding: 9px 14px;
+      border: 1px solid rgba(127, 159, 227, 0.32);
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.74);
+      color: #536da8;
+      box-shadow: 0 10px 24px rgba(72, 86, 112, 0.08);
+      text-decoration: none;
+      font-size: 0.86rem;
+      font-weight: 900;
+      white-space: nowrap;
+      transition: border-color 0.16s ease, background 0.16s ease, transform 0.16s ease;
+    }
+
+    .back-link:hover {
+      border-color: rgba(127, 159, 227, 0.58);
+      background: rgba(255, 255, 255, 0.94);
+      transform: translateY(-1px);
+    }
+
+    .level-picker {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 7px;
+      padding: 7px;
+      border: 1px solid rgba(217, 226, 239, 0.96);
+      border-radius: 22px;
+      background: rgba(252, 253, 255, 0.72);
+      box-shadow: 0 13px 34px rgba(72, 86, 112, 0.08);
+      backdrop-filter: blur(14px);
+    }
+
+    .level-button {
+      appearance: none;
+      display: grid;
+      grid-template-columns: auto minmax(0, 1fr);
+      align-items: center;
+      gap: 10px;
+      min-width: 0;
+      min-height: 58px;
+      padding: 8px 13px;
+      border: 1px solid transparent;
+      border-radius: 16px;
+      background: transparent;
+      text-align: left;
+      cursor: pointer;
+      transition: background 0.16s ease, border-color 0.16s ease, box-shadow 0.16s ease, transform 0.16s ease;
+    }
+
+    .level-button:hover {
+      background: rgba(255, 255, 255, 0.76);
+      transform: translateY(-1px);
+    }
+
+    .level-button[aria-checked="true"] {
+      border-color: rgba(127, 159, 227, 0.38);
+      background: #ffffff;
+      box-shadow:
+        0 0 0 3px rgba(127, 159, 227, 0.08),
+        0 10px 24px rgba(72, 86, 112, 0.08);
+    }
+
+    .level-number {
+      display: grid;
+      width: 36px;
+      height: 36px;
+      place-items: center;
+      border-radius: 12px;
+      background: #edf2fc;
+      color: var(--blue-dark);
+      font-size: 0.88rem;
+      font-weight: 950;
+    }
+
+    .level-button[aria-checked="true"] .level-number {
+      background: linear-gradient(145deg, #8eabe9, #6f91d9);
+      color: #fff;
+      box-shadow: 0 7px 15px rgba(127, 159, 227, 0.26);
+    }
+
+    .level-copy {
+      min-width: 0;
+    }
+
+    .level-copy strong,
+    .level-copy small {
+      display: block;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .level-copy strong {
+      font-size: 0.91rem;
+      letter-spacing: -0.018em;
+    }
+
+    .level-copy small {
+      margin-top: 2px;
+      color: var(--muted);
+      font-size: 0.72rem;
+    }
+
+    .workspace {
+      display: grid;
+      grid-template-columns: minmax(250px, 292px) minmax(440px, 1fr) minmax(280px, 324px);
+      gap: 10px;
+      min-width: 0;
+      min-height: 0;
+      align-items: stretch;
+    }
+
+    .panel {
+      min-width: 0;
+      min-height: 0;
+      overflow: hidden;
+      border: 1px solid rgba(217, 226, 239, 0.96);
+      border-radius: var(--radius);
+      background: var(--card);
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(14px);
+    }
+
+    .panel-heading {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 14px 15px 10px;
+      border-bottom: 1px solid rgba(220, 227, 239, 0.86);
+    }
+
+    .panel-kicker {
+      display: block;
+      margin-bottom: 3px;
+      color: var(--blue-dark);
+      font-size: 0.66rem;
+      font-weight: 950;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+    }
+
+    .panel h2,
+    .panel h3 {
+      margin: 0;
+      letter-spacing: -0.025em;
+    }
+
+    .panel h2 {
+      font-size: 1rem;
+    }
+
+    .panel h3 {
+      font-size: 0.94rem;
+    }
+
+    .panel-description {
+      margin: 4px 0 0;
+      color: var(--muted);
+      font-size: 0.77rem;
+      line-height: 1.3;
+    }
+
+    .controls-panel,
+    .quiz-panel {
+      display: grid;
+      grid-template-rows: auto minmax(0, 1fr);
+    }
+
+    .panel-scroll {
+      min-height: 0;
+      overflow: auto;
+      overscroll-behavior: contain;
+      padding: 12px 14px 14px;
+      scrollbar-width: thin;
+      scrollbar-color: #cbd6e7 transparent;
+    }
+
+    .preset-label {
+      display: block;
+      margin-bottom: 7px;
+      color: var(--muted);
+      font-size: 0.69rem;
+      font-weight: 850;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+
+    .preset-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-bottom: 11px;
+    }
+
+    .preset-button {
+      min-height: 32px;
+      padding: 6px 9px;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      background: #fff;
+      color: #5e6c83;
+      font-size: 0.71rem;
+      font-weight: 850;
+      cursor: pointer;
+      transition: border-color 0.15s ease, background 0.15s ease, color 0.15s ease;
+    }
+
+    .preset-button:hover {
+      border-color: rgba(127, 159, 227, 0.65);
+      color: var(--blue-dark);
+    }
+
+    .preset-button.active {
+      border-color: rgba(127, 159, 227, 0.55);
+      background: #eef3fd;
+      color: var(--blue-dark);
+    }
+
+    .control-stack {
+      display: grid;
+      gap: 9px;
+    }
+
+    .object-card {
+      margin-bottom: 9px;
+      padding: 10px;
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      background: rgba(255, 255, 255, 0.72);
+    }
+
+    .object-card.object-a {
+      border-left: 4px solid var(--blue);
+    }
+
+    .object-card.object-b {
+      border-left: 4px solid var(--orange);
+    }
+
+    .object-card-title {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      margin-bottom: 8px;
+      font-size: 0.78rem;
+      font-weight: 950;
+    }
+
+    .object-chip {
+      display: inline-grid;
+      width: 24px;
+      height: 24px;
+      place-items: center;
+      border-radius: 8px;
+      color: #fff;
+      font-size: 0.72rem;
+      font-weight: 950;
+    }
+
+    .object-chip.a {
+      background: var(--blue);
+    }
+
+    .object-chip.b {
+      background: var(--orange);
+    }
+
+    .control {
+      padding: 8px 9px;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      background: var(--card-solid);
+    }
+
+    .control + .control {
+      margin-top: 7px;
+    }
+
+    .control-top {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      align-items: center;
+      gap: 7px;
+      margin-bottom: 6px;
+    }
+
+    .control-label {
+      min-width: 0;
+      font-size: 0.76rem;
+      font-weight: 900;
+    }
+
+    .control-label small {
+      display: block;
+      margin-top: 1px;
+      overflow: hidden;
+      color: var(--muted);
+      font-size: 0.63rem;
+      font-weight: 650;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .number-wrap {
+      display: grid;
+      grid-template-columns: minmax(44px, 54px) auto;
+      align-items: center;
+      overflow: hidden;
+      border: 1px solid #d5deec;
+      border-radius: 9px;
+      background: #fff;
+    }
+
+    .number-wrap input {
+      width: 100%;
+      min-width: 0;
+      padding: 5px 3px 5px 7px;
+      border: 0;
+      outline: 0;
+      background: transparent;
+      color: var(--dark);
+      font-size: 0.74rem;
+      font-weight: 900;
+      text-align: right;
+    }
+
+    .number-wrap span {
+      padding: 0 6px 0 2px;
+      color: var(--muted);
+      font-size: 0.65rem;
+      font-weight: 850;
+    }
+
+    input[type="range"] {
+      width: 100%;
+      height: 22px;
+      margin: -5px 0;
+      border-radius: 999px;
+      accent-color: var(--blue);
+      cursor: pointer;
+    }
+
+    .object-b input[type="range"] {
+      accent-color: var(--orange);
+    }
+
+    .formula-note,
+    .meeting-result {
+      margin-top: 10px;
+      padding: 9px 10px;
+      border: 1px solid rgba(145, 201, 213, 0.48);
+      border-radius: 14px;
+      background: #f2fafb;
+      color: #536d75;
+      font-size: 0.7rem;
+      line-height: 1.35;
+    }
+
+    .meeting-result {
+      border-color: rgba(129, 201, 161, 0.5);
+      background: #f2fbf6;
+      color: #4d715d;
+    }
+
+    .meeting-result.warning {
+      border-color: rgba(233, 160, 120, 0.48);
+      background: #fff7f2;
+      color: #8a624e;
+    }
+
+    .formula-note strong,
+    .meeting-result strong {
+      display: block;
+      margin-bottom: 2px;
+      color: var(--dark);
+      font-size: 0.72rem;
+    }
+
+    .middle-column {
+      display: grid;
+      grid-template-rows: minmax(285px, 1.08fr) minmax(215px, 0.92fr);
+      gap: 10px;
+      min-width: 0;
+      min-height: 0;
+    }
+
+    .simulation-panel {
+      display: grid;
+      grid-template-rows: auto minmax(118px, 1fr) auto auto;
+    }
+
+    .scene-heading {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      align-items: start;
+      gap: 12px;
+      padding: 11px 14px 8px;
+      border-bottom: 1px solid rgba(220, 227, 239, 0.8);
+    }
+
+    .scene-heading h2 {
+      font-size: 0.98rem;
+    }
+
+    .scene-hint {
+      margin: 3px 0 0;
+      color: var(--muted);
+      font-size: 0.71rem;
+      line-height: 1.25;
+    }
+
+    .formula-badge {
+      align-self: center;
+      padding: 6px 9px;
+      border: 1px solid rgba(127, 159, 227, 0.34);
+      border-radius: 10px;
+      background: #f3f6fd;
+      color: #536da8;
+      font-family: "Cambria Math", Cambria, Georgia, serif;
+      font-size: 0.72rem;
+      font-weight: 800;
+      white-space: nowrap;
+    }
+
+    .stage {
+      position: relative;
+      min-height: 0;
+      overflow: hidden;
+      background:
+        radial-gradient(circle, rgba(127, 159, 227, 0.18) 1.25px, transparent 1.35px) 0 0 / 20px 20px,
+        linear-gradient(180deg, #fbfdff 0%, #f5f8fc 100%);
+    }
+
+    #motionSvg {
+      display: block;
+      width: 100%;
+      height: 100%;
+      min-height: 145px;
+    }
+
+    .transport {
+      display: grid;
+      grid-template-columns: auto auto auto minmax(130px, 1fr) auto;
+      align-items: center;
+      gap: 7px;
+      padding: 8px 10px;
+      border-top: 1px solid var(--line);
+      background: rgba(255, 255, 255, 0.78);
+    }
+
+    .transport-button {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      min-height: 34px;
+      padding: 6px 10px;
+      border: 1px solid var(--line);
+      border-radius: 11px;
+      background: #fff;
+      color: #5e6c83;
+      font-size: 0.72rem;
+      font-weight: 900;
+      cursor: pointer;
+    }
+
+    .transport-button.primary {
+      border-color: rgba(127, 159, 227, 0.5);
+      background: linear-gradient(145deg, #8ea9e5, #7294dc);
+      color: #fff;
+      box-shadow: 0 8px 18px rgba(127, 159, 227, 0.23);
+    }
+
+    .transport-button:hover {
+      transform: translateY(-1px);
+    }
+
+    .time-control {
+      display: grid;
+      grid-template-columns: minmax(80px, 1fr) 58px;
+      align-items: center;
+      gap: 7px;
+      min-width: 0;
+    }
+
+    .time-control output {
+      color: var(--dark);
+      font-size: 0.72rem;
+      font-variant-numeric: tabular-nums;
+      font-weight: 950;
+      text-align: right;
+    }
+
+    .speed-select {
+      min-height: 34px;
+      padding: 5px 7px;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      background: #fff;
+      color: #5e6c83;
+      font-size: 0.7rem;
+      font-weight: 850;
+    }
+
+    .speed-control {
+      min-width: 0;
+    }
+
+    .metric-grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 6px;
+      padding: 7px 10px 9px;
+      background: rgba(246, 249, 253, 0.92);
+    }
+
+    .metric-grid.single-mode {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
+    .metric {
+      min-width: 0;
+      padding: 6px 8px;
+      border: 1px solid var(--line);
+      border-radius: 11px;
+      background: #fff;
+    }
+
+    .metric span,
+    .metric strong {
+      display: block;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .metric span {
+      color: var(--muted);
+      font-size: 0.61rem;
+      font-weight: 750;
+    }
+
+    .metric strong {
+      margin-top: 2px;
+      color: var(--dark);
+      font-size: 0.79rem;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .diagram-panel {
+      display: grid;
+      grid-template-rows: auto minmax(0, 1fr) auto;
+    }
+
+    .plot-heading {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      align-items: center;
+      gap: 10px;
+      padding: 9px 12px 7px;
+      border-bottom: 1px solid rgba(220, 227, 239, 0.8);
+    }
+
+    .plot-heading h2 {
+      font-size: 0.91rem;
+    }
+
+    .plot-tabs {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      padding: 3px;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      background: #f4f7fb;
+    }
+
+    .plot-tab {
+      min-height: 29px;
+      padding: 4px 9px;
+      border: 0;
+      border-radius: 7px;
+      background: transparent;
+      color: var(--muted);
+      font-size: 0.67rem;
+      font-weight: 900;
+      cursor: pointer;
+    }
+
+    .plot-tab[aria-selected="true"] {
+      background: #fff;
+      color: var(--blue-dark);
+      box-shadow: 0 4px 12px rgba(72, 86, 112, 0.1);
+    }
+
+    .plot-area {
+      min-height: 0;
+      padding: 4px 7px 0;
+      background: #fff;
+    }
+
+    #plotSvg {
+      display: block;
+      width: 100%;
+      height: 100%;
+      min-height: 135px;
+    }
+
+    .plot-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      min-height: 30px;
+      padding: 5px 11px 7px;
+      border-top: 1px solid rgba(220, 227, 239, 0.7);
+      background: #fff;
+    }
+
+    .plot-summary {
+      margin: 0;
+      overflow: hidden;
+      color: var(--muted);
+      font-size: 0.65rem;
+      line-height: 1.25;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .plot-legend {
+      display: flex;
+      flex: 0 0 auto;
+      gap: 8px;
+      color: var(--muted);
+      font-size: 0.64rem;
+      font-weight: 850;
+    }
+
+    .legend-item {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .legend-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+    }
+
+    .quiz-heading {
+      align-items: center;
+    }
+
+    .score-chip {
+      flex: 0 0 auto;
+      padding: 5px 8px;
+      border: 1px solid rgba(129, 201, 161, 0.44);
+      border-radius: 999px;
+      background: #f1faf5;
+      color: var(--green-dark);
+      font-size: 0.68rem;
+      font-weight: 950;
+    }
+
+    .quiz-body {
+      display: grid;
+      grid-template-rows: auto auto minmax(0, 1fr) auto auto;
+      gap: 10px;
+      min-height: 0;
+      overflow: auto;
+      padding: 12px 14px 14px;
+      scrollbar-width: thin;
+    }
+
+    .progress-track {
+      height: 6px;
+      overflow: hidden;
+      border-radius: 999px;
+      background: #e8edf5;
+    }
+
+    .progress-bar {
+      width: 0;
+      height: 100%;
+      border-radius: inherit;
+      background: linear-gradient(90deg, var(--blue), var(--cyan));
+      transition: width 0.2s ease;
+    }
+
+    .quiz-meta {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      color: var(--muted);
+      font-size: 0.67rem;
+      font-weight: 850;
+    }
+
+    .quiz-question {
+      margin: 0 0 10px;
+      color: var(--dark);
+      font-size: clamp(0.9rem, 1vw, 1rem);
+      line-height: 1.35;
+      letter-spacing: -0.018em;
+    }
+
+    .answer-list {
+      display: grid;
+      gap: 7px;
+    }
+
+    .answer-button {
+      display: grid;
+      grid-template-columns: 27px minmax(0, 1fr);
+      align-items: center;
+      gap: 8px;
+      width: 100%;
+      min-height: 42px;
+      padding: 7px 9px;
+      border: 1px solid var(--line);
+      border-radius: 13px;
+      background: #fff;
+      color: #536075;
+      text-align: left;
+      font-size: 0.76rem;
+      font-weight: 800;
+      cursor: pointer;
+      transition: border-color 0.14s ease, background 0.14s ease, transform 0.14s ease;
+    }
+
+    .answer-button:not(:disabled):hover {
+      border-color: rgba(127, 159, 227, 0.62);
+      background: #f7f9fe;
+      transform: translateY(-1px);
+    }
+
+    .answer-button:disabled {
+      cursor: default;
+    }
+
+    .answer-letter {
+      display: grid;
+      width: 27px;
+      height: 27px;
+      place-items: center;
+      border-radius: 9px;
+      background: #edf1f7;
+      color: #68768d;
+      font-size: 0.68rem;
+      font-weight: 950;
+    }
+
+    .answer-button.correct {
+      border-color: rgba(76, 164, 111, 0.5);
+      background: #effaf4;
+      color: #356f4d;
+    }
+
+    .answer-button.correct .answer-letter {
+      background: var(--green);
+      color: #fff;
+    }
+
+    .answer-button.wrong {
+      border-color: rgba(223, 140, 137, 0.54);
+      background: #fff3f2;
+      color: #935653;
+    }
+
+    .answer-button.wrong .answer-letter {
+      background: var(--red);
+      color: #fff;
+    }
+
+    .quiz-feedback {
+      min-height: 51px;
+      padding: 9px 10px;
+      border: 1px dashed var(--line);
+      border-radius: 13px;
+      background: #f8fafc;
+      color: var(--muted);
+      font-size: 0.7rem;
+      line-height: 1.38;
+    }
+
+    .quiz-feedback.success {
+      border-style: solid;
+      border-color: rgba(129, 201, 161, 0.5);
+      background: #f0faf4;
+      color: #47715a;
+    }
+
+    .quiz-feedback.error {
+      border-style: solid;
+      border-color: rgba(233, 160, 120, 0.5);
+      background: #fff6f1;
+      color: #865d49;
+    }
+
+    .next-question {
+      width: 100%;
+      min-height: 40px;
+      padding: 8px 12px;
+      border: 1px solid rgba(127, 159, 227, 0.5);
+      border-radius: 12px;
+      background: linear-gradient(145deg, #8ea9e5, #7294dc);
+      color: #fff;
+      box-shadow: 0 8px 18px rgba(127, 159, 227, 0.2);
+      font-size: 0.75rem;
+      font-weight: 950;
+      cursor: pointer;
+    }
+
+    .next-question:disabled {
+      border-color: var(--line);
+      background: #e8edf5;
+      color: #9aa6b7;
+      box-shadow: none;
+      cursor: not-allowed;
+    }
+
+    .sr-only {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      white-space: nowrap;
+      border: 0;
+    }
+
+    @media (min-width: 1020px) and (min-height: 680px) {
+      html,
+      body {
+        height: 100%;
+        overflow: hidden;
+      }
+
+      .app-shell {
+        height: 100vh;
+        height: 100dvh;
+        grid-template-rows: auto auto minmax(0, 1fr);
+      }
+
+      .workspace,
+      .middle-column,
+      .panel {
+        height: 100%;
+      }
+    }
+
+    @media (max-height: 780px) and (min-width: 1020px) {
+      .app-shell {
+        padding: 8px 0;
+        gap: 8px;
+      }
+
+      .subtitle {
+        font-size: 0.8rem;
+      }
+
+      .level-picker {
+        padding: 5px;
+      }
+
+      .level-button {
+        min-height: 50px;
+        padding: 6px 10px;
+      }
+
+      .level-number {
+        width: 32px;
+        height: 32px;
+      }
+
+      .panel-heading {
+        padding-top: 10px;
+        padding-bottom: 8px;
+      }
+
+      .panel-scroll,
+      .quiz-body {
+        padding-top: 9px;
+      }
+
+      .middle-column {
+        grid-template-rows: minmax(260px, 1.02fr) minmax(190px, 0.82fr);
+        gap: 8px;
+      }
+
+      .simulation-panel {
+        grid-template-rows: auto minmax(86px, 1fr) auto auto;
+      }
+
+      #motionSvg {
+        min-height: 0;
+      }
+
+      .scene-heading {
+        padding-top: 8px;
+        padding-bottom: 6px;
+      }
+
+      .transport {
+        padding-top: 6px;
+        padding-bottom: 6px;
+      }
+
+      .metric-grid {
+        padding-top: 5px;
+        padding-bottom: 6px;
+      }
+    }
+
+    @media (max-width: 1019px) {
+      .workspace {
+        grid-template-columns: minmax(250px, 292px) minmax(0, 1fr);
+      }
+
+      .quiz-panel {
+        grid-column: 1 / -1;
+        min-height: 360px;
+      }
+
+      .quiz-body {
+        grid-template-columns: minmax(0, 1.2fr) minmax(260px, 0.8fr);
+        grid-template-rows: auto auto minmax(0, 1fr) auto;
+      }
+
+      .progress-track,
+      .quiz-meta {
+        grid-column: 1 / -1;
+      }
+
+      .quiz-feedback {
+        align-self: start;
+      }
+
+      .next-question {
+        grid-column: 2;
+      }
+    }
+
+    @media (max-width: 820px) {
+      .app-shell {
+        width: min(100vw - 16px, 1540px);
+      }
+
+      .app-header {
+        display: block;
+      }
+
+      .back-link {
+        margin-top: 10px;
+      }
+
+      .level-picker {
+        display: flex;
+        overflow-x: auto;
+        scroll-snap-type: x mandatory;
+        scrollbar-width: thin;
+      }
+
+      .level-button {
+        flex: 0 0 min(270px, 78vw);
+        scroll-snap-align: start;
+      }
+
+      .workspace {
+        grid-template-columns: 1fr;
+      }
+
+      .middle-column {
+        grid-template-rows: auto auto;
+      }
+
+      .controls-panel,
+      .quiz-panel {
+        min-height: auto;
+      }
+
+      .quiz-panel {
+        grid-column: auto;
+      }
+
+      .panel-scroll,
+      .quiz-body {
+        overflow: visible;
+      }
+
+      .stage {
+        min-height: 255px;
+      }
+
+      .plot-area {
+        min-height: 230px;
+      }
+
+      .quiz-body {
+        display: grid;
+        grid-template-columns: 1fr;
+        grid-template-rows: auto;
+      }
+
+      .progress-track,
+      .quiz-meta,
+      .next-question {
+        grid-column: auto;
+      }
+    }
+
+    @media (max-width: 560px) {
+      .subtitle {
+        font-size: 0.82rem;
+      }
+
+      .level-button {
+        min-height: 54px;
+      }
+
+      .scene-heading {
+        grid-template-columns: 1fr;
+        gap: 6px;
+      }
+
+      .formula-badge {
+        justify-self: start;
+      }
+
+      .transport {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+      }
+
+      .transport-button {
+        padding-inline: 7px;
+      }
+
+      .time-control {
+        grid-column: 1 / 3;
+        grid-row: 2;
+      }
+
+      .speed-control {
+        grid-column: 3;
+        grid-row: 2;
+      }
+
+      .speed-select {
+        width: 100%;
+      }
+
+      .preset-button,
+      .transport-button,
+      .speed-select,
+      .plot-tab,
+      .answer-button,
+      .next-question,
+      .back-link {
+        min-height: 44px;
+      }
+
+      input[type="range"] {
+        height: 36px;
+        margin: -8px 0;
+      }
+
+      .metric-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .metric-grid.single-mode {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .plot-heading {
+        grid-template-columns: 1fr;
+      }
+
+      .plot-tabs {
+        justify-self: start;
+        max-width: 100%;
+        overflow-x: auto;
+      }
+
+      .plot-footer {
+        align-items: flex-start;
+        flex-direction: column;
+        gap: 4px;
+      }
+
+      .plot-summary {
+        white-space: normal;
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *,
+      *::before,
+      *::after {
+        scroll-behavior: auto !important;
+        transition-duration: 0.01ms !important;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="app-shell">
+    <header class="app-header">
+      <div class="title-wrap">
+        <span class="eyebrow">Interaktive Simulation</span>
+        <h1>Kinematik-Labor</h1>
+        <p class="subtitle">Bewegungen beobachten, Diagramme lesen und das Gelernte direkt im Quiz prüfen.</p>
+      </div>
+      <a class="back-link" id="backLink" href="../">← Zurück zur Physik-Seite</a>
+    </header>
+
+    <nav class="level-picker" id="levelPicker" role="radiogroup" aria-label="Lernlevel auswählen">
+      <button class="level-button" type="button" role="radio" aria-checked="true" data-mode="single">
+        <span class="level-number">1</span>
+        <span class="level-copy">
+          <strong>Gleichförmig</strong>
+          <small>ein Objekt · s und v</small>
+        </span>
+      </button>
+      <button class="level-button" type="button" role="radio" aria-checked="false" data-mode="encounter">
+        <span class="level-number">2</span>
+        <span class="level-copy">
+          <strong>Begegnung</strong>
+          <small>zwei Objekte · Treffpunkt</small>
+        </span>
+      </button>
+      <button class="level-button" type="button" role="radio" aria-checked="false" data-mode="accelerated">
+        <span class="level-number">3</span>
+        <span class="level-copy">
+          <strong>Beschleunigt</strong>
+          <small>s, v und a verändern sich</small>
+        </span>
+      </button>
+    </nav>
+
+    <div class="workspace">
+      <aside class="panel controls-panel" aria-labelledby="controlsTitle">
+        <div class="panel-heading">
+          <div>
+            <span class="panel-kicker">Einstellungen</span>
+            <h2 id="controlsTitle">Bewegung festlegen</h2>
+            <p class="panel-description" id="controlsIntro"></p>
+          </div>
+        </div>
+        <div class="panel-scroll" id="controlsBody"></div>
+      </aside>
+
+      <div class="middle-column">
+        <section class="panel simulation-panel" aria-labelledby="sceneTitle">
+          <div class="scene-heading">
+            <div>
+              <span class="panel-kicker" id="sceneEyebrow">Level 1</span>
+              <h2 id="sceneTitle">Gleichförmige Bewegung</h2>
+              <p class="scene-hint" id="sceneHint"></p>
+            </div>
+            <div class="formula-badge" id="formulaBadge"></div>
+          </div>
+
+          <div class="stage">
+            <svg id="motionSvg" viewBox="0 0 900 250" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Bewegung auf einer geraden Strecke"></svg>
+          </div>
+
+          <div class="transport" aria-label="Zeitsteuerung">
+            <button class="transport-button primary" id="playButton" type="button">
+              <span id="playIcon" aria-hidden="true">▶</span>
+              <span id="playLabel">Start</span>
+            </button>
+            <button class="transport-button" id="stepButton" type="button" title="Eine halbe Sekunde weiter">+0,5 s</button>
+            <button class="transport-button" id="resetButton" type="button">↺ Reset</button>
+            <label class="time-control">
+              <span class="sr-only">Zeitpunkt</span>
+              <input id="timeSlider" type="range" min="0" max="12" value="0" step="0.01" />
+              <output id="timeOutput" for="timeSlider">0,0 s</output>
+            </label>
+            <label class="speed-control">
+              <span class="sr-only">Abspielgeschwindigkeit</span>
+              <select class="speed-select" id="speedSelect">
+                <option value="0.5">0,5×</option>
+                <option value="1" selected>1×</option>
+                <option value="2">2×</option>
+              </select>
+            </label>
+          </div>
+
+          <div class="metric-grid" id="metricGrid" aria-live="off"></div>
+        </section>
+
+        <section class="panel diagram-panel" aria-labelledby="plotTitle">
+          <div class="plot-heading">
+            <div>
+              <span class="panel-kicker">Diagramm</span>
+              <h2 id="plotTitle">Ort–Zeit</h2>
+            </div>
+            <div class="plot-tabs" id="plotTabs" role="tablist" aria-label="Diagramm auswählen"></div>
+          </div>
+          <div class="plot-area" id="plotPanel" role="tabpanel" aria-label="Ausgewähltes Bewegungsdiagramm">
+            <svg id="plotSvg" viewBox="0 0 640 260" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Ort-Zeit-Diagramm"></svg>
+          </div>
+          <div class="plot-footer">
+            <p class="plot-summary" id="plotSummary"></p>
+            <div class="plot-legend" id="plotLegend" aria-label="Legende"></div>
+          </div>
+        </section>
+      </div>
+
+      <aside class="panel quiz-panel" aria-labelledby="quizTitle">
+        <div class="panel-heading quiz-heading">
+          <div>
+            <span class="panel-kicker" id="quizLevel">Level 1</span>
+            <h2 id="quizTitle">Mini-Quiz</h2>
+            <p class="panel-description">Rechne mit deinen aktuellen Werten.</p>
+          </div>
+          <span class="score-chip" id="quizScore">0 / 4</span>
+        </div>
+        <div class="quiz-body">
+          <div class="progress-track" aria-hidden="true">
+            <div class="progress-bar" id="quizProgress"></div>
+          </div>
+          <div class="quiz-meta">
+            <span id="quizCounter">Frage 1 von 4</span>
+            <span>eine Antwort wählen</span>
+          </div>
+          <div>
+            <h3 class="quiz-question" id="quizQuestion"></h3>
+            <div class="answer-list" id="quizAnswers"></div>
+          </div>
+          <div class="quiz-feedback" id="quizFeedback" aria-live="polite">
+            Wähle eine Antwort. Danach erhältst du sofort eine kurze Erklärung.
+          </div>
+          <button class="next-question" id="nextQuestion" type="button" disabled>Nächste Frage</button>
+        </div>
+      </aside>
+    </div>
+    <p class="sr-only" id="simulationStatus" aria-live="polite"></p>
+  </main>
+
+  <script>
+    (function () {
+      "use strict";
+
+      var COLORS = {
+        blue: "#7f9fe3",
+        blueDark: "#5574b8",
+        orange: "#e9a078",
+        orangeDark: "#b96f49",
+        green: "#63b887",
+        cyan: "#70b6c5",
+        dark: "#465268",
+        muted: "#68768d",
+        line: "#dce3ef"
+      };
+
+      var modeMeta = {
+        single: {
+          level: "Level 1",
+          title: "Geradlinig gleichförmig · ein Objekt",
+          controls: "Ein Objekt bewegt sich mit konstanter Geschwindigkeit.",
+          formula: "s(t) = s₀ + v · t"
+        },
+        encounter: {
+          level: "Level 2",
+          title: "Geradlinig gleichförmig · zwei Objekte",
+          controls: "Vergleiche zwei konstante Geschwindigkeiten und finde eine mögliche Begegnung.",
+          formula: "sA,B(t) = sA,B₀ + vA,B · t"
+        },
+        accelerated: {
+          level: "Level 3",
+          title: "Gleichmässig beschleunigt",
+          controls: "Die Geschwindigkeit ändert sich in jeder Sekunde um denselben Betrag.",
+          formula: "s(t) = s₀ + v₀t + ½at²"
+        }
+      };
+
+      var profiles = {
+        single: { s0: 10, v: 7, tMax: 12 },
+        encounter: { sA: 10, vA: 7, sB: 100, vB: -5, tMax: 12 },
+        accelerated: { s0: 5, v0: 0, a: 1.5, tMax: 12 }
+      };
+
+      var presets = {
+        single: [
+          { id: "forward", label: "Vorwärts", values: { s0: 10, v: 7, tMax: 12 } },
+          { id: "backward", label: "Rückwärts", values: { s0: 90, v: -6, tMax: 12 } },
+          { id: "rest", label: "Stillstand", values: { s0: 45, v: 0, tMax: 12 } }
+        ],
+        encounter: [
+          { id: "headon", label: "Aufeinander zu", values: { sA: 10, vA: 7, sB: 100, vB: -5, tMax: 12 } },
+          { id: "catchup", label: "Einholen", values: { sA: 5, vA: 10, sB: 45, vB: 4, tMax: 12 } },
+          { id: "parallel", label: "Parallel", values: { sA: 10, vA: 6, sB: 55, vB: 6, tMax: 12 } }
+        ],
+        accelerated: [
+          { id: "start", label: "Anfahren", values: { s0: 5, v0: 0, a: 1.5, tMax: 12 } },
+          { id: "brake", label: "Bremsen", values: { s0: 5, v0: 16, a: -2, tMax: 8 } },
+          { id: "turn", label: "Richtungswechsel", values: { s0: 70, v0: -9, a: 1.5, tMax: 12 } }
+        ]
+      };
+
+      var definitions = {
+        single: {
+          main: [
+            { key: "s0", label: "Startort s₀", help: "Ort bei t = 0", unit: "m", min: -20, max: 100, step: 1 },
+            { key: "v", label: "Geschwindigkeit v", help: "konstant", unit: "m/s", min: -12, max: 18, step: 0.5 }
+          ],
+          time: { key: "tMax", label: "Beobachtungszeit", help: "Länge der Simulation", unit: "s", min: 4, max: 20, step: 1 }
+        },
+        encounter: {
+          a: [
+            { key: "sA", label: "Startort sA₀", help: "Objekt A bei t = 0", unit: "m", min: -20, max: 100, step: 1 },
+            { key: "vA", label: "Geschwindigkeit vA", help: "konstant", unit: "m/s", min: -12, max: 18, step: 0.5 }
+          ],
+          b: [
+            { key: "sB", label: "Startort sB₀", help: "Objekt B bei t = 0", unit: "m", min: -20, max: 120, step: 1 },
+            { key: "vB", label: "Geschwindigkeit vB", help: "konstant", unit: "m/s", min: -12, max: 18, step: 0.5 }
+          ],
+          time: { key: "tMax", label: "Beobachtungszeit", help: "sichtbares Zeitfenster", unit: "s", min: 4, max: 20, step: 1 }
+        },
+        accelerated: {
+          main: [
+            { key: "s0", label: "Startort s₀", help: "Ort bei t = 0", unit: "m", min: -20, max: 100, step: 1 },
+            { key: "v0", label: "Startgeschwindigkeit v₀", help: "Geschwindigkeit bei t = 0", unit: "m/s", min: -15, max: 20, step: 0.5 },
+            { key: "a", label: "Beschleunigung a", help: "Änderung von v pro Sekunde", unit: "m/s²", min: -4, max: 4, step: 0.1 }
+          ],
+          time: { key: "tMax", label: "Beobachtungszeit", help: "Länge der Simulation", unit: "s", min: 4, max: 20, step: 1 }
+        }
+      };
+
+      var state = {
+        mode: "single",
+        time: 0,
+        playing: false,
+        playback: 1,
+        raf: 0,
+        lastFrame: 0,
+        lastPaint: 0,
+        plot: "position"
+      };
+
+      var quizStates = {
+        single: { index: 0, score: 0, answered: false, selected: -1 },
+        encounter: { index: 0, score: 0, answered: false, selected: -1 },
+        accelerated: { index: 0, score: 0, answered: false, selected: -1 }
+      };
+
+      var plotCache = null;
+      var stageDomainCache = null;
+      var resizeFrame = 0;
+
+      var els = {
+        backLink: document.getElementById("backLink"),
+        levelPicker: document.getElementById("levelPicker"),
+        controlsTitle: document.getElementById("controlsTitle"),
+        controlsIntro: document.getElementById("controlsIntro"),
+        controlsBody: document.getElementById("controlsBody"),
+        sceneEyebrow: document.getElementById("sceneEyebrow"),
+        sceneTitle: document.getElementById("sceneTitle"),
+        sceneHint: document.getElementById("sceneHint"),
+        formulaBadge: document.getElementById("formulaBadge"),
+        motionSvg: document.getElementById("motionSvg"),
+        playButton: document.getElementById("playButton"),
+        playIcon: document.getElementById("playIcon"),
+        playLabel: document.getElementById("playLabel"),
+        stepButton: document.getElementById("stepButton"),
+        resetButton: document.getElementById("resetButton"),
+        timeSlider: document.getElementById("timeSlider"),
+        timeOutput: document.getElementById("timeOutput"),
+        speedSelect: document.getElementById("speedSelect"),
+        metricGrid: document.getElementById("metricGrid"),
+        plotTitle: document.getElementById("plotTitle"),
+        plotTabs: document.getElementById("plotTabs"),
+        plotSvg: document.getElementById("plotSvg"),
+        plotSummary: document.getElementById("plotSummary"),
+        plotLegend: document.getElementById("plotLegend"),
+        quizLevel: document.getElementById("quizLevel"),
+        quizScore: document.getElementById("quizScore"),
+        quizProgress: document.getElementById("quizProgress"),
+        quizCounter: document.getElementById("quizCounter"),
+        quizQuestion: document.getElementById("quizQuestion"),
+        quizAnswers: document.getElementById("quizAnswers"),
+        quizFeedback: document.getElementById("quizFeedback"),
+        nextQuestion: document.getElementById("nextQuestion"),
+        simulationStatus: document.getElementById("simulationStatus")
+      };
+
+      function clamp(value, min, max) {
+        return Math.min(max, Math.max(min, value));
+      }
+
+      function finite(value, fallback) {
+        return Number.isFinite(value) ? value : fallback;
+      }
+
+      function fmt(value, digits) {
+        var safe = Math.abs(value) < 0.0000001 ? 0 : value;
+        var places = typeof digits === "number" ? digits : 1;
+        return safe.toFixed(places).replace(".", ",");
+      }
+
+      function fmtAxis(value) {
+        var absolute = Math.abs(value);
+        return fmt(value, absolute >= 20 || Math.abs(value - Math.round(value)) < 0.001 ? 0 : 1);
+      }
+
+      function signed(value, digits) {
+        return (value < 0 ? "− " : "+ ") + fmt(Math.abs(value), digits);
+      }
+
+      function escapeHtml(value) {
+        return String(value)
+          .replace(/&/g, "&amp;")
+          .replace(/</g, "&lt;")
+          .replace(/>/g, "&gt;")
+          .replace(/"/g, "&quot;")
+          .replace(/'/g, "&#039;");
+      }
+
+      function currentProfile() {
+        return profiles[state.mode];
+      }
+
+      function motionSignature() {
+        return state.mode + "|" + JSON.stringify(currentProfile());
+      }
+
+      function plotSignature() {
+        return motionSignature() + "|" + state.plot;
+      }
+
+      function responsivePlotWidth() {
+        var rect = els.plotSvg.getBoundingClientRect();
+        if (rect.width > 0 && rect.height > 0) {
+          return Math.max(400, rect.width / rect.height * 260);
+        }
+        return 640;
+      }
+
+      function responsiveStageWidth() {
+        var rect = els.motionSvg.getBoundingClientRect();
+        if (rect.width > 0 && rect.height > 0) {
+          return clamp(rect.width / rect.height * 250, 420, 900);
+        }
+        return 900;
+      }
+
+      function setupBackLink() {
+        var targets = {
+          gymnasium: { href: "../gymi/simulationen/", label: "← Zurück zu Gymnasium-Simulationen" },
+          fms: { href: "../fms/simulationen/", label: "← Zurück zu FMS-Simulationen" }
+        };
+        var params = new URLSearchParams(window.location.search);
+        var source = params.get("from");
+        if (!source && document.referrer.indexOf("/physik/gymi/simulationen") !== -1) {
+          source = "gymnasium";
+        }
+        if (!source && document.referrer.indexOf("/physik/fms/simulationen") !== -1) {
+          source = "fms";
+        }
+        if (targets[source]) {
+          els.backLink.href = targets[source].href;
+          els.backLink.textContent = targets[source].label;
+        }
+        var requestedLevel = params.get("level");
+        if (requestedLevel === "2") {
+          state.mode = "encounter";
+        } else if (requestedLevel === "3") {
+          state.mode = "accelerated";
+        }
+      }
+
+      function allDefinitionsForMode(mode) {
+        var config = definitions[mode];
+        var result = [];
+        Object.keys(config).forEach(function (key) {
+          if (Array.isArray(config[key])) {
+            result = result.concat(config[key]);
+          } else {
+            result.push(config[key]);
+          }
+        });
+        return result;
+      }
+
+      function definitionFor(key) {
+        var list = allDefinitionsForMode(state.mode);
+        for (var i = 0; i < list.length; i += 1) {
+          if (list[i].key === key) {
+            return list[i];
+          }
+        }
+        return null;
+      }
+
+      function controlMarkup(definition) {
+        var value = currentProfile()[definition.key];
+        var idBase = state.mode + "-" + definition.key;
+        return [
+          "<div class='control'>",
+            "<div class='control-top'>",
+              "<label class='control-label' for='", idBase, "-number'>",
+                escapeHtml(definition.label),
+                "<small>", escapeHtml(definition.help), "</small>",
+              "</label>",
+              "<span class='number-wrap'>",
+                "<input id='", idBase, "-number' type='number' inputmode='decimal'",
+                  " min='", definition.min, "' max='", definition.max, "' step='", definition.step, "'",
+                  " value='", value, "' data-value-key='", definition.key, "' />",
+                "<span>", escapeHtml(definition.unit), "</span>",
+              "</span>",
+            "</div>",
+            "<input id='", idBase, "-range' type='range'",
+              " min='", definition.min, "' max='", definition.max, "' step='", definition.step, "'",
+              " value='", value, "' data-value-key='", definition.key, "'",
+              " aria-label='", escapeHtml(definition.label), "' />",
+          "</div>"
+        ].join("");
+      }
+
+      function presetMarkup() {
+        var activePresets = presets[state.mode];
+        var profile = currentProfile();
+        var html = "<span class='preset-label'>Beispiele</span><div class='preset-row'>";
+        activePresets.forEach(function (preset) {
+          var active = Object.keys(preset.values).every(function (key) {
+            return Math.abs(profile[key] - preset.values[key]) < 0.0001;
+          });
+          html += "<button class='preset-button" + (active ? " active" : "") + "' type='button' data-preset='" +
+            preset.id + "'>" + escapeHtml(preset.label) + "</button>";
+        });
+        return html + "</div>";
+      }
+
+      function renderControls() {
+        var html = presetMarkup();
+        if (state.mode === "encounter") {
+          html += "<div class='object-card object-a'><div class='object-card-title'><span>Objekt A</span><span class='object-chip a'>A</span></div>";
+          definitions.encounter.a.forEach(function (definition) {
+            html += controlMarkup(definition);
+          });
+          html += "</div>";
+          html += "<div class='object-card object-b'><div class='object-card-title'><span>Objekt B</span><span class='object-chip b'>B</span></div>";
+          definitions.encounter.b.forEach(function (definition) {
+            html += controlMarkup(definition);
+          });
+          html += "</div>";
+          html += "<div class='control-stack'>" + controlMarkup(definitions.encounter.time) + "</div>";
+          html += "<div class='meeting-result' id='meetingResult'></div>";
+        } else {
+          html += "<div class='control-stack'>";
+          definitions[state.mode].main.forEach(function (definition) {
+            html += controlMarkup(definition);
+          });
+          html += controlMarkup(definitions[state.mode].time);
+          html += "</div>";
+          if (state.mode === "single") {
+            html += "<div class='formula-note'><strong>Merkregel</strong>In gleichen Zeitabschnitten werden gleich grosse Ortsänderungen zurückgelegt.</div>";
+          } else {
+            html += "<div class='formula-note'><strong>Was bedeutet a?</strong>Der Wert a gibt an, um wie viele m/s sich v in jeder Sekunde ändert.</div>";
+          }
+        }
+        els.controlsBody.innerHTML = html;
+        updateMeetingResult();
+      }
+
+      function parseInputValue(input) {
+        if (String(input.value).trim() === "") {
+          return NaN;
+        }
+        var direct = input.valueAsNumber;
+        if (Number.isFinite(direct)) {
+          return direct;
+        }
+        return Number(String(input.value).replace(",", "."));
+      }
+
+      function snapToDefinition(value, definition) {
+        var step = definition.step;
+        if (!Number.isFinite(step) || step <= 0) {
+          return clamp(value, definition.min, definition.max);
+        }
+        var snapped = definition.min + Math.round((value - definition.min) / step) * step;
+        var stepText = String(step);
+        var decimalPlaces = stepText.indexOf(".") === -1 ? 0 : stepText.length - stepText.indexOf(".") - 1;
+        return Number(clamp(snapped, definition.min, definition.max).toFixed(decimalPlaces));
+      }
+
+      function syncControlInputs(key, value, source) {
+        var inputs = els.controlsBody.querySelectorAll("[data-value-key='" + key + "']");
+        inputs.forEach(function (input) {
+          if (input !== source) {
+            input.value = value;
+          }
+        });
+      }
+
+      function resetQuiz(mode) {
+        quizStates[mode] = { index: 0, score: 0, answered: false, selected: -1 };
+      }
+
+      function applyControlInput(input, finalChange) {
+        var key = input.getAttribute("data-value-key");
+        var definition = definitionFor(key);
+        if (!definition) {
+          return;
+        }
+        var value = parseInputValue(input);
+        if (!Number.isFinite(value)) {
+          if (finalChange) {
+            input.value = currentProfile()[key];
+          }
+          return;
+        }
+        value = clamp(value, definition.min, definition.max);
+        if (finalChange || input.type === "range") {
+          value = snapToDefinition(value, definition);
+          input.value = value;
+        }
+        currentProfile()[key] = value;
+        syncControlInputs(key, value, input);
+        pauseSimulation();
+        state.time = 0;
+        resetQuiz(state.mode);
+        updateMeetingResult();
+        renderDynamic();
+        renderQuiz();
+        updatePresetStates();
+      }
+
+      function updatePresetStates() {
+        var profile = currentProfile();
+        els.controlsBody.querySelectorAll("[data-preset]").forEach(function (button) {
+          var preset = presets[state.mode].find(function (item) {
+            return item.id === button.getAttribute("data-preset");
+          });
+          var active = preset && Object.keys(preset.values).every(function (key) {
+            return Math.abs(profile[key] - preset.values[key]) < 0.0001;
+          });
+          button.classList.toggle("active", Boolean(active));
+        });
+      }
+
+      function applyPreset(id) {
+        var preset = presets[state.mode].find(function (item) {
+          return item.id === id;
+        });
+        if (!preset) {
+          return;
+        }
+        Object.keys(preset.values).forEach(function (key) {
+          currentProfile()[key] = preset.values[key];
+        });
+        pauseSimulation();
+        state.time = 0;
+        resetQuiz(state.mode);
+        renderControls();
+        renderDynamic();
+        renderQuiz();
+        var restoredPreset = els.controlsBody.querySelector("[data-preset='" + id + "']");
+        if (restoredPreset) {
+          restoredPreset.focus();
+        }
+      }
+
+      function selectMode(mode) {
+        if (!modeMeta[mode]) {
+          return;
+        }
+        pauseSimulation();
+        state.mode = mode;
+        state.time = 0;
+        state.plot = "position";
+        document.querySelectorAll(".level-button").forEach(function (button) {
+          var active = button.getAttribute("data-mode") === mode;
+          button.setAttribute("aria-checked", active ? "true" : "false");
+          button.tabIndex = active ? 0 : -1;
+        });
+        var params = new URLSearchParams(window.location.search);
+        params.set("level", mode === "single" ? "1" : mode === "encounter" ? "2" : "3");
+        var nextUrl = window.location.pathname + "?" + params.toString() + window.location.hash;
+        try {
+          window.history.replaceState(null, "", nextUrl);
+        } catch (error) {
+          /* Lokale file:-Vorschauen dürfen die URL je nach Browser nicht ändern. */
+        }
+        renderMode();
+      }
+
+      function revealActiveLevel() {
+        if (!window.matchMedia("(max-width: 820px)").matches) {
+          return;
+        }
+        var active = els.levelPicker.querySelector("[aria-checked='true']");
+        if (!active) {
+          return;
+        }
+        var target = active.offsetLeft - (els.levelPicker.clientWidth - active.offsetWidth) / 2;
+        els.levelPicker.scrollLeft = Math.max(0, target);
+      }
+
+      function renderMode() {
+        var meta = modeMeta[state.mode];
+        els.controlsTitle.textContent = state.mode === "encounter" ? "Zwei Bewegungen festlegen" : "Bewegung festlegen";
+        els.controlsIntro.textContent = meta.controls;
+        els.sceneEyebrow.textContent = meta.level;
+        els.sceneTitle.textContent = meta.title;
+        els.formulaBadge.textContent = meta.formula;
+        els.quizLevel.textContent = meta.level;
+        renderControls();
+        renderPlotTabs();
+        renderDynamic();
+        renderQuiz();
+        revealActiveLevel();
+      }
+
+      function positionAt(objectId, time) {
+        var p = currentProfile();
+        if (state.mode === "single") {
+          return p.s0 + p.v * time;
+        }
+        if (state.mode === "encounter") {
+          return objectId === "A" ? p.sA + p.vA * time : p.sB + p.vB * time;
+        }
+        return p.s0 + p.v0 * time + 0.5 * p.a * time * time;
+      }
+
+      function velocityAt(objectId, time) {
+        var p = currentProfile();
+        if (state.mode === "single") {
+          return p.v;
+        }
+        if (state.mode === "encounter") {
+          return objectId === "A" ? p.vA : p.vB;
+        }
+        return p.v0 + p.a * time;
+      }
+
+      function accelerationAt() {
+        return state.mode === "accelerated" ? currentProfile().a : 0;
+      }
+
+      function objectIds() {
+        return state.mode === "encounter" ? ["A", "B"] : ["A"];
+      }
+
+      function meetingAnalysis() {
+        if (state.mode !== "encounter") {
+          return null;
+        }
+        var p = profiles.encounter;
+        var deltaS = p.sB - p.sA;
+        var deltaV = p.vA - p.vB;
+        var epsilon = 0.000001;
+        if (Math.abs(deltaS) < epsilon && Math.abs(deltaV) < epsilon) {
+          return { kind: "always", time: 0, position: p.sA };
+        }
+        if (Math.abs(deltaS) < epsilon) {
+          return { kind: "start", time: 0, position: p.sA };
+        }
+        if (Math.abs(deltaV) < epsilon) {
+          return { kind: "parallel", time: null, position: null };
+        }
+        var time = deltaS / deltaV;
+        var position = p.sA + p.vA * time;
+        if (time < -epsilon) {
+          return { kind: "past", time: time, position: position };
+        }
+        if (time > p.tMax + epsilon) {
+          return { kind: "later", time: time, position: position };
+        }
+        return { kind: "within", time: Math.max(0, time), position: position };
+      }
+
+      function meetingCopy(analysis) {
+        if (!analysis) {
+          return "";
+        }
+        if (analysis.kind === "always") {
+          return "Beide Objekte sind immer am gleichen Ort.";
+        }
+        if (analysis.kind === "start") {
+          return "Sie starten gemeinsam bei s = " + fmt(analysis.position) + " m.";
+        }
+        if (analysis.kind === "parallel") {
+          return "Gleiche Geschwindigkeit: Der Abstand bleibt konstant.";
+        }
+        if (analysis.kind === "past") {
+          return "Die Geraden schneiden sich nur bei negativer Zeit. Nach t = 0 gibt es kein Treffen.";
+        }
+        if (analysis.kind === "later") {
+          return "Treffen erst bei t = " + fmt(analysis.time, 2) + " s und s = " + fmt(analysis.position) + " m.";
+        }
+        return "Treffen bei t = " + fmt(analysis.time, 2) + " s und s = " + fmt(analysis.position) + " m.";
+      }
+
+      function updateMeetingResult() {
+        var result = document.getElementById("meetingResult");
+        if (!result || state.mode !== "encounter") {
+          return;
+        }
+        var analysis = meetingAnalysis();
+        var successful = analysis.kind === "within" || analysis.kind === "always" || analysis.kind === "start";
+        result.classList.toggle("warning", !successful);
+        result.innerHTML = "<strong>Begegnungs-Check</strong>" + escapeHtml(meetingCopy(analysis));
+      }
+
+      function niceStep(raw) {
+        if (!Number.isFinite(raw) || raw <= 0) {
+          return 1;
+        }
+        var power = Math.pow(10, Math.floor(Math.log10(raw)));
+        var fraction = raw / power;
+        var niceFraction;
+        if (fraction <= 1) {
+          niceFraction = 1;
+        } else if (fraction <= 2) {
+          niceFraction = 2;
+        } else if (fraction <= 5) {
+          niceFraction = 5;
+        } else {
+          niceFraction = 10;
+        }
+        return niceFraction * power;
+      }
+
+      function makeDomain(values, includeZero, tickTarget) {
+        var safeValues = values.filter(Number.isFinite);
+        if (!safeValues.length) {
+          safeValues = [0, 1];
+        }
+        var min = Math.min.apply(null, safeValues);
+        var max = Math.max.apply(null, safeValues);
+        if (includeZero) {
+          min = Math.min(min, 0);
+          max = Math.max(max, 0);
+        }
+        if (Math.abs(max - min) < 0.000001) {
+          var basePad = Math.max(1, Math.abs(max) * 0.2);
+          min -= basePad;
+          max += basePad;
+        } else {
+          var pad = (max - min) * 0.08;
+          min -= pad;
+          max += pad;
+        }
+        var step = niceStep((max - min) / (tickTarget || 5));
+        min = Math.floor(min / step) * step;
+        max = Math.ceil(max / step) * step;
+        if (Math.abs(max - min) < 0.000001) {
+          max = min + step;
+        }
+        var ticks = [];
+        for (var value = min, guard = 0; value <= max + step * 0.25 && guard < 20; value += step, guard += 1) {
+          ticks.push(Math.abs(value) < 0.0000001 ? 0 : value);
+        }
+        return { min: min, max: max, ticks: ticks };
+      }
+
+      function sampleTimes(count) {
+        var max = currentProfile().tMax;
+        var times = [];
+        for (var i = 0; i <= count; i += 1) {
+          times.push(max * i / count);
+        }
+        return times;
+      }
+
+      function positionDomain(tickTarget) {
+        var signature = motionSignature() + "|" + tickTarget;
+        if (stageDomainCache && stageDomainCache.signature === signature) {
+          return stageDomainCache.domain;
+        }
+        var values = [];
+        var ids = objectIds();
+        sampleTimes(80).forEach(function (time) {
+          ids.forEach(function (id) {
+            values.push(positionAt(id, time));
+          });
+        });
+        var domain = makeDomain(values, true, tickTarget);
+        stageDomainCache = { signature: signature, domain: domain };
+        return domain;
+      }
+
+      function mapValue(value, domainMin, domainMax, pixelMin, pixelMax) {
+        return pixelMin + (value - domainMin) / (domainMax - domainMin) * (pixelMax - pixelMin);
+      }
+
+      function velocityArrow(x, y, value, color, label, stageWidth) {
+        if (Math.abs(value) < 0.01) {
+          return "<text x='" + x + "' y='" + (y - 38) + "' text-anchor='middle' fill='" + color +
+            "' font-size='13' font-weight='850'>" + escapeHtml(label) + " = 0</text>";
+        }
+        var direction = value > 0 ? 1 : -1;
+        var length = clamp(Math.abs(value) * 5, 26, 92);
+        var start = x - direction * 4;
+        var end = clamp(x + direction * length, 14, stageWidth - 14);
+        var tip = direction > 0 ?
+          (end + "," + (y - 42) + " " + (end - 10) + "," + (y - 48) + " " + (end - 10) + "," + (y - 36)) :
+          (end + "," + (y - 42) + " " + (end + 10) + "," + (y - 48) + " " + (end + 10) + "," + (y - 36));
+        return [
+          "<line x1='", start, "' y1='", y - 42, "' x2='", end, "' y2='", y - 42,
+            "' stroke='", color, "' stroke-width='3' stroke-linecap='round' />",
+          "<polygon points='", tip, "' fill='", color, "' />",
+          "<text x='", (start + end) / 2, "' y='", y - 51,
+            "' text-anchor='middle' fill='", color, "' font-size='12' font-weight='850'>",
+            escapeHtml(label), " = ", fmt(value), " m/s</text>"
+        ].join("");
+      }
+
+      function accelerationArrow(x, y, value, stageWidth) {
+        if (state.mode !== "accelerated") {
+          return "";
+        }
+        if (Math.abs(value) < 0.01) {
+          return "<text x='" + x + "' y='" + (y + 53) + "' text-anchor='middle' fill='" + COLORS.cyan +
+            "' font-size='12' font-weight='850'>a = 0</text>";
+        }
+        var direction = value > 0 ? 1 : -1;
+        var length = clamp(Math.abs(value) * 18, 28, 76);
+        var end = clamp(x + direction * length, 14, stageWidth - 14);
+        var tip = direction > 0 ?
+          (end + "," + (y + 40) + " " + (end - 9) + "," + (y + 35) + " " + (end - 9) + "," + (y + 45)) :
+          (end + "," + (y + 40) + " " + (end + 9) + "," + (y + 35) + " " + (end + 9) + "," + (y + 45));
+        return [
+          "<line x1='", x, "' y1='", y + 40, "' x2='", end, "' y2='", y + 40,
+            "' stroke='", COLORS.cyan, "' stroke-width='3' stroke-linecap='round' />",
+          "<polygon points='", tip, "' fill='", COLORS.cyan, "' />",
+          "<text x='", (x + end) / 2, "' y='", y + 57,
+            "' text-anchor='middle' fill='", COLORS.cyan, "' font-size='12' font-weight='850'>a = ",
+            fmt(value), " m/s²</text>"
+        ].join("");
+      }
+
+      function vehicleMarkup(x, y, id, color, velocity, stageWidth) {
+        var bodyX = x - 34;
+        var bodyY = y - 20;
+        return [
+          "<g filter='url(#vehicleShadow)'>",
+            "<rect x='", bodyX, "' y='", bodyY, "' width='68' height='31' rx='11' fill='", color,
+              "' stroke='rgba(70,82,104,0.22)' stroke-width='1.4' />",
+            "<path d='M ", bodyX + 14, " ", bodyY, " L ", bodyX + 25, " ", bodyY - 12,
+              " L ", bodyX + 49, " ", bodyY - 12, " L ", bodyX + 58, " ", bodyY,
+              " Z' fill='", color, "' opacity='0.88' />",
+            "<path d='M ", bodyX + 27, " ", bodyY - 9, " L ", bodyX + 47, " ", bodyY - 9,
+              " L ", bodyX + 53, " ", bodyY, " L ", bodyX + 22, " ", bodyY,
+              " Z' fill='#eef6ff' opacity='0.92' />",
+            "<circle cx='", bodyX + 16, "' cy='", bodyY + 31, "' r='7' fill='#566276' />",
+            "<circle cx='", bodyX + 53, "' cy='", bodyY + 31, "' r='7' fill='#566276' />",
+            "<circle cx='", bodyX + 16, "' cy='", bodyY + 31, "' r='3' fill='#dbe4f1' />",
+            "<circle cx='", bodyX + 53, "' cy='", bodyY + 31, "' r='3' fill='#dbe4f1' />",
+            "<text x='", x, "' y='", bodyY + 21, "' text-anchor='middle' fill='#fff' font-size='14' font-weight='950'>",
+              id, "</text>",
+          "</g>",
+          velocityArrow(x, y, velocity, id === "B" ? COLORS.orangeDark : COLORS.blueDark, "v" + (state.mode === "encounter" ? id : ""), stageWidth),
+          id === "A" ? accelerationArrow(x, y, accelerationAt(), stageWidth) : ""
+        ].join("");
+      }
+
+      function drawStage() {
+        var stageWidth = responsiveStageWidth();
+        var tickTarget = stageWidth < 600 ? 4 : 6;
+        var domain = positionDomain(tickTarget);
+        var xLeft = stageWidth < 600 ? 45 : 70;
+        var xRight = stageWidth - xLeft;
+        els.motionSvg.setAttribute("viewBox", "0 0 " + stageWidth + " 250");
+        var ids = objectIds();
+        var positions = {};
+        var velocities = {};
+        ids.forEach(function (id) {
+          positions[id] = positionAt(id, state.time);
+          velocities[id] = velocityAt(id, state.time);
+        });
+
+        var markup = [
+          "<defs>",
+            "<linearGradient id='trackGradient' x1='0' x2='1'>",
+              "<stop offset='0%' stop-color='#dce4ef' />",
+              "<stop offset='50%' stop-color='#f9fbfd' />",
+              "<stop offset='100%' stop-color='#dce4ef' />",
+            "</linearGradient>",
+            "<filter id='vehicleShadow' x='-35%' y='-50%' width='170%' height='220%'>",
+              "<feDropShadow dx='0' dy='7' stdDeviation='7' flood-color='#667da8' flood-opacity='0.2' />",
+            "</filter>",
+          "</defs>",
+          "<rect x='", xLeft - 20, "' y='194' width='", xRight - xLeft + 40,
+            "' height='18' rx='9' fill='url(#trackGradient)' stroke='#cbd6e5' />",
+          "<line x1='", xLeft, "' y1='203' x2='", xRight, "' y2='203' stroke='#8491a4' stroke-width='2' />"
+        ].join("");
+
+        domain.ticks.forEach(function (tick) {
+          var x = mapValue(tick, domain.min, domain.max, xLeft, xRight);
+          markup += "<line x1='" + x + "' y1='196' x2='" + x + "' y2='214' stroke='#8996a8' stroke-width='1.5' />";
+          markup += "<text x='" + x + "' y='232' text-anchor='middle' fill='#68768d' font-size='12' font-weight='750'>" +
+            fmtAxis(tick) + " m</text>";
+        });
+
+        var analysis = meetingAnalysis();
+        if (analysis && analysis.kind === "always") {
+          var stageCenter = stageWidth / 2;
+          markup += [
+            "<rect x='", stageCenter - 73, "' y='17' width='146' height='27' rx='13.5' fill='#effaf4' stroke='#8bd0a7' />",
+            "<text x='", stageCenter, "' y='35' text-anchor='middle' fill='#39845b' font-size='12' font-weight='900'>immer zusammen</text>"
+          ].join("");
+        } else if (analysis && (analysis.kind === "within" || analysis.kind === "start")) {
+          var meetingX = mapValue(analysis.position, domain.min, domain.max, xLeft, xRight);
+          markup += [
+            "<line x1='", meetingX, "' y1='34' x2='", meetingX, "' y2='194' stroke='", COLORS.green,
+              "' stroke-width='2' stroke-dasharray='7 7' opacity='0.9' />",
+            "<rect x='", meetingX - 57, "' y='17' width='114' height='27' rx='13.5' fill='#effaf4' stroke='#8bd0a7' />",
+            "<text x='", meetingX, "' y='35' text-anchor='middle' fill='#39845b' font-size='12' font-weight='900'>Treffpunkt</text>"
+          ].join("");
+        }
+
+        ids.forEach(function (id, index) {
+          var x = mapValue(positions[id], domain.min, domain.max, xLeft, xRight);
+          var start = positionAt(id, 0);
+          var startX = mapValue(start, domain.min, domain.max, xLeft, xRight);
+          var y = state.mode === "encounter" ? (index === 0 ? 115 : 171) : 143;
+          var color = id === "B" ? COLORS.orange : COLORS.blue;
+          markup += "<line x1='" + startX + "' y1='" + (y + 17) + "' x2='" + x + "' y2='" + (y + 17) +
+            "' stroke='" + color + "' stroke-width='5' stroke-linecap='round' opacity='0.22' />";
+          markup += "<circle cx='" + startX + "' cy='" + (y + 17) + "' r='5' fill='#fff' stroke='" + color +
+            "' stroke-width='2' opacity='0.9' />";
+          markup += vehicleMarkup(x, y, id, color, velocities[id], stageWidth);
+        });
+
+        els.motionSvg.innerHTML = markup;
+        var description = state.mode === "encounter" ?
+          "Zwei Objekte A und B auf einer geraden Strecke bei t gleich " + fmt(state.time) + " Sekunden." :
+          "Objekt A auf einer geraden Strecke bei t gleich " + fmt(state.time) + " Sekunden.";
+        els.motionSvg.setAttribute("aria-label", description);
+      }
+
+      function metricMarkup(label, value) {
+        return "<div class='metric'><span>" + escapeHtml(label) + "</span><strong>" + escapeHtml(value) + "</strong></div>";
+      }
+
+      function renderMetrics() {
+        var html = metricMarkup("Zeit t", fmt(state.time) + " s");
+        if (state.mode === "encounter") {
+          var sA = positionAt("A", state.time);
+          var sB = positionAt("B", state.time);
+          html += metricMarkup("Ort A", fmt(sA) + " m");
+          html += metricMarkup("Ort B", fmt(sB) + " m");
+          html += metricMarkup("Abstand", fmt(Math.abs(sB - sA)) + " m");
+        } else {
+          html += metricMarkup("Ort s", fmt(positionAt("A", state.time)) + " m");
+          html += metricMarkup("Geschwindigkeit v", fmt(velocityAt("A", state.time)) + " m/s");
+          if (state.mode === "accelerated") {
+            html += metricMarkup("Beschleunigung a", fmt(accelerationAt()) + " m/s²");
+          }
+        }
+        els.metricGrid.innerHTML = html;
+        els.metricGrid.classList.toggle("single-mode", state.mode === "single");
+      }
+
+      function updateSceneHint() {
+        if (state.mode === "single") {
+          els.sceneHint.textContent = "Konstantes v: Die Geschwindigkeit bleibt zu jedem Zeitpunkt gleich.";
+        } else if (state.mode === "encounter") {
+          els.sceneHint.textContent = meetingCopy(meetingAnalysis());
+        } else {
+          var a = currentProfile().a;
+          if (Math.abs(a) < 0.001) {
+            els.sceneHint.textContent = "a = 0: Dieser Spezialfall ist wieder eine gleichförmige Bewegung.";
+          } else {
+            els.sceneHint.textContent = "Pro Sekunde ändert sich v um " + fmt(a) + " m/s.";
+          }
+        }
+      }
+
+      function availablePlots() {
+        if (state.mode === "single") {
+          return [
+            { id: "position", label: "s–t" },
+            { id: "velocity", label: "v–t" }
+          ];
+        }
+        if (state.mode === "encounter") {
+          return [
+            { id: "position", label: "s–t" },
+            { id: "distance", label: "Abstand" }
+          ];
+        }
+        return [
+          { id: "position", label: "s–t" },
+          { id: "velocity", label: "v–t" },
+          { id: "acceleration", label: "a–t" }
+        ];
+      }
+
+      function renderPlotTabs() {
+        var plots = availablePlots();
+        if (!plots.some(function (plot) { return plot.id === state.plot; })) {
+          state.plot = plots[0].id;
+        }
+        els.plotTabs.innerHTML = plots.map(function (plot) {
+          var active = plot.id === state.plot;
+          return "<button class='plot-tab' type='button' role='tab' data-plot='" + plot.id +
+            "' aria-controls='plotPanel' aria-selected='" + (active ? "true" : "false") +
+            "' tabindex='" + (active ? "0" : "-1") + "'>" + escapeHtml(plot.label) + "</button>";
+        }).join("");
+      }
+
+      function plotConfiguration() {
+        var config = {
+          id: state.plot,
+          title: "",
+          axis: "",
+          unit: "",
+          includeZero: true,
+          summary: "",
+          series: []
+        };
+        if (state.plot === "position") {
+          config.title = "Ort–Zeit";
+          config.axis = "s";
+          config.unit = "m";
+          config.series = objectIds().map(function (id) {
+            return {
+              id: id,
+              label: state.mode === "encounter" ? "Objekt " + id : "Ort s",
+              color: id === "B" ? COLORS.orange : COLORS.blue,
+              value: function (time) { return positionAt(id, time); }
+            };
+          });
+          config.summary = state.mode === "single" ?
+            "Die konstante Steigung der Geraden ist die Geschwindigkeit v." :
+            state.mode === "encounter" ?
+              "Ein Schnittpunkt bedeutet: gleicher Ort zur gleichen Zeit." :
+              Math.abs(currentProfile().a) < 0.0001 ?
+                "Bei a = 0 ist auch diese Ortsfunktion eine Gerade." :
+                "Die Kurve wird durch die konstante Beschleunigung gekrümmt.";
+        } else if (state.plot === "velocity") {
+          config.title = "Geschwindigkeit–Zeit";
+          config.axis = "v";
+          config.unit = "m/s";
+          config.series = [{
+            id: "A",
+            label: "Geschwindigkeit v",
+            color: COLORS.blue,
+            value: function (time) { return velocityAt("A", time); }
+          }];
+          config.summary = state.mode === "single" ?
+            "Eine waagrechte Linie zeigt: v ist konstant." :
+            "Die Steigung der Geraden ist die Beschleunigung a.";
+        } else if (state.plot === "distance") {
+          config.title = "Abstand–Zeit";
+          config.axis = "|Δs|";
+          config.unit = "m";
+          config.series = [{
+            id: "distance",
+            label: "Abstand |sB − sA|",
+            color: COLORS.green,
+            value: function (time) {
+              return Math.abs(positionAt("B", time) - positionAt("A", time));
+            }
+          }];
+          var distanceAnalysis = meetingAnalysis();
+          if (distanceAnalysis.kind === "always") {
+            config.summary = "Identische Bewegungen: Der Abstand bleibt immer 0 m.";
+          } else if (distanceAnalysis.kind === "parallel") {
+            config.summary = "Gleiche Geschwindigkeiten: Der Abstand bleibt konstant.";
+          } else if (distanceAnalysis.kind === "past") {
+            config.summary = "Das Treffen lag in der Vergangenheit; danach wächst der Abstand.";
+          } else if (distanceAnalysis.kind === "later") {
+            config.summary = "Der Abstand erreicht erst bei t = " + fmt(distanceAnalysis.time, 2) + " s den Wert 0 m.";
+          } else if (distanceAnalysis.kind === "start") {
+            config.summary = "Bei t = 0 ist der Abstand 0 m; danach trennen sich die Objekte.";
+          } else {
+            config.summary = "Beim Treffen fällt der Abstand auf 0 m.";
+          }
+        } else {
+          config.title = "Beschleunigung–Zeit";
+          config.axis = "a";
+          config.unit = "m/s²";
+          config.series = [{
+            id: "A",
+            label: "Beschleunigung a",
+            color: COLORS.cyan,
+            value: function () { return accelerationAt(); }
+          }];
+          config.summary = "Eine waagrechte Linie zeigt: a ist konstant.";
+        }
+        return config;
+      }
+
+      function seriesPath(series, times, xScale, yScale) {
+        return times.map(function (time, index) {
+          return (index === 0 ? "M " : " L ") + xScale(time).toFixed(2) + " " + yScale(series.value(time)).toFixed(2);
+        }).join("");
+      }
+
+      function drawPlot() {
+        var config = plotConfiguration();
+        var times = sampleTimes(90);
+        var meetingForSamples = meetingAnalysis();
+        if (meetingForSamples && (meetingForSamples.kind === "within" || meetingForSamples.kind === "start")) {
+          if (!times.some(function (time) { return Math.abs(time - meetingForSamples.time) < 0.000001; })) {
+            times.push(meetingForSamples.time);
+            times.sort(function (a, b) { return a - b; });
+          }
+        }
+        var yValues = [];
+        config.series.forEach(function (series) {
+          times.forEach(function (time) {
+            yValues.push(series.value(time));
+          });
+        });
+        var yDomain = makeDomain(yValues, config.includeZero, 5);
+        var width = responsivePlotWidth();
+        var height = 260;
+        els.plotSvg.setAttribute("viewBox", "0 0 " + width + " " + height);
+        var left = 55;
+        var right = 18;
+        var top = 16;
+        var bottom = 38;
+        var plotWidth = width - left - right;
+        var plotHeight = height - top - bottom;
+        var tMax = currentProfile().tMax;
+        var xScale = function (time) {
+          return left + time / tMax * plotWidth;
+        };
+        var yScale = function (value) {
+          return top + (yDomain.max - value) / (yDomain.max - yDomain.min) * plotHeight;
+        };
+        var markup = "<rect x='0' y='0' width='" + width + "' height='" + height + "' fill='#fff' />";
+
+        yDomain.ticks.forEach(function (tick) {
+          var y = yScale(tick);
+          markup += "<line x1='" + left + "' y1='" + y + "' x2='" + (width - right) + "' y2='" + y +
+            "' stroke='#e7ecf3' stroke-width='1' />";
+          markup += "<text x='" + (left - 9) + "' y='" + (y + 4) + "' text-anchor='end' fill='#68768d' font-size='11'>" +
+            fmtAxis(tick) + "</text>";
+        });
+
+        var xTickCount = width < 520 ? 4 : 5;
+        for (var i = 0; i <= xTickCount; i += 1) {
+          var timeTick = tMax * i / xTickCount;
+          var x = xScale(timeTick);
+          markup += "<line x1='" + x + "' y1='" + top + "' x2='" + x + "' y2='" + (height - bottom) +
+            "' stroke='#eef2f7' stroke-width='1' />";
+          markup += "<text x='" + x + "' y='" + (height - 16) + "' text-anchor='middle' fill='#68768d' font-size='11'>" +
+            fmtAxis(timeTick) + "</text>";
+        }
+
+        markup += "<line x1='" + left + "' y1='" + top + "' x2='" + left + "' y2='" + (height - bottom) +
+          "' stroke='#8b98aa' stroke-width='1.4' />";
+        markup += "<line x1='" + left + "' y1='" + (height - bottom) + "' x2='" + (width - right) + "' y2='" +
+          (height - bottom) + "' stroke='#8b98aa' stroke-width='1.4' />";
+        markup += "<text x='15' y='" + (top + plotHeight / 2) +
+          "' text-anchor='middle' transform='rotate(-90 15 " + (top + plotHeight / 2) +
+          ")' fill='#5f6d82' font-size='11' font-weight='850'>" +
+          escapeHtml(config.axis + " / " + config.unit) + "</text>";
+        markup += "<text x='" + (width - right - 4) + "' y='" + (height - bottom - 8) +
+          "' text-anchor='end' fill='#5f6d82' font-size='11' font-weight='850'>t / s</text>";
+
+        config.series.forEach(function (series) {
+          markup += "<path d='" + seriesPath(series, times, xScale, yScale) + "' fill='none' stroke='" + series.color +
+            "' stroke-width='3.5' stroke-linecap='round' stroke-linejoin='round' />";
+        });
+
+        var currentX = xScale(state.time);
+        markup += "<line id='plotCursorLine' x1='" + currentX + "' y1='" + top + "' x2='" + currentX + "' y2='" + (height - bottom) +
+          "' stroke='#68768d' stroke-width='1.4' stroke-dasharray='5 5' opacity='0.6' />";
+        config.series.forEach(function (series) {
+          var currentY = yScale(series.value(state.time));
+          markup += "<circle id='plotCursor-" + series.id + "' cx='" + currentX + "' cy='" + currentY + "' r='5.5' fill='#fff' stroke='" + series.color +
+            "' stroke-width='3' />";
+        });
+
+        if (state.mode === "encounter" && state.plot === "position") {
+          var analysis = meetingAnalysis();
+          if (analysis && analysis.kind === "always") {
+            markup += "<rect x='" + (left + 12) + "' y='" + (top + 8) +
+              "' width='174' height='25' rx='12.5' fill='#effaf4' stroke='#8bd0a7' />";
+            markup += "<text x='" + (left + 99) + "' y='" + (top + 25) +
+              "' text-anchor='middle' fill='#39845b' font-size='11' font-weight='900'>identische Graphen</text>";
+          } else if (analysis && (analysis.kind === "within" || analysis.kind === "start")) {
+            var mx = xScale(analysis.time);
+            var my = yScale(analysis.position);
+            markup += "<circle cx='" + mx + "' cy='" + my + "' r='8' fill='#fff' stroke='" + COLORS.green +
+              "' stroke-width='3.5' />";
+            markup += "<text x='" + (mx + 10) + "' y='" + (my - 10) + "' fill='#39845b' font-size='11' font-weight='900'>Treffen</text>";
+          }
+        }
+
+        els.plotSvg.innerHTML = markup;
+        els.plotTitle.textContent = config.title;
+        els.plotSummary.textContent = config.summary;
+        els.plotSvg.setAttribute("aria-label", config.title + "-Diagramm");
+        els.plotLegend.innerHTML = config.series.map(function (series) {
+          return "<span class='legend-item'><span class='legend-dot' style='background:" + series.color +
+            "'></span>" + escapeHtml(series.label) + "</span>";
+        }).join("");
+        plotCache = {
+          signature: plotSignature(),
+          renderedWidth: width,
+          config: config,
+          xScale: xScale,
+          yScale: yScale
+        };
+      }
+
+      function updatePlotCursor() {
+        if (!plotCache || plotCache.signature !== plotSignature()) {
+          drawPlot();
+          return;
+        }
+        var currentX = plotCache.xScale(state.time);
+        var cursorLine = document.getElementById("plotCursorLine");
+        if (!cursorLine) {
+          drawPlot();
+          return;
+        }
+        cursorLine.setAttribute("x1", currentX);
+        cursorLine.setAttribute("x2", currentX);
+        plotCache.config.series.forEach(function (series) {
+          var marker = document.getElementById("plotCursor-" + series.id);
+          if (marker) {
+            marker.setAttribute("cx", currentX);
+            marker.setAttribute("cy", plotCache.yScale(series.value(state.time)));
+          }
+        });
+      }
+
+      function makeNumericQuestion(prompt, correctValue, candidates, unit, explanation, correctPosition, digits) {
+        var places = typeof digits === "number" ? digits : 1;
+        var answerLabel = function (value) {
+          return fmt(value, places) + (unit ? " " + unit : "");
+        };
+        var values = [correctValue];
+        var labels = [answerLabel(correctValue)];
+        var addIfDistinct = function (candidate) {
+          var label = answerLabel(candidate);
+          if (Number.isFinite(candidate) && labels.indexOf(label) === -1) {
+            values.push(candidate);
+            labels.push(label);
+          }
+        };
+        candidates.forEach(function (candidate) {
+          addIfDistinct(candidate);
+        });
+        var scale = Math.max(Math.pow(10, -places) * 2, Math.abs(correctValue) * 0.25);
+        var attempt = 1;
+        while (values.length < 3 && attempt < 50) {
+          addIfDistinct(correctValue + attempt * scale);
+          if (values.length < 3) {
+            addIfDistinct(correctValue - attempt * scale);
+          }
+          attempt += 1;
+        }
+        var position = clamp(correctPosition || 0, 0, 2);
+        var wrong = values.slice(1, 3);
+        var ordered = [];
+        var wrongIndex = 0;
+        for (var i = 0; i < 3; i += 1) {
+          ordered.push(i === position ? correctValue : wrong[wrongIndex++]);
+        }
+        return {
+          prompt: prompt,
+          answers: ordered.map(function (value) {
+            return answerLabel(value);
+          }),
+          correct: position,
+          explanation: explanation
+        };
+      }
+
+      function singleQuestions() {
+        var p = profiles.single;
+        var tq = Math.min(4, p.tMax);
+        var position = p.s0 + p.v * tq;
+        var delta = p.v * p.tMax;
+        var directionCorrect = p.v > 0.001 ? 0 : p.v < -0.001 ? 1 : 2;
+        return [
+          makeNumericQuestion(
+            "Wo befindet sich Objekt A nach " + fmt(tq) + " s?",
+            position,
+            [p.v * tq, p.s0 + 0.5 * p.v * tq, p.s0 - p.v * tq],
+            "m",
+            "Mit s = s₀ + v·t erhält man " + fmt(p.s0) + " m + " + fmt(p.v) + " m/s · " + fmt(tq) + " s = " + fmt(position) + " m.",
+            1,
+            1
+          ),
+          {
+            prompt: "Was zeigt die Steigung im s–t-Diagramm?",
+            answers: ["Die Geschwindigkeit v", "Den Startort s₀", "Die Beobachtungszeit"],
+            correct: 0,
+            explanation: "Steigung bedeutet Ortsänderung pro Zeit. Genau das ist die Geschwindigkeit."
+          },
+          {
+            prompt: "Was verrät das Vorzeichen deiner Geschwindigkeit?",
+            answers: ["A bewegt sich in positive Richtung.", "A bewegt sich in negative Richtung.", "A bleibt am gleichen Ort."],
+            correct: directionCorrect,
+            explanation: p.v > 0.001 ? "v ist positiv, deshalb wächst der Ort s." : p.v < -0.001 ? "v ist negativ, deshalb wird der Ort s kleiner." : "v ist null, deshalb ändert sich der Ort nicht."
+          },
+          makeNumericQuestion(
+            "Welche Ortsänderung Δs entsteht während der ganzen Beobachtungszeit?",
+            delta,
+            [Math.abs(delta), p.s0 + delta, p.s0],
+            "m",
+            "Für eine gleichförmige Bewegung gilt Δs = v·Δt = " + fmt(p.v) + " m/s · " + fmt(p.tMax) + " s = " + fmt(delta) + " m.",
+            2,
+            1
+          )
+        ];
+      }
+
+      function encounterQuestions() {
+        var p = profiles.encounter;
+        var analysis = meetingAnalysis();
+        var relative = Math.abs(p.vA - p.vB);
+        var questions = [];
+        if (analysis.kind === "always") {
+          questions.push({
+            prompt: "Wie lange sind A und B am gleichen Ort?",
+            answers: ["Während der ganzen Bewegung.", "Nur bei t = 0.", "Nie."],
+            correct: 0,
+            explanation: "Gleicher Startort und gleiche Geschwindigkeit ergeben identische Ortsfunktionen."
+          });
+        } else if (analysis.kind === "within" || analysis.kind === "start") {
+          questions.push(makeNumericQuestion(
+            "Nach welcher Zeit treffen sich A und B?",
+            analysis.time,
+            [Math.abs(p.sB - p.sA) / Math.max(0.5, Math.abs(p.vA) + Math.abs(p.vB)), analysis.time + 2, Math.abs(p.sB - p.sA) / Math.max(0.5, relative + 2)],
+            "s",
+            "Setze sA(t) = sB(t). Daraus folgt t = (sB₀ − sA₀)/(vA − vB) = " + fmt(analysis.time, 2) + " s.",
+            1,
+            2
+          ));
+        } else {
+          questions.push({
+            prompt: "Treffen sich A und B im dargestellten Zeitfenster?",
+            answers: ["Ja, innerhalb des Zeitfensters.", "Nein, nicht für t ≥ 0.", "Nein im Zeitfenster; erst später."],
+            correct: analysis.kind === "later" ? 2 : 1,
+            explanation: meetingCopy(analysis)
+          });
+        }
+        questions.push(makeNumericQuestion(
+          "Wie gross ist der Betrag der relativen Geschwindigkeit |vA − vB|?",
+          relative,
+          [Math.abs(p.vA + p.vB), relative + 1, relative + 2],
+          "m/s",
+          "|vA − vB| = |" + fmt(p.vA) + " − (" + fmt(p.vB) + ")| = " + fmt(relative) + " m/s.",
+          0,
+          1
+        ));
+        questions.push({
+          prompt: "Was bedeutet ein Schnittpunkt der beiden Linien im s–t-Diagramm?",
+          answers: ["Beide haben dieselbe Geschwindigkeit.", "Beide sind zur gleichen Zeit am gleichen Ort.", "Beide starten am gleichen Ort."],
+          correct: 1,
+          explanation: "Am Schnittpunkt stimmen Zeitkoordinate und Ortskoordinate für beide Objekte überein."
+        });
+        if (analysis.kind === "always") {
+          questions.push({
+            prompt: "Warum bleiben die beiden Ortsfunktionen identisch?",
+            answers: ["Nur die Geschwindigkeiten sind gleich.", "Startorte und Geschwindigkeiten sind gleich.", "Nur die Startorte sind gleich."],
+            correct: 1,
+            explanation: "Eine gleichförmige Ortsfunktion ist durch Startort und Geschwindigkeit vollständig festgelegt."
+          });
+        } else if (Number.isFinite(analysis.time) && analysis.time >= 0) {
+          questions.push(makeNumericQuestion(
+            "An welchem Ort liegt die rechnerische Begegnung?",
+            analysis.position,
+            [p.sA + p.vB * analysis.time, p.sB + p.vA * analysis.time, (p.sA + p.sB) / 2],
+            "m",
+            "Einsetzen in eine der Ortsfunktionen ergibt sT = " + fmt(analysis.position) + " m.",
+            2,
+            1
+          ));
+        } else if (analysis.kind === "parallel") {
+          questions.push({
+            prompt: "Was gilt bei gleicher Geschwindigkeit und verschiedenen Startorten?",
+            answers: ["Der Abstand bleibt konstant.", "Das hintere Objekt holt auf.", "Beide treffen sich bei t = 0."],
+            correct: 0,
+            explanation: "Beide legen in derselben Zeit dieselbe Ortsänderung zurück. Der Anfangsabstand bleibt erhalten."
+          });
+        } else {
+          questions.push({
+            prompt: "Warum treffen sich A und B nach t = 0 nicht mehr?",
+            answers: ["Der rechnerische Schnittpunkt liegt bei negativer Zeit.", "Ihre Geschwindigkeiten sind gleich null.", "Ihre Startorte sind identisch."],
+            correct: 0,
+            explanation: "Die Ortsfunktionen schneiden sich nur in der rechnerischen Vergangenheit; danach entfernen sich die Objekte."
+          });
+        }
+        return questions;
+      }
+
+      function acceleratedQuestions() {
+        var p = profiles.accelerated;
+        var tq = Math.min(4, p.tMax);
+        var velocity = p.v0 + p.a * tq;
+        var position = p.s0 + p.v0 * tq + 0.5 * p.a * tq * tq;
+        var questions = [
+          makeNumericQuestion(
+            "Welche Geschwindigkeit hat A nach " + fmt(tq) + " s?",
+            velocity,
+            [p.a * tq, p.v0 + 0.5 * p.a * tq, p.v0 - p.a * tq],
+            "m/s",
+            "v = v₀ + a·t = " + fmt(p.v0) + " m/s " + signed(p.a, 1) + " m/s² · " + fmt(tq) + " s = " + fmt(velocity) + " m/s.",
+            0,
+            1
+          ),
+          makeNumericQuestion(
+            "Wo befindet sich A nach " + fmt(tq) + " s?",
+            position,
+            [p.s0 + p.v0 * tq + p.a * tq * tq, p.v0 * tq + 0.5 * p.a * tq * tq, p.s0 + p.v0 * tq],
+            "m",
+            "s = s₀ + v₀t + ½at². Eingesetzt ergibt das " + fmt(position) + " m.",
+            1,
+            1
+          ),
+          {
+            prompt: "Was zeigt die Steigung im v–t-Diagramm?",
+            answers: ["Den Ort s", "Die Beschleunigung a", "Die Startgeschwindigkeit v₀"],
+            correct: 1,
+            explanation: "Die Steigung ist Δv/Δt. Das ist per Definition die Beschleunigung a."
+          }
+        ];
+        var stopTime = Math.abs(p.a) > 0.0001 ? -p.v0 / p.a : -1;
+        if (stopTime >= 0 && stopTime <= p.tMax) {
+          questions.push(makeNumericQuestion(
+            "Wann ist A momentan in Ruhe, also v = 0?",
+            stopTime,
+            [stopTime + 1, stopTime * 2, stopTime / 2],
+            "s",
+            "0 = v₀ + a·t liefert t = −v₀/a = " + fmt(stopTime, 2) + " s.",
+            2,
+            2
+          ));
+        } else {
+          var deltaV = p.a * p.tMax;
+          questions.push(makeNumericQuestion(
+            "Welche Geschwindigkeitsänderung Δv entsteht in der ganzen Beobachtungszeit?",
+            deltaV,
+            [0.5 * p.a * p.tMax, -p.a * p.tMax, p.v0 + deltaV],
+            "m/s",
+            "Die Geschwindigkeitsänderung ist Δv = a·Δt = " + fmt(deltaV) + " m/s.",
+            2,
+            1
+          ));
+        }
+        return questions;
+      }
+
+      function currentQuestions() {
+        if (state.mode === "single") {
+          return singleQuestions();
+        }
+        if (state.mode === "encounter") {
+          return encounterQuestions();
+        }
+        return acceleratedQuestions();
+      }
+
+      function renderQuiz() {
+        var questions = currentQuestions();
+        var quiz = quizStates[state.mode];
+        if (quiz.index >= questions.length) {
+          quiz.index = 0;
+          quiz.score = 0;
+          quiz.answered = false;
+          quiz.selected = -1;
+        }
+        var question = questions[quiz.index];
+        els.quizScore.textContent = quiz.score + " / " + questions.length;
+        els.quizCounter.textContent = "Frage " + (quiz.index + 1) + " von " + questions.length;
+        els.quizQuestion.textContent = question.prompt;
+        var letters = ["A", "B", "C"];
+        els.quizAnswers.innerHTML = question.answers.map(function (answer, index) {
+          var classes = "answer-button";
+          if (quiz.answered && index === question.correct) {
+            classes += " correct";
+          } else if (quiz.answered && index === quiz.selected) {
+            classes += " wrong";
+          }
+          return "<button class='" + classes + "' type='button' data-answer='" + index + "'" +
+            (quiz.answered ? " disabled" : "") + "><span class='answer-letter'>" + letters[index] +
+            "</span><span>" + escapeHtml(answer) + "</span></button>";
+        }).join("");
+        var progress = (quiz.index + (quiz.answered ? 1 : 0)) / questions.length * 100;
+        els.quizProgress.style.width = progress + "%";
+        if (quiz.answered) {
+          var correct = quiz.selected === question.correct;
+          els.quizFeedback.className = "quiz-feedback " + (correct ? "success" : "error");
+          els.quizFeedback.textContent = (correct ? "Richtig. " : "Noch nicht. ") + question.explanation;
+          els.nextQuestion.disabled = false;
+          els.nextQuestion.textContent = quiz.index === questions.length - 1 ? "Neue Quizrunde" : "Nächste Frage";
+        } else {
+          els.quizFeedback.className = "quiz-feedback";
+          els.quizFeedback.textContent = "Wähle eine Antwort. Danach erhältst du sofort eine kurze Erklärung.";
+          els.nextQuestion.disabled = true;
+          els.nextQuestion.textContent = "Nächste Frage";
+        }
+      }
+
+      function answerQuiz(index) {
+        var quiz = quizStates[state.mode];
+        if (quiz.answered) {
+          return;
+        }
+        var question = currentQuestions()[quiz.index];
+        quiz.selected = index;
+        quiz.answered = true;
+        if (index === question.correct) {
+          quiz.score += 1;
+        }
+        renderQuiz();
+        els.nextQuestion.focus();
+      }
+
+      function nextQuizQuestion() {
+        var questions = currentQuestions();
+        var quiz = quizStates[state.mode];
+        if (!quiz.answered) {
+          return;
+        }
+        if (quiz.index >= questions.length - 1) {
+          resetQuiz(state.mode);
+        } else {
+          quiz.index += 1;
+          quiz.answered = false;
+          quiz.selected = -1;
+        }
+        renderQuiz();
+        var firstAnswer = els.quizAnswers.querySelector("[data-answer]");
+        if (firstAnswer) {
+          firstAnswer.focus();
+        }
+      }
+
+      function updateTransport() {
+        var max = currentProfile().tMax;
+        state.time = clamp(state.time, 0, max);
+        els.timeSlider.max = max;
+        els.timeSlider.value = state.time;
+        els.timeOutput.textContent = fmt(state.time) + " s";
+        els.playIcon.textContent = state.playing ? "❚❚" : "▶";
+        els.playLabel.textContent = state.playing ? "Pause" : state.time >= max - 0.0001 ? "Nochmals" : "Start";
+      }
+
+      function renderDynamic() {
+        updateTransport();
+        updateSceneHint();
+        drawStage();
+        renderMetrics();
+        updatePlotCursor();
+      }
+
+      function animationFrame(timestamp) {
+        if (!state.playing) {
+          return;
+        }
+        var delta = Math.min(0.08, Math.max(0, (timestamp - state.lastFrame) / 1000));
+        state.lastFrame = timestamp;
+        state.time += delta * state.playback;
+        if (state.time >= currentProfile().tMax) {
+          state.time = currentProfile().tMax;
+          pauseSimulation();
+          els.simulationStatus.textContent = "Simulation beendet.";
+          renderDynamic();
+          return;
+        }
+        if (timestamp - state.lastPaint >= 30) {
+          state.lastPaint = timestamp;
+          renderDynamic();
+        }
+        state.raf = window.requestAnimationFrame(animationFrame);
+      }
+
+      function startSimulation() {
+        if (state.playing) {
+          return;
+        }
+        if (state.time >= currentProfile().tMax - 0.0001) {
+          state.time = 0;
+        }
+        state.playing = true;
+        state.lastFrame = performance.now();
+        state.lastPaint = 0;
+        els.simulationStatus.textContent = "Simulation gestartet.";
+        updateTransport();
+        state.raf = window.requestAnimationFrame(animationFrame);
+      }
+
+      function pauseSimulation() {
+        state.playing = false;
+        if (state.raf) {
+          window.cancelAnimationFrame(state.raf);
+          state.raf = 0;
+        }
+        updateTransport();
+      }
+
+      function toggleSimulation() {
+        if (state.playing) {
+          pauseSimulation();
+          els.simulationStatus.textContent = "Simulation pausiert.";
+        } else {
+          startSimulation();
+        }
+      }
+
+      function resetSimulation() {
+        pauseSimulation();
+        state.time = 0;
+        els.simulationStatus.textContent = "Simulation zurückgesetzt.";
+        renderDynamic();
+      }
+
+      function bindEvents() {
+        els.levelPicker.addEventListener("click", function (event) {
+          var button = event.target.closest("[data-mode]");
+          if (button) {
+            selectMode(button.getAttribute("data-mode"));
+          }
+        });
+
+        els.levelPicker.addEventListener("keydown", function (event) {
+          if (["ArrowRight", "ArrowDown", "ArrowLeft", "ArrowUp", "Home", "End"].indexOf(event.key) === -1) {
+            return;
+          }
+          var buttons = Array.from(els.levelPicker.querySelectorAll("[data-mode]"));
+          var current = event.target.closest("[data-mode]");
+          if (!current) {
+            return;
+          }
+          event.preventDefault();
+          var index = buttons.indexOf(current);
+          if (event.key === "Home") {
+            index = 0;
+          } else if (event.key === "End") {
+            index = buttons.length - 1;
+          } else {
+            var direction = event.key === "ArrowRight" || event.key === "ArrowDown" ? 1 : -1;
+            index = (index + direction + buttons.length) % buttons.length;
+          }
+          selectMode(buttons[index].getAttribute("data-mode"));
+          buttons[index].focus();
+        });
+
+        els.controlsBody.addEventListener("input", function (event) {
+          if (event.target.matches("[data-value-key]")) {
+            applyControlInput(event.target, false);
+          }
+        });
+
+        els.controlsBody.addEventListener("change", function (event) {
+          if (event.target.matches("[data-value-key]")) {
+            applyControlInput(event.target, true);
+          }
+        });
+
+        els.controlsBody.addEventListener("click", function (event) {
+          var button = event.target.closest("[data-preset]");
+          if (button) {
+            applyPreset(button.getAttribute("data-preset"));
+          }
+        });
+
+        els.playButton.addEventListener("click", toggleSimulation);
+        els.resetButton.addEventListener("click", resetSimulation);
+        els.stepButton.addEventListener("click", function () {
+          pauseSimulation();
+          state.time = clamp(state.time + 0.5, 0, currentProfile().tMax);
+          renderDynamic();
+        });
+        els.timeSlider.addEventListener("input", function () {
+          pauseSimulation();
+          state.time = finite(Number(els.timeSlider.value), 0);
+          renderDynamic();
+        });
+        els.speedSelect.addEventListener("change", function () {
+          state.playback = finite(Number(els.speedSelect.value), 1);
+        });
+
+        els.plotTabs.addEventListener("click", function (event) {
+          var button = event.target.closest("[data-plot]");
+          if (!button) {
+            return;
+          }
+          state.plot = button.getAttribute("data-plot");
+          renderPlotTabs();
+          drawPlot();
+          els.plotTabs.querySelector("[data-plot='" + state.plot + "']").focus();
+        });
+
+        els.plotTabs.addEventListener("keydown", function (event) {
+          if (["ArrowRight", "ArrowLeft", "Home", "End"].indexOf(event.key) === -1) {
+            return;
+          }
+          var tabs = Array.from(els.plotTabs.querySelectorAll("[data-plot]"));
+          var current = event.target.closest("[data-plot]");
+          if (!current) {
+            return;
+          }
+          event.preventDefault();
+          var index = tabs.indexOf(current);
+          if (event.key === "Home") {
+            index = 0;
+          } else if (event.key === "End") {
+            index = tabs.length - 1;
+          } else {
+            var direction = event.key === "ArrowRight" ? 1 : -1;
+            index = (index + direction + tabs.length) % tabs.length;
+          }
+          state.plot = tabs[index].getAttribute("data-plot");
+          renderPlotTabs();
+          drawPlot();
+          els.plotTabs.querySelector("[data-plot='" + state.plot + "']").focus();
+        });
+
+        els.quizAnswers.addEventListener("click", function (event) {
+          var button = event.target.closest("[data-answer]");
+          if (button) {
+            answerQuiz(Number(button.getAttribute("data-answer")));
+          }
+        });
+        els.nextQuestion.addEventListener("click", nextQuizQuestion);
+
+        window.addEventListener("resize", function () {
+          if (resizeFrame) {
+            window.cancelAnimationFrame(resizeFrame);
+          }
+          resizeFrame = window.requestAnimationFrame(function () {
+            resizeFrame = 0;
+            plotCache = null;
+            stageDomainCache = null;
+            revealActiveLevel();
+            renderDynamic();
+          });
+        });
+
+        document.addEventListener("visibilitychange", function () {
+          if (document.hidden && state.playing) {
+            pauseSimulation();
+          }
+        });
+      }
+
+      setupBackLink();
+      bindEvents();
+      document.querySelectorAll(".level-button").forEach(function (button) {
+        var active = button.getAttribute("data-mode") === state.mode;
+        button.setAttribute("aria-checked", active ? "true" : "false");
+        button.tabIndex = active ? 0 : -1;
+      });
+      renderMode();
+    }());
+  </script>
+</body>
+</html>
