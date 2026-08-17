@@ -211,12 +211,13 @@
     }
 
     .workspace {
+      --main-view-height: max(520px, calc(100dvh - 200px));
       display: grid;
       grid-template-columns: minmax(238px, 292px) minmax(410px, 1fr) minmax(370px, 560px);
-      grid-template-rows: minmax(310px, 1fr) minmax(185px, 260px);
+      grid-template-rows: var(--main-view-height) auto;
       grid-template-areas:
         "controls simulation diagrams"
-        "controls quiz diagrams";
+        "quiz quiz quiz";
       gap: 10px;
       min-width: 0;
       min-height: 0;
@@ -707,26 +708,17 @@
     .plots-grid {
       display: grid;
       grid-template-columns: minmax(0, 1fr);
-      grid-template-rows: repeat(2, minmax(245px, 1fr));
+      grid-template-rows: repeat(2, minmax(0, 1fr));
       gap: 8px;
       min-height: 0;
-      overflow-x: hidden;
-      overflow-y: auto;
-      overscroll-behavior: contain;
-      scrollbar-gutter: stable;
-      scrollbar-width: thin;
+      overflow: hidden;
       padding: 8px;
       background: #f5f7fb;
     }
 
     .plots-grid[data-count="3"] {
       grid-template-columns: minmax(0, 1fr);
-      grid-template-rows: repeat(3, minmax(235px, 1fr));
-    }
-
-    .plots-grid:focus-visible {
-      outline: 3px solid rgba(127, 159, 227, 0.42);
-      outline-offset: -4px;
+      grid-template-rows: repeat(3, minmax(0, 1fr));
     }
 
     .plot-card {
@@ -769,7 +761,7 @@
       display: block;
       width: 100%;
       height: 100%;
-      min-height: 165px;
+      min-height: 0;
     }
 
     .plot-footer {
@@ -816,14 +808,20 @@
       align-items: center;
     }
 
+    .quiz-heading h2 {
+      font-size: 1.1rem;
+    }
+
     .quiz-panel {
       grid-area: quiz;
-      grid-template-rows: auto auto minmax(0, 1fr);
+      grid-template-rows: auto auto auto;
+      min-height: 600px;
     }
 
     .quiz-type-picker {
       display: grid;
-      grid-template-columns: repeat(2, minmax(0, 1fr));
+      grid-template-columns: repeat(2, minmax(0, 260px));
+      justify-content: start;
       gap: 4px;
       padding: 5px;
       border-bottom: 1px solid rgba(220, 227, 239, 0.8);
@@ -832,14 +830,14 @@
 
     .quiz-type-picker button {
       min-width: 0;
-      min-height: 34px;
-      padding: 5px 7px;
+      min-height: 44px;
+      padding: 8px 10px;
       overflow: hidden;
       border: 1px solid transparent;
       border-radius: 10px;
       background: transparent;
       color: var(--muted);
-      font-size: 0.67rem;
+      font-size: 0.76rem;
       font-weight: 900;
       line-height: 1.15;
       overflow-wrap: anywhere;
@@ -861,22 +859,36 @@
       border-radius: 999px;
       background: #f1faf5;
       color: var(--green-dark);
-      font-size: 0.68rem;
+      font-size: 0.76rem;
       font-weight: 950;
     }
 
     .quiz-body {
       display: grid;
-      grid-template-rows: auto auto auto auto auto;
+      grid-template-columns: minmax(0, 1.25fr) minmax(320px, 0.75fr);
+      grid-template-rows: auto auto auto auto;
       align-content: start;
       gap: 10px;
+      width: 100%;
+      max-width: 1280px;
+      margin: 0 auto;
       min-height: 0;
-      overflow: auto;
-      overscroll-behavior: contain;
-      scrollbar-gutter: stable;
-      scroll-padding-block: 12px;
-      padding: 12px 14px 14px;
+      overflow: visible;
+      padding: 16px 18px 18px;
       scrollbar-width: thin;
+    }
+
+    .progress-track,
+    .quiz-meta {
+      grid-column: 1 / -1;
+    }
+
+    .quiz-feedback {
+      align-self: start;
+    }
+
+    .next-question {
+      grid-column: 2;
     }
 
     .progress-track {
@@ -901,22 +913,22 @@
       justify-content: space-between;
       gap: 10px;
       color: var(--muted);
-      font-size: 0.67rem;
+      font-size: 0.75rem;
       font-weight: 850;
     }
 
     .quiz-question {
       margin: 0 0 10px;
       color: var(--dark);
-      font-size: clamp(0.9rem, 1vw, 1rem);
+      font-size: clamp(1.02rem, 1.15vw, 1.18rem);
       line-height: 1.35;
       letter-spacing: -0.018em;
       overflow-wrap: anywhere;
     }
 
     .quiz-visual {
-      height: 72px;
-      margin-bottom: 8px;
+      height: 132px;
+      margin-bottom: 12px;
       overflow: hidden;
       border: 1px solid var(--line);
       border-radius: 12px;
@@ -935,23 +947,23 @@
 
     .answer-list {
       display: grid;
-      gap: 7px;
+      gap: 9px;
     }
 
     .answer-button {
       display: grid;
-      grid-template-columns: 27px minmax(0, 1fr);
+      grid-template-columns: 32px minmax(0, 1fr);
       align-items: center;
-      gap: 8px;
+      gap: 10px;
       width: 100%;
-      min-height: 42px;
-      padding: 7px 9px;
+      min-height: 50px;
+      padding: 9px 11px;
       border: 1px solid var(--line);
       border-radius: 13px;
       background: #fff;
       color: #536075;
       text-align: left;
-      font-size: 0.76rem;
+      font-size: 0.84rem;
       font-weight: 800;
       cursor: pointer;
       transition: border-color 0.14s ease, background 0.14s ease, transform 0.14s ease;
@@ -969,13 +981,13 @@
 
     .answer-letter {
       display: grid;
-      width: 27px;
-      height: 27px;
+      width: 32px;
+      height: 32px;
       place-items: center;
       border-radius: 9px;
       background: #edf1f7;
       color: #68768d;
-      font-size: 0.68rem;
+      font-size: 0.75rem;
       font-weight: 950;
     }
 
@@ -1002,13 +1014,13 @@
     }
 
     .quiz-feedback {
-      min-height: 51px;
-      padding: 9px 10px;
+      min-height: 60px;
+      padding: 12px;
       border: 1px dashed var(--line);
       border-radius: 13px;
       background: #f8fafc;
       color: var(--muted);
-      font-size: 0.7rem;
+      font-size: 0.8rem;
       line-height: 1.38;
       overflow-wrap: anywhere;
     }
@@ -1035,14 +1047,14 @@
 
     .next-question {
       width: 100%;
-      min-height: 40px;
-      padding: 8px 12px;
+      min-height: 48px;
+      padding: 10px 14px;
       border: 1px solid rgba(127, 159, 227, 0.5);
       border-radius: 12px;
       background: linear-gradient(145deg, #8ea9e5, #7294dc);
       color: #fff;
       box-shadow: 0 8px 18px rgba(127, 159, 227, 0.2);
-      font-size: 0.75rem;
+      font-size: 0.84rem;
       font-weight: 950;
       cursor: pointer;
     }
@@ -1067,26 +1079,11 @@
       border: 0;
     }
 
-    @media (min-width: 1180px) and (min-height: 760px) {
-      html,
-      body {
-        height: 100%;
-        overflow: hidden;
+    @media (max-height: 850px) and (min-width: 1080px) {
+      .workspace {
+        --main-view-height: max(520px, calc(100dvh - 164px));
       }
 
-      .app-shell {
-        height: 100vh;
-        height: 100dvh;
-        grid-template-rows: auto auto minmax(0, 1fr);
-      }
-
-      .workspace,
-      .panel {
-        height: 100%;
-      }
-    }
-
-    @media (max-height: 780px) and (min-width: 1180px) {
       .app-shell {
         padding: 8px 0;
         gap: 8px;
@@ -1115,9 +1112,73 @@
         padding-bottom: 8px;
       }
 
+      .controls-panel .panel-description,
+      .preset-label,
+      .control-label small {
+        display: none;
+      }
+
       .panel-scroll,
       .quiz-body {
         padding-top: 9px;
+      }
+
+      .panel-scroll {
+        padding-top: 6px;
+        padding-right: 10px;
+        padding-bottom: 6px;
+        padding-left: 10px;
+      }
+
+      .preset-row {
+        margin-bottom: 4px;
+      }
+
+      .control-stack {
+        gap: 6px;
+      }
+
+      .object-card {
+        margin-bottom: 4px;
+        padding: 6px;
+      }
+
+      .object-card-title {
+        margin-bottom: 4px;
+      }
+
+      .control {
+        padding: 4px 6px;
+      }
+
+      .control + .control {
+        margin-top: 3px;
+      }
+
+      .control-top {
+        margin-bottom: 2px;
+      }
+
+      .number-wrap input {
+        padding-top: 3px;
+        padding-bottom: 3px;
+      }
+
+      input[type="range"] {
+        height: 18px;
+        margin-top: -4px;
+        margin-bottom: -4px;
+      }
+
+      .formula-note,
+      .meeting-result {
+        margin-top: 3px;
+        padding: 5px 6px;
+      }
+
+      .meeting-result strong {
+        display: inline;
+        margin: 0 4px 0 0;
       }
 
       .simulation-panel {
@@ -1141,6 +1202,15 @@
       .metric-grid {
         padding-top: 5px;
         padding-bottom: 6px;
+      }
+
+      .plot-card-heading {
+        min-height: 25px;
+        padding-top: 3px;
+      }
+
+      .plot-footer {
+        display: none;
       }
     }
 
@@ -1173,7 +1243,7 @@
 
       .quiz-panel {
         height: auto;
-        min-height: 0;
+        min-height: 560px;
       }
 
       .quiz-body {
@@ -1325,6 +1395,14 @@
       .next-question,
       .back-link {
         min-height: 44px;
+      }
+
+      .answer-button {
+        min-height: 50px;
+      }
+
+      .next-question {
+        min-height: 48px;
       }
 
       input[type="range"] {
