@@ -2047,12 +2047,18 @@
 
       function updateTransport() {
         var max = currentProfile().tMax;
+        var hasEnded;
         state.time = clamp(state.time, 0, max);
+        hasEnded = !state.playing && state.time >= max - 0.0001;
         els.timeSlider.max = max;
         els.timeSlider.value = state.time;
         els.timeOutput.textContent = fmt(state.time) + " s";
-        els.playIcon.textContent = state.playing ? "❚❚" : "▶";
-        els.playLabel.textContent = state.playing ? "Pause" : state.time >= max - 0.0001 ? "Nochmals" : "Start";
+        els.playIcon.textContent = state.playing ? "❚❚" : hasEnded ? "↻" : "▶";
+        els.playLabel.textContent = state.playing ? "Pause" : hasEnded ? "Erneut" : "Start";
+        els.playButton.setAttribute(
+          "aria-label",
+          state.playing ? "Simulation pausieren" : hasEnded ? "Simulation erneut starten" : "Simulation starten"
+        );
       }
 
       function renderDynamic() {
