@@ -745,6 +745,7 @@
 
     .diagram-actions {
       display: flex;
+      flex-wrap: wrap;
       flex: 0 0 auto;
       align-items: center;
       justify-content: flex-end;
@@ -775,6 +776,44 @@
       border-color: rgba(99, 184, 135, 0.78);
       background: #eaf8f0;
       box-shadow: inset 0 0 0 1px rgba(99, 184, 135, 0.16);
+    }
+
+    .comparison-button {
+      min-height: 28px;
+      padding: 5px 9px;
+      border: 1px solid rgba(127, 159, 227, 0.5);
+      border-radius: 999px;
+      background: #fff;
+      color: var(--blue-dark);
+      font-size: 0.63rem;
+      font-weight: 950;
+      white-space: nowrap;
+      cursor: pointer;
+    }
+
+    .comparison-button:hover:not(:disabled) {
+      border-color: rgba(85, 116, 184, 0.75);
+      background: #f3f6fd;
+      transform: translateY(-1px);
+    }
+
+    .comparison-button:disabled {
+      opacity: 0.48;
+      cursor: not-allowed;
+    }
+
+    .comparison-delete {
+      border-color: rgba(185, 111, 73, 0.4);
+      color: var(--orange-dark);
+    }
+
+    .comparison-summary {
+      flex: 1 0 100%;
+      order: 10;
+      color: #56647a;
+      font-size: 0.61rem;
+      font-weight: 750;
+      line-height: 1.3;
     }
 
     .plots-grid {
@@ -840,6 +879,10 @@
       pointer-events: none;
     }
 
+    .plot-comparison-curves {
+      pointer-events: none;
+    }
+
     .plot-footer {
       min-height: 25px;
       padding: 4px 7px 6px;
@@ -878,6 +921,15 @@
       width: 7px;
       height: 7px;
       border-radius: 50%;
+    }
+
+    .legend-line {
+      width: 13px;
+      border-top: 2.5px solid currentColor;
+    }
+
+    .legend-comparison .legend-line {
+      border-top-style: dashed;
     }
 
     .quiz-heading {
@@ -1477,6 +1529,7 @@
       .transport-button,
       .speed-select,
       .analysis-toggle,
+      .comparison-button,
       .meeting-check-button,
       .quiz-type-picker button,
       .answer-button,
@@ -1512,7 +1565,7 @@
 
       .diagram-actions {
         width: 100%;
-        justify-content: space-between;
+        justify-content: flex-start;
         margin-left: 0;
       }
 

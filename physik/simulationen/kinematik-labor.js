@@ -7,7 +7,9 @@
         orange: "#e9a078",
         orangeDark: "#b96f49",
         green: "#63b887",
+        greenDark: "#39845b",
         cyan: "#70b6c5",
+        cyanDark: "#4f91a0",
         dark: "#465268",
         muted: "#68768d",
         line: "#dce3ef"
@@ -118,6 +120,11 @@
       var plotCaches = {};
       var stageDomainCache = null;
       var resizeFrame = 0;
+      var comparisonState = {
+        single: { measurement: null, axes: {}, timeMax: 0, revision: 0 },
+        encounter: { measurement: null, axes: {}, timeMax: 0, revision: 0 },
+        accelerated: { measurement: null, axes: {}, timeMax: 0, revision: 0 }
+      };
 
       var els = {
         backLink: document.getElementById("backLink"),
@@ -141,6 +148,10 @@
         metricGrid: document.getElementById("metricGrid"),
         plotsGrid: document.getElementById("plotsGrid"),
         analysisToggle: null,
+        comparisonSave: null,
+        comparisonDelete: null,
+        comparisonSummary: null,
+        scaleReset: null,
         positionPlotTitle: document.getElementById("positionPlotTitle"),
         positionPlotSvg: document.getElementById("positionPlotSvg"),
         positionPlotSummary: document.getElementById("positionPlotSummary"),
@@ -208,13 +219,27 @@
         return profiles[state.mode];
       }
 
+      function currentComparisonState() {
+        return comparisonState[state.mode];
+      }
+
+      function cloneProfile(profile) {
+        return Object.assign({}, profile);
+      }
+
+      function comparisonSignature() {
+        var comparison = currentComparisonState();
+        return comparison.revision + "|" + (comparison.measurement ?
+          JSON.stringify(comparison.measurement) : "none");
+      }
+
       function motionSignature() {
         return state.mode + "|" + JSON.stringify(currentProfile());
       }
 
       function plotSignature(plotId) {
         return motionSignature() + "|" + plotId + "|analysis:" + (state.analysisHelpers ? "1" : "0") +
-          "|meeting:" + (state.meetingRevealed ? "1" : "0");
+          "|meeting:" + (state.meetingRevealed ? "1" : "0") + "|comparison:" + comparisonSignature();
       }
 
       function responsivePlotWidth(svg) {
@@ -264,29 +289,74 @@
         if (!heading) {
           return;
         }
-        var existing = document.getElementById("analysisToggle");
-        if (existing) {
-          els.analysisToggle = existing;
-          updateAnalysisToggle();
-          return;
+        var actions = heading.querySelector(".diagram-actions");
+        if (!actions) {
+          actions = document.createElement("div");
+          actions.className = "diagram-actions";
+          var syncChip = heading.querySelector(".sync-chip");
+          if (syncChip) {
+            syncChip.textContent = "Skala stabilisiert";
+            heading.insertBefore(actions, syncChip);
+            actions.appendChild(syncChip);
+          } else {
+            heading.appendChild(actions);
+          }
         }
-        var actions = document.createElement("div");
-        actions.className = "diagram-actions";
-        var syncChip = heading.querySelector(".sync-chip");
-        if (syncChip) {
-          heading.insertBefore(actions, syncChip);
-          actions.appendChild(syncChip);
-        } else {
-          heading.appendChild(actions);
+
+        els.comparisonSave = document.getElementById("comparisonSave");
+        if (!els.comparisonSave) {
+          els.comparisonSave = document.createElement("button");
+          els.comparisonSave.id = "comparisonSave";
+          els.comparisonSave.className = "comparison-button comparison-save";
+          els.comparisonSave.type = "button";
+          els.comparisonSave.setAttribute("aria-controls", "plotsGrid");
+          els.comparisonSave.setAttribute("aria-describedby", "comparisonSummary");
+          actions.appendChild(els.comparisonSave);
         }
-        var button = document.createElement("button");
-        button.id = "analysisToggle";
-        button.className = "analysis-toggle";
-        button.type = "button";
-        button.setAttribute("aria-controls", "plotsGrid");
-        actions.appendChild(button);
-        els.analysisToggle = button;
+
+        els.comparisonDelete = document.getElementById("comparisonDelete");
+        if (!els.comparisonDelete) {
+          els.comparisonDelete = document.createElement("button");
+          els.comparisonDelete.id = "comparisonDelete";
+          els.comparisonDelete.className = "comparison-button comparison-delete";
+          els.comparisonDelete.type = "button";
+          els.comparisonDelete.setAttribute("aria-controls", "plotsGrid");
+          els.comparisonDelete.setAttribute("aria-describedby", "comparisonSummary");
+          els.comparisonDelete.textContent = "Vergleich löschen";
+          actions.appendChild(els.comparisonDelete);
+        }
+
+        els.scaleReset = document.getElementById("scaleReset");
+        if (!els.scaleReset) {
+          els.scaleReset = document.createElement("button");
+          els.scaleReset.id = "scaleReset";
+          els.scaleReset.className = "comparison-button scale-reset";
+          els.scaleReset.type = "button";
+          els.scaleReset.setAttribute("aria-controls", "plotsGrid");
+          els.scaleReset.textContent = "Skala anpassen";
+          els.scaleReset.title = "Achsen neu an die aktuellen und gespeicherten Kurven anpassen";
+          actions.appendChild(els.scaleReset);
+        }
+
+        els.comparisonSummary = document.getElementById("comparisonSummary");
+        if (!els.comparisonSummary) {
+          els.comparisonSummary = document.createElement("span");
+          els.comparisonSummary.id = "comparisonSummary";
+          els.comparisonSummary.className = "comparison-summary";
+          actions.appendChild(els.comparisonSummary);
+        }
+
+        els.analysisToggle = document.getElementById("analysisToggle");
+        if (!els.analysisToggle) {
+          els.analysisToggle = document.createElement("button");
+          els.analysisToggle.id = "analysisToggle";
+          els.analysisToggle.className = "analysis-toggle";
+          els.analysisToggle.type = "button";
+          els.analysisToggle.setAttribute("aria-controls", "plotsGrid");
+          actions.appendChild(els.analysisToggle);
+        }
         updateAnalysisToggle();
+        updateComparisonControls();
       }
 
       function updateAnalysisToggle() {
@@ -305,6 +375,92 @@
         renderDynamic();
         els.simulationStatus.textContent = state.analysisHelpers ?
           "Analysehilfen eingeblendet." : "Analysehilfen ausgeblendet.";
+      }
+
+      function updateComparisonControls() {
+        if (!els.comparisonSave || !els.comparisonDelete || !els.comparisonSummary) {
+          return;
+        }
+        var hasMeasurement = Boolean(currentComparisonState().measurement);
+        var canSave = state.time > 0.0001;
+        els.comparisonSave.disabled = !canSave;
+        els.comparisonSave.textContent = hasMeasurement ? "Vergleich aktualisieren" : "Als Vergleich merken";
+        els.comparisonSave.title = canSave ?
+          "Die aktuell sichtbaren Kurven als Vergleich speichern" :
+          "Lassen Sie die Simulation zuerst ein Stück laufen";
+        els.comparisonDelete.hidden = !hasMeasurement;
+        if (hasMeasurement) {
+          els.comparisonSummary.textContent = comparisonDescription(currentComparisonState().measurement);
+        } else if (canSave) {
+          els.comparisonSummary.textContent = "Die sichtbaren Kurven können jetzt als Vergleich gespeichert werden.";
+        } else {
+          els.comparisonSummary.textContent = "Für einen Vergleich die Simulation zuerst ein Stück laufen lassen.";
+        }
+      }
+
+      function comparisonDescription(measurement) {
+        if (!measurement) {
+          return "Kein Vergleich gespeichert.";
+        }
+        var profile = measurement.profile;
+        var end = "bis t = " + fmt(measurement.visibleUntil) + " s";
+        if (state.mode === "single") {
+          return "Vergleich: x₀ = " + fmt(profile.x0) + " m · v = " + fmt(profile.v) + " m/s · " + end;
+        }
+        if (state.mode === "encounter") {
+          return "Vergleich: A (" + fmt(profile.xA0) + " m; " + fmt(profile.vA) + " m/s) · B (" +
+            fmt(profile.xB0) + " m; " + fmt(profile.vB) + " m/s) · " + end;
+        }
+        return "Vergleich: x₀ = " + fmt(profile.x0) + " m · v₀ = " + fmt(profile.v0) +
+          " m/s · a = " + fmt(profile.a) + " m/s² · " + end;
+      }
+
+      function invalidateComparisonRender(mode) {
+        var comparison = comparisonState[mode];
+        comparison.revision += 1;
+        plotCaches = {};
+        stageDomainCache = null;
+      }
+
+      function resetComparisonView(mode) {
+        var comparison = comparisonState[mode];
+        comparison.axes = {};
+        comparison.timeMax = 0;
+        invalidateComparisonRender(mode);
+      }
+
+      function resetCurrentScale() {
+        resetComparisonView(state.mode);
+        renderDynamic();
+        els.simulationStatus.textContent = "Skala für " + modeMeta[state.mode].level + " neu angepasst.";
+      }
+
+      function saveComparisonMeasurement() {
+        if (state.time <= 0.0001) {
+          return;
+        }
+        pauseSimulation();
+        var comparison = currentComparisonState();
+        comparison.measurement = {
+          profile: cloneProfile(currentProfile()),
+          visibleUntil: clamp(state.time, 0, currentProfile().tMax)
+        };
+        invalidateComparisonRender(state.mode);
+        renderDynamic();
+        els.simulationStatus.textContent = "Vergleich für " + modeMeta[state.mode].level +
+          " bis t = " + fmt(comparison.measurement.visibleUntil) + " s gespeichert.";
+      }
+
+      function deleteComparisonMeasurement() {
+        var comparison = currentComparisonState();
+        if (!comparison.measurement) {
+          return;
+        }
+        comparison.measurement = null;
+        invalidateComparisonRender(state.mode);
+        renderDynamic();
+        els.simulationStatus.textContent = "Vergleich für " + modeMeta[state.mode].level + " gelöscht.";
+        els.comparisonSave.focus();
       }
 
       function allDefinitionsForMode(mode) {
@@ -466,6 +622,10 @@
           value = snapToDefinition(value, definition);
           input.value = value;
         }
+        if (Math.abs(currentProfile()[key] - value) < 0.000001) {
+          syncControlInputs(key, value, input);
+          return;
+        }
         currentProfile()[key] = value;
         syncControlInputs(key, value, input);
         pauseSimulation();
@@ -567,32 +727,44 @@
         renderDynamic();
         renderQuiz();
         revealActiveLevel();
+        updateComparisonControls();
+      }
+
+      function positionFor(mode, profile, objectId, time) {
+        if (mode === "single") {
+          return profile.x0 + profile.v * time;
+        }
+        if (mode === "encounter") {
+          return objectId === "A" ?
+            profile.xA0 + profile.vA * time : profile.xB0 + profile.vB * time;
+        }
+        return profile.x0 + profile.v0 * time + 0.5 * profile.a * time * time;
+      }
+
+      function velocityFor(mode, profile, objectId, time) {
+        if (mode === "single") {
+          return profile.v;
+        }
+        if (mode === "encounter") {
+          return objectId === "A" ? profile.vA : profile.vB;
+        }
+        return profile.v0 + profile.a * time;
+      }
+
+      function accelerationFor(mode, profile) {
+        return mode === "accelerated" ? profile.a : 0;
       }
 
       function positionAt(objectId, time) {
-        var p = currentProfile();
-        if (state.mode === "single") {
-          return p.x0 + p.v * time;
-        }
-        if (state.mode === "encounter") {
-          return objectId === "A" ? p.xA0 + p.vA * time : p.xB0 + p.vB * time;
-        }
-        return p.x0 + p.v0 * time + 0.5 * p.a * time * time;
+        return positionFor(state.mode, currentProfile(), objectId, time);
       }
 
       function velocityAt(objectId, time) {
-        var p = currentProfile();
-        if (state.mode === "single") {
-          return p.v;
-        }
-        if (state.mode === "encounter") {
-          return objectId === "A" ? p.vA : p.vB;
-        }
-        return p.v0 + p.a * time;
+        return velocityFor(state.mode, currentProfile(), objectId, time);
       }
 
       function accelerationAt() {
-        return state.mode === "accelerated" ? currentProfile().a : 0;
+        return accelerationFor(state.mode, currentProfile());
       }
 
       function objectIds() {
@@ -746,12 +918,103 @@
         return { min: min, max: max, ticks: ticks };
       }
 
-      function sampleTimes(count) {
-        var max = currentProfile().tMax;
+      function valueBounds(values, includeZero) {
+        var safeValues = values.filter(Number.isFinite);
+        if (!safeValues.length) {
+          safeValues = [0, 1];
+        }
+        var min = Math.min.apply(null, safeValues);
+        var max = Math.max.apply(null, safeValues);
+        if (includeZero) {
+          min = Math.min(min, 0);
+          max = Math.max(max, 0);
+        }
+        return { min: min, max: max };
+      }
+
+      function retickDomain(domain, tickTarget) {
+        var step = niceStep((domain.max - domain.min) / (tickTarget || 5));
+        var ticks = [];
+        var start = Math.ceil((domain.min - step * 0.000001) / step) * step;
+        for (var value = start, guard = 0;
+            value <= domain.max + step * 0.25 && guard < 20;
+            value += step, guard += 1) {
+          ticks.push(Math.abs(value) < 0.0000001 ? 0 : value);
+        }
+        return { min: domain.min, max: domain.max, ticks: ticks };
+      }
+
+      function stableDomain(axisKey, values, includeZero, tickTarget) {
+        var comparison = currentComparisonState();
+        var candidate = valueBounds(values, includeZero);
+        var axis = comparison.axes[axisKey];
+        if (!axis) {
+          axis = {
+            rawMin: candidate.min,
+            rawMax: candidate.max,
+            domain: makeDomain([candidate.min, candidate.max], includeZero, tickTarget)
+          };
+          comparison.axes[axisKey] = axis;
+          return axis.domain;
+        }
+
+        axis.rawMin = Math.min(axis.rawMin, candidate.min);
+        axis.rawMax = Math.max(axis.rawMax, candidate.max);
+        if (candidate.min < axis.domain.min - 0.000001 || candidate.max > axis.domain.max + 0.000001) {
+          axis.domain = makeDomain([axis.rawMin, axis.rawMax], includeZero, tickTarget);
+        }
+        return axis.domain;
+      }
+
+      function stableTimeMaximum(requiredMaximum) {
+        var comparison = currentComparisonState();
+        comparison.timeMax = Math.max(comparison.timeMax, finite(requiredMaximum, 1), 1);
+        return comparison.timeMax;
+      }
+
+      function sampleTimesFor(maximum, count) {
+        var max = Math.max(0, finite(maximum, 0));
         var times = [];
         for (var i = 0; i <= count; i += 1) {
           times.push(max * i / count);
         }
+        return times;
+      }
+
+      function sampleTimes(count) {
+        return sampleTimesFor(currentProfile().tMax, count);
+      }
+
+      function specialTimesForProfile(mode, plotId, profile, endTime) {
+        var times = [];
+        var limit = clamp(endTime, 0, profile.tMax);
+        if (mode === "accelerated" && plotId === "position" && Math.abs(profile.a) > 0.000001) {
+          var turnTime = -profile.v0 / profile.a;
+          if (turnTime > 0.000001 && turnTime < limit - 0.000001) {
+            times.push(turnTime);
+          }
+        }
+        if (mode === "encounter" && (plotId === "position" || plotId === "distance")) {
+          var relativeVelocity = profile.vA - profile.vB;
+          if (Math.abs(relativeVelocity) > 0.000001) {
+            var meetingTime = (profile.xB0 - profile.xA0) / relativeVelocity;
+            if (meetingTime >= 0 && meetingTime <= limit + 0.000001) {
+              times.push(clamp(meetingTime, 0, limit));
+            }
+          }
+        }
+        return times;
+      }
+
+      function plotTimesForProfile(mode, plotId, profile, endTime, count) {
+        var limit = clamp(endTime, 0, profile.tMax);
+        var times = sampleTimesFor(limit, count);
+        specialTimesForProfile(mode, plotId, profile, limit).forEach(function (time) {
+          if (!times.some(function (sample) { return Math.abs(sample - time) < 0.000001; })) {
+            times.push(time);
+          }
+        });
+        times.sort(function (a, b) { return a - b; });
         return times;
       }
 
@@ -783,7 +1046,7 @@
       }
 
       function positionDomain(tickTarget) {
-        var signature = motionSignature() + "|" + tickTarget;
+        var signature = motionSignature() + "|" + tickTarget + "|comparison:" + comparisonSignature();
         if (stageDomainCache && stageDomainCache.signature === signature) {
           return stageDomainCache.domain;
         }
@@ -794,7 +1057,7 @@
             values.push(positionAt(id, time));
           });
         });
-        var domain = makeDomain(values, true, tickTarget);
+        var domain = retickDomain(stableDomain("stage-position", values, true, 5), tickTarget);
         stageDomainCache = { signature: signature, domain: domain };
         return domain;
       }
@@ -1049,7 +1312,7 @@
             return {
               id: id,
               label: state.mode === "encounter" ? "x" + id : "x",
-              color: id === "B" ? COLORS.orange : COLORS.blue,
+              color: id === "B" ? COLORS.orangeDark : COLORS.blueDark,
               value: function (time) { return positionAt(id, time); }
             };
           });
@@ -1076,7 +1339,7 @@
             return {
               id: id,
               label: state.mode === "encounter" ? "v" + id : "v",
-              color: id === "B" ? COLORS.orange : COLORS.blue,
+              color: id === "B" ? COLORS.orangeDark : COLORS.blueDark,
               value: function (time) { return velocityAt(id, time); }
             };
           });
@@ -1100,7 +1363,7 @@
           config.series = [{
             id: "distance",
             label: "|xB − xA|",
-            color: COLORS.green,
+            color: COLORS.greenDark,
             value: function (time) {
               return Math.abs(positionAt("B", time) - positionAt("A", time));
             }
@@ -1128,7 +1391,7 @@
           config.series = [{
             id: "A",
             label: "a",
-            color: COLORS.cyan,
+            color: COLORS.cyanDark,
             value: function () { return accelerationAt(); }
           }];
           config.summary = state.analysisHelpers ?
@@ -1144,10 +1407,73 @@
         }).join("");
       }
 
+      function comparisonSeriesFor(plotId, measurement) {
+        if (!measurement) {
+          return [];
+        }
+        var mode = state.mode;
+        var profile = measurement.profile;
+        var ids = mode === "encounter" ? ["A", "B"] : ["A"];
+        if (plotId === "position") {
+          return ids.map(function (id) {
+            return {
+              id: id,
+              label: mode === "encounter" ? "x" + id : "x",
+              color: id === "B" ? COLORS.orangeDark : COLORS.blueDark,
+              value: function (time) { return positionFor(mode, profile, id, time); }
+            };
+          });
+        }
+        if (plotId === "velocity") {
+          return ids.map(function (id) {
+            return {
+              id: id,
+              label: mode === "encounter" ? "v" + id : "v",
+              color: id === "B" ? COLORS.orangeDark : COLORS.blueDark,
+              value: function (time) { return velocityFor(mode, profile, id, time); }
+            };
+          });
+        }
+        if (plotId === "distance") {
+          return [{
+            id: "distance",
+            label: "|xB − xA|",
+            color: COLORS.greenDark,
+            value: function (time) {
+              return Math.abs(
+                positionFor(mode, profile, "B", time) - positionFor(mode, profile, "A", time)
+              );
+            }
+          }];
+        }
+        return [{
+          id: "A",
+          label: "a",
+          color: COLORS.cyanDark,
+          value: function () { return accelerationFor(mode, profile); }
+        }];
+      }
+
       function drawPlot(plotId) {
         var target = plotTarget(plotId);
         var config = plotConfiguration(plotId);
-        var domainTimes = sampleTimes(90);
+        var comparison = currentComparisonState();
+        var measurement = comparison.measurement;
+        var comparisonSeries = comparisonSeriesFor(plotId, measurement);
+        var domainTimes = plotTimesForProfile(
+          state.mode,
+          plotId,
+          currentProfile(),
+          currentProfile().tMax,
+          90
+        );
+        var comparisonTimes = measurement ? plotTimesForProfile(
+          state.mode,
+          plotId,
+          measurement.profile,
+          measurement.visibleUntil,
+          90
+        ) : [];
         var meetingForSamples = meetingAnalysis();
         if ((plotId === "position" || plotId === "distance") && meetingForSamples &&
             (meetingForSamples.kind === "within" || meetingForSamples.kind === "start")) {
@@ -1162,7 +1488,12 @@
             yValues.push(series.value(time));
           });
         });
-        var yDomain = makeDomain(yValues, config.includeZero, 5);
+        comparisonSeries.forEach(function (series) {
+          comparisonTimes.forEach(function (time) {
+            yValues.push(series.value(time));
+          });
+        });
+        var yDomain = stableDomain(plotId, yValues, config.includeZero, 5);
         var width = responsivePlotWidth(target.svg);
         var height = 260;
         target.svg.setAttribute("viewBox", "0 0 " + width + " " + height);
@@ -1172,7 +1503,11 @@
         var bottom = 35;
         var plotWidth = width - left - right;
         var plotHeight = height - top - bottom;
-        var tMax = currentProfile().tMax;
+        var requiredTimeMaximum = Math.max(
+          currentProfile().tMax,
+          measurement ? measurement.profile.tMax : 0
+        );
+        var tMax = stableTimeMaximum(requiredTimeMaximum);
         var xScale = function (time) {
           return left + time / tMax * plotWidth;
         };
@@ -1214,6 +1549,17 @@
           escapeHtml(config.axis + " / " + config.unit) + "</text>";
         markup += "<text x='" + (width - right - 4) + "' y='" + (height - bottom - 8) +
           "' text-anchor='end' fill='#5f6d82' font-size='11' font-weight='850'>t / s</text>";
+
+        if (comparisonSeries.length) {
+          markup += "<g class='plot-comparison-curves' clip-path='url(#" + clipId + ")' aria-hidden='true'>";
+          comparisonSeries.forEach(function (series) {
+            markup += "<path d='" + seriesPath(series, comparisonTimes, xScale, yScale) +
+              "' fill='none' stroke='" + series.color +
+              "' stroke-width='2.4' stroke-dasharray='8 6' stroke-linecap='round'" +
+              " stroke-linejoin='round' />";
+          });
+          markup += "</g>";
+        }
 
         if (state.analysisHelpers && (state.mode === "single" || state.mode === "accelerated") &&
             plotId === "velocity") {
@@ -1294,11 +1640,23 @@
         } else if (state.analysisHelpers && state.mode === "accelerated" && plotId === "velocity") {
           plotAria += ". Analysehilfe mit Steigungsdreieck für Beschleunigung und schattierter Fläche für Ortsänderung.";
         }
+        if (comparisonSeries.length) {
+          plotAria += ". Gestrichelte Kurven zeigen die gespeicherte Vergleichsmessung. " +
+            comparisonDescription(measurement) + ".";
+        }
         target.svg.setAttribute("aria-label", plotAria);
-        target.legend.innerHTML = config.series.map(function (series) {
-          return "<span class='legend-item'><span class='legend-dot' style='background:" + series.color +
-            "'></span>" + escapeHtml(series.label) + "</span>";
+        var legendMarkup = config.series.map(function (series) {
+          return "<span class='legend-item legend-current'><span class='legend-line' style='border-color:" +
+            series.color + "'></span>" + escapeHtml(series.label + (comparisonSeries.length ? " aktuell" : "")) +
+            "</span>";
         }).join("");
+        if (comparisonSeries.length) {
+          legendMarkup += comparisonSeries.map(function (series) {
+            return "<span class='legend-item legend-comparison'><span class='legend-line' style='border-color:" +
+              series.color + "'></span>" + escapeHtml(series.label + " Vergleich") + "</span>";
+          }).join("");
+        }
+        target.legend.innerHTML = legendMarkup;
         var markers = {};
         var paths = {};
         config.series.forEach(function (series) {
@@ -2063,6 +2421,7 @@
 
       function renderDynamic() {
         updateTransport();
+        updateComparisonControls();
         updateSceneHint();
         drawStage();
         renderMetrics();
@@ -2134,6 +2493,15 @@
       function bindEvents() {
         if (els.analysisToggle) {
           els.analysisToggle.addEventListener("click", toggleAnalysisHelpers);
+        }
+        if (els.comparisonSave) {
+          els.comparisonSave.addEventListener("click", saveComparisonMeasurement);
+        }
+        if (els.comparisonDelete) {
+          els.comparisonDelete.addEventListener("click", deleteComparisonMeasurement);
+        }
+        if (els.scaleReset) {
+          els.scaleReset.addEventListener("click", resetCurrentScale);
         }
         els.levelPicker.addEventListener("click", function (event) {
           var button = event.target.closest("[data-mode]");
