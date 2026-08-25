@@ -95,7 +95,9 @@
         raf: 0,
         lastFrame: 0,
         lastPaint: 0,
-        quizType: "understanding"
+        quizType: "understanding",
+        analysisHelpers: false,
+        meetingRevealed: false
       };
 
       var quizStates = {
@@ -138,6 +140,7 @@
         speedSelect: document.getElementById("speedSelect"),
         metricGrid: document.getElementById("metricGrid"),
         plotsGrid: document.getElementById("plotsGrid"),
+        analysisToggle: null,
         positionPlotTitle: document.getElementById("positionPlotTitle"),
         positionPlotSvg: document.getElementById("positionPlotSvg"),
         positionPlotSummary: document.getElementById("positionPlotSummary"),
@@ -210,7 +213,8 @@
       }
 
       function plotSignature(plotId) {
-        return motionSignature() + "|" + plotId;
+        return motionSignature() + "|" + plotId + "|analysis:" + (state.analysisHelpers ? "1" : "0") +
+          "|meeting:" + (state.meetingRevealed ? "1" : "0");
       }
 
       function responsivePlotWidth(svg) {
@@ -253,6 +257,54 @@
         } else if (requestedLevel === "3") {
           state.mode = "accelerated";
         }
+      }
+
+      function setupAnalysisControls() {
+        var heading = document.querySelector(".plots-heading");
+        if (!heading) {
+          return;
+        }
+        var existing = document.getElementById("analysisToggle");
+        if (existing) {
+          els.analysisToggle = existing;
+          updateAnalysisToggle();
+          return;
+        }
+        var actions = document.createElement("div");
+        actions.className = "diagram-actions";
+        var syncChip = heading.querySelector(".sync-chip");
+        if (syncChip) {
+          heading.insertBefore(actions, syncChip);
+          actions.appendChild(syncChip);
+        } else {
+          heading.appendChild(actions);
+        }
+        var button = document.createElement("button");
+        button.id = "analysisToggle";
+        button.className = "analysis-toggle";
+        button.type = "button";
+        button.setAttribute("aria-controls", "plotsGrid");
+        actions.appendChild(button);
+        els.analysisToggle = button;
+        updateAnalysisToggle();
+      }
+
+      function updateAnalysisToggle() {
+        if (!els.analysisToggle) {
+          return;
+        }
+        els.analysisToggle.setAttribute("aria-pressed", state.analysisHelpers ? "true" : "false");
+        els.analysisToggle.textContent = state.analysisHelpers ?
+          "Analysehilfen ausblenden" : "Analysehilfen anzeigen";
+      }
+
+      function toggleAnalysisHelpers() {
+        state.analysisHelpers = !state.analysisHelpers;
+        plotCaches = {};
+        updateAnalysisToggle();
+        renderDynamic();
+        els.simulationStatus.textContent = state.analysisHelpers ?
+          "Analysehilfen eingeblendet." : "Analysehilfen ausgeblendet.";
       }
 
       function allDefinitionsForMode(mode) {
@@ -331,7 +383,10 @@
           });
           html += "</div>";
           html += "<div class='control-stack'>" + controlMarkup(definitions.encounter.time) + "</div>";
-          html += "<div class='meeting-result' id='meetingResult'></div>";
+          html += "<div class='meeting-check-wrap'>" +
+            "<button class='meeting-check-button' id='meetingToggle' type='button' aria-controls='meetingResult' aria-pressed='false'>Treffpunkt prüfen</button>" +
+            "<div class='meeting-result concealed' id='meetingResult' role='status' aria-live='polite'></div>" +
+            "</div>";
         } else {
           html += "<div class='control-stack'>";
           definitions[state.mode].main.forEach(function (definition) {
@@ -415,6 +470,9 @@
         syncControlInputs(key, value, input);
         pauseSimulation();
         state.time = 0;
+        if (state.mode === "encounter") {
+          state.meetingRevealed = false;
+        }
         resetQuiz(state.mode, "calculation");
         updateMeetingResult();
         renderDynamic();
@@ -442,6 +500,9 @@
         if (!preset) {
           return;
         }
+        if (state.mode === "encounter") {
+          state.meetingRevealed = false;
+        }
         Object.keys(preset.values).forEach(function (key) {
           currentProfile()[key] = preset.values[key];
         });
@@ -464,6 +525,7 @@
         pauseSimulation();
         state.mode = mode;
         state.time = 0;
+        state.meetingRevealed = false;
         document.querySelectorAll(".level-button").forEach(function (button) {
           var active = button.getAttribute("data-mode") === mode;
           button.setAttribute("aria-checked", active ? "true" : "false");
@@ -592,10 +654,44 @@
         if (!result || state.mode !== "encounter") {
           return;
         }
+        var button = document.getElementById("meetingToggle");
+        if (button) {
+          button.setAttribute("aria-pressed", state.meetingRevealed ? "true" : "false");
+          button.textContent = state.meetingRevealed ? "Ergebnis verdecken" : "Treffpunkt prüfen";
+        }
+        result.classList.toggle("concealed", !state.meetingRevealed);
+        if (!state.meetingRevealed) {
+          result.classList.remove("warning");
+          result.innerHTML = "<strong>Vorhersagemodus</strong>Schätze zuerst Treffzeit und Treffort. Decke das Ergebnis erst danach auf.";
+          return;
+        }
         var analysis = meetingAnalysis();
         var successful = analysis.kind === "within" || analysis.kind === "always" || analysis.kind === "start";
         result.classList.toggle("warning", !successful);
         result.innerHTML = "<strong>Begegnungs-Check</strong>" + escapeHtml(meetingCopy(analysis));
+      }
+
+      function toggleMeetingResult() {
+        if (state.mode !== "encounter") {
+          return;
+        }
+        state.meetingRevealed = !state.meetingRevealed;
+        plotCaches = {};
+        updateMeetingResult();
+        renderDynamic();
+        els.simulationStatus.textContent = state.meetingRevealed ?
+          "Treffpunkt-Ergebnis eingeblendet." : "Treffpunkt-Ergebnis wieder verdeckt.";
+      }
+
+      function meetingMarkerVisible(analysis) {
+        if (!analysis) {
+          return false;
+        }
+        if (state.meetingRevealed) {
+          return true;
+        }
+        return analysis.kind === "within" && analysis.time > 0.000001 &&
+          state.time + 0.0001 >= analysis.time;
       }
 
       function niceStep(raw) {
@@ -817,13 +913,14 @@
         });
 
         var analysis = meetingAnalysis();
-        if (analysis && analysis.kind === "always") {
+        var showMeetingMarker = meetingMarkerVisible(analysis);
+        if (showMeetingMarker && analysis.kind === "always") {
           var stageCenter = stageWidth / 2;
           markup += [
             "<rect x='", stageCenter - 73, "' y='17' width='146' height='27' rx='13.5' fill='#effaf4' stroke='#8bd0a7' />",
             "<text x='", stageCenter, "' y='35' text-anchor='middle' fill='#39845b' font-size='12' font-weight='900'>immer zusammen</text>"
           ].join("");
-        } else if (analysis && (analysis.kind === "within" || analysis.kind === "start")) {
+        } else if (showMeetingMarker && (analysis.kind === "within" || analysis.kind === "start")) {
           var meetingX = mapValue(analysis.position, domain.min, domain.max, xLeft, xRight);
           markup += [
             "<line x1='", meetingX, "' y1='34' x2='", meetingX, "' y2='194' stroke='", COLORS.green,
@@ -880,7 +977,8 @@
         if (state.mode === "single") {
           els.sceneHint.textContent = "Konstantes v: Die Geschwindigkeit bleibt zu jedem Zeitpunkt gleich.";
         } else if (state.mode === "encounter") {
-          els.sceneHint.textContent = meetingCopy(meetingAnalysis());
+          els.sceneHint.textContent = state.meetingRevealed ? meetingCopy(meetingAnalysis()) :
+            "Vorhersagemodus: Beobachte beide Bewegungen und schätze Treffzeit und Treffort.";
         } else {
           var a = currentProfile().a;
           if (Math.abs(a) < 0.001) {
@@ -955,13 +1053,21 @@
               value: function (time) { return positionAt(id, time); }
             };
           });
-          config.summary = state.mode === "single" ?
-            "Die konstante Steigung der Geraden ist die Geschwindigkeit v." :
-            state.mode === "encounter" ?
-              "Ein Schnittpunkt bedeutet: gleicher Ort zur gleichen Zeit." :
-              Math.abs(currentProfile().a) < 0.0001 ?
-                "Bei a = 0 ist auch diese Ortsfunktion eine Gerade." :
-                "Die Kurve wird durch die konstante Beschleunigung gekrümmt.";
+          if (!state.analysisHelpers) {
+            config.summary = state.mode === "single" ?
+              "Beobachte, wie sich x in gleichen Zeitabschnitten verändert." :
+              state.mode === "encounter" ?
+                "Beobachte beide Ortsgraphen und formuliere eine Vermutung." :
+                "Beobachte, wie sich die Steilheit der Ortskurve verändert.";
+          } else {
+            config.summary = state.mode === "single" ?
+              "Die konstante Steigung der Geraden ist die Geschwindigkeit v." :
+              state.mode === "encounter" ?
+                "Ein Schnittpunkt bedeutet: gleicher Ort zur gleichen Zeit." :
+                Math.abs(currentProfile().a) < 0.0001 ?
+                  "Bei a = 0 ist auch diese Ortsfunktion eine Gerade." :
+                  "Die Tangentensteigung ist die momentane Geschwindigkeit v(t).";
+          }
         } else if (plotId === "velocity") {
           config.title = "Geschwindigkeit–Zeit";
           config.axis = "v";
@@ -974,11 +1080,19 @@
               value: function (time) { return velocityAt(id, time); }
             };
           });
-          config.summary = state.mode === "single" ?
-            "Eine waagrechte Linie zeigt: v ist konstant." :
-            state.mode === "encounter" ?
-              "Beide waagrechten Linien zeigen konstante Geschwindigkeiten." :
-              "Die Steigung der Geraden ist die Beschleunigung a.";
+          if (!state.analysisHelpers) {
+            config.summary = state.mode === "single" ?
+              "Vergleiche die Höhe der Linie mit der eingestellten Geschwindigkeit." :
+              state.mode === "encounter" ?
+                "Vergleiche Richtung und Betrag beider Geschwindigkeiten." :
+                "Beobachte, wie sich v in gleichen Zeitabschnitten verändert.";
+          } else {
+            config.summary = state.mode === "single" ?
+              "Eine waagrechte Linie zeigt: v ist konstant; die Fläche entspricht Δx." :
+              state.mode === "encounter" ?
+                "Beide waagrechten Linien zeigen konstante Geschwindigkeiten." :
+                "Die Steigung der Geraden ist die Beschleunigung a; die Fläche entspricht Δx.";
+          }
         } else if (plotId === "distance") {
           config.title = "Abstand–Zeit";
           config.axis = "|Δx|";
@@ -992,7 +1106,9 @@
             }
           }];
           var distanceAnalysis = meetingAnalysis();
-          if (distanceAnalysis.kind === "always") {
+          if (!state.meetingRevealed) {
+            config.summary = "Beobachte den Abstand und vermute, ob und wann er 0 m erreicht.";
+          } else if (distanceAnalysis.kind === "always") {
             config.summary = "Identische Bewegungen: Der Abstand bleibt immer 0 m.";
           } else if (distanceAnalysis.kind === "parallel") {
             config.summary = "Gleiche Geschwindigkeiten: Der Abstand bleibt konstant.";
@@ -1015,7 +1131,9 @@
             color: COLORS.cyan,
             value: function () { return accelerationAt(); }
           }];
-          config.summary = "Eine waagrechte Linie zeigt: a ist konstant.";
+          config.summary = state.analysisHelpers ?
+            "Eine waagrechte Linie zeigt: a ist konstant." :
+            "Vergleiche die Linie mit dem eingestellten Wert von a.";
         }
         return config;
       }
@@ -1061,7 +1179,12 @@
         var yScale = function (value) {
           return top + (yDomain.max - value) / (yDomain.max - yDomain.min) * plotHeight;
         };
-        var markup = "<rect x='0' y='0' width='" + width + "' height='" + height + "' fill='#fff' />";
+        var plotRight = width - right;
+        var plotBottom = height - bottom;
+        var clipId = "plotClip-" + plotId;
+        var markup = "<defs><clipPath id='" + clipId + "'><rect x='" + left + "' y='" + top +
+          "' width='" + plotWidth + "' height='" + plotHeight + "' /></clipPath></defs>" +
+          "<rect x='0' y='0' width='" + width + "' height='" + height + "' fill='#fff' />";
 
         yDomain.ticks.forEach(function (tick) {
           var y = yScale(tick);
@@ -1092,11 +1215,45 @@
         markup += "<text x='" + (width - right - 4) + "' y='" + (height - bottom - 8) +
           "' text-anchor='end' fill='#5f6d82' font-size='11' font-weight='850'>t / s</text>";
 
+        if (state.analysisHelpers && (state.mode === "single" || state.mode === "accelerated") &&
+            plotId === "velocity") {
+          markup += "<g id='plotAreaAid-velocity' class='plot-analysis-aid' aria-hidden='true' visibility='hidden'>" +
+            "<g id='plotAreaShapes-velocity' clip-path='url(#" + clipId + ")'></g>" +
+            "<text id='plotAreaLabel-velocity' x='" + (left + 8) + "' y='" + (plotBottom - 8) +
+            "' fill='#536da8' font-size='11' font-weight='900' paint-order='stroke' stroke='#fff' stroke-width='4' stroke-linejoin='round'></text></g>";
+        }
+
         var visibleTimes = visiblePlotTimes(plotId);
         config.series.forEach(function (series) {
           markup += "<path id='plotSeries-" + plotId + "-" + series.id + "' d='" + seriesPath(series, visibleTimes, xScale, yScale) + "' fill='none' stroke='" + series.color +
             "' stroke-width='3.5' stroke-linecap='round' stroke-linejoin='round' />";
         });
+
+        var showSlopeAid = state.analysisHelpers &&
+          ((state.mode === "single" && plotId === "position") ||
+            (state.mode === "accelerated" && plotId === "velocity"));
+        if (showSlopeAid) {
+          var aidBoxWidth = Math.min(224, Math.max(160, plotWidth - 12));
+          var aidBoxX = plotRight - aidBoxWidth - 5;
+          markup += "<g id='plotSlopeAid-" + plotId + "' class='plot-analysis-aid' aria-hidden='true' visibility='hidden'>" +
+            "<path id='plotSlopeFill-" + plotId + "' fill='" + COLORS.green + "' fill-opacity='0.12' stroke='none' />" +
+            "<path id='plotSlopeLegs-" + plotId + "' fill='none' stroke='" + COLORS.green +
+            "' stroke-width='2.2' stroke-dasharray='6 4' stroke-linejoin='round' />" +
+            "<circle id='plotSlopeStart-" + plotId + "' r='4' fill='#fff' stroke='" + COLORS.green + "' stroke-width='2' />" +
+            "<circle id='plotSlopeEnd-" + plotId + "' r='4' fill='#fff' stroke='" + COLORS.green + "' stroke-width='2' />" +
+            "<text id='plotSlopeDt-" + plotId + "' fill='#39845b' font-size='10.5' font-weight='900' text-anchor='middle' paint-order='stroke' stroke='#fff' stroke-width='4' stroke-linejoin='round'></text>" +
+            "<text id='plotSlopeDy-" + plotId + "' fill='#39845b' font-size='10.5' font-weight='900' paint-order='stroke' stroke='#fff' stroke-width='4' stroke-linejoin='round'></text>" +
+            "<rect x='" + aidBoxX + "' y='" + (top + 5) + "' width='" + aidBoxWidth + "' height='38' rx='9' fill='#effaf4' fill-opacity='0.94' stroke='#8bd0a7' />" +
+            "<text id='plotSlopeSummary1-" + plotId + "' x='" + (aidBoxX + 8) + "' y='" + (top + 20) + "' fill='#39845b' font-size='10.5' font-weight='850'></text>" +
+            "<text id='plotSlopeSummary2-" + plotId + "' x='" + (aidBoxX + 8) + "' y='" + (top + 36) + "' fill='#2f6f4d' font-size='10.5' font-weight='950'></text></g>";
+        }
+
+        if (state.analysisHelpers && state.mode === "accelerated" && plotId === "position") {
+          markup += "<g id='plotTangentAid-position' class='plot-analysis-aid' aria-hidden='true'>" +
+            "<line id='plotTangentLine-position' clip-path='url(#" + clipId + ")' stroke='" + COLORS.green +
+            "' stroke-width='2.5' stroke-dasharray='8 5' />" +
+            "<text id='plotTangentLabel-position' fill='#39845b' font-size='11' font-weight='950' paint-order='stroke' stroke='#fff' stroke-width='4' stroke-linejoin='round'></text></g>";
+        }
 
         var currentX = xScale(state.time);
         markup += "<line id='plotCursorLine-" + plotId + "' x1='" + currentX + "' y1='" + top + "' x2='" + currentX + "' y2='" + (height - bottom) +
@@ -1109,7 +1266,7 @@
 
         if (state.mode === "encounter" && plotId === "position") {
           var analysis = meetingAnalysis();
-          if (analysis && analysis.kind === "always") {
+          if (analysis && analysis.kind === "always" && meetingMarkerVisible(analysis)) {
             markup += "<rect x='" + (left + 12) + "' y='" + (top + 8) +
               "' width='174' height='25' rx='12.5' fill='#effaf4' stroke='#8bd0a7' />";
             markup += "<text x='" + (left + 99) + "' y='" + (top + 25) +
@@ -1117,7 +1274,7 @@
           } else if (analysis && (analysis.kind === "within" || analysis.kind === "start")) {
             var mx = xScale(analysis.time);
             var my = yScale(analysis.position);
-            markup += "<g id='plotMeeting-" + plotId + "' opacity='" + (state.time + 0.0001 >= analysis.time ? "1" : "0") + "'>";
+            markup += "<g id='plotMeeting-" + plotId + "' opacity='" + (meetingMarkerVisible(analysis) ? "1" : "0") + "'>";
             markup += "<circle cx='" + mx + "' cy='" + my + "' r='8' fill='#fff' stroke='" + COLORS.green +
               "' stroke-width='3.5' />";
             markup += "<text x='" + (mx + 10) + "' y='" + (my - 10) + "' fill='#39845b' font-size='11' font-weight='900'>Treffen</text></g>";
@@ -1127,7 +1284,17 @@
         target.svg.innerHTML = markup;
         target.title.textContent = config.title;
         target.summary.textContent = config.summary;
-        target.svg.setAttribute("aria-label", config.title + "-Diagramm, " + config.axis + " über t");
+        var plotAria = config.title + "-Diagramm, " + config.axis + " über t";
+        if (state.analysisHelpers && state.mode === "single" && plotId === "position") {
+          plotAria += ". Analysehilfe mit Steigungsdreieck für Geschwindigkeit.";
+        } else if (state.analysisHelpers && state.mode === "single" && plotId === "velocity") {
+          plotAria += ". Analysehilfe mit schattierter Fläche für die Ortsänderung.";
+        } else if (state.analysisHelpers && state.mode === "accelerated" && plotId === "position") {
+          plotAria += ". Analysehilfe mit Tangente für die momentane Geschwindigkeit.";
+        } else if (state.analysisHelpers && state.mode === "accelerated" && plotId === "velocity") {
+          plotAria += ". Analysehilfe mit Steigungsdreieck für Beschleunigung und schattierter Fläche für Ortsänderung.";
+        }
+        target.svg.setAttribute("aria-label", plotAria);
         target.legend.innerHTML = config.series.map(function (series) {
           return "<span class='legend-item'><span class='legend-dot' style='background:" + series.color +
             "'></span>" + escapeHtml(series.label) + "</span>";
@@ -1144,12 +1311,177 @@
           config: config,
           xScale: xScale,
           yScale: yScale,
+          left: left,
+          right: plotRight,
+          top: top,
+          bottom: plotBottom,
+          plotWidth: plotWidth,
+          plotHeight: plotHeight,
+          tMax: tMax,
           cursorLine: target.svg.querySelector("#plotCursorLine-" + plotId),
           markers: markers,
           paths: paths,
           meetingMarker: target.svg.querySelector("#plotMeeting-" + plotId),
-          meetingTime: meetingForSamples && (meetingForSamples.kind === "within" || meetingForSamples.kind === "start") ? meetingForSamples.time : null
+          meetingTime: meetingForSamples && (meetingForSamples.kind === "within" || meetingForSamples.kind === "start") ? meetingForSamples.time : null,
+          analysis: {
+            slopeGroup: target.svg.querySelector("#plotSlopeAid-" + plotId),
+            slopeFill: target.svg.querySelector("#plotSlopeFill-" + plotId),
+            slopeLegs: target.svg.querySelector("#plotSlopeLegs-" + plotId),
+            slopeStart: target.svg.querySelector("#plotSlopeStart-" + plotId),
+            slopeEnd: target.svg.querySelector("#plotSlopeEnd-" + plotId),
+            slopeDt: target.svg.querySelector("#plotSlopeDt-" + plotId),
+            slopeDy: target.svg.querySelector("#plotSlopeDy-" + plotId),
+            slopeSummary1: target.svg.querySelector("#plotSlopeSummary1-" + plotId),
+            slopeSummary2: target.svg.querySelector("#plotSlopeSummary2-" + plotId),
+            tangentGroup: target.svg.querySelector("#plotTangentAid-" + plotId),
+            tangentLine: target.svg.querySelector("#plotTangentLine-" + plotId),
+            tangentLabel: target.svg.querySelector("#plotTangentLabel-" + plotId),
+            areaGroup: target.svg.querySelector("#plotAreaAid-" + plotId),
+            areaShapes: target.svg.querySelector("#plotAreaShapes-" + plotId),
+            areaLabel: target.svg.querySelector("#plotAreaLabel-" + plotId)
+          }
         };
+        updatePlotAnalysis(plotId, plotCaches[plotId]);
+      }
+
+      function updateSlopeAnalysis(plotId, cache) {
+        var aid = cache.analysis;
+        if (!aid || !aid.slopeGroup) {
+          return;
+        }
+        var time = state.time;
+        if (time <= 0.0001) {
+          aid.slopeGroup.setAttribute("visibility", "hidden");
+          return;
+        }
+        var isPositionSlope = state.mode === "single" && plotId === "position";
+        var isVelocitySlope = state.mode === "accelerated" && plotId === "velocity";
+        if (!isPositionSlope && !isVelocitySlope) {
+          aid.slopeGroup.setAttribute("visibility", "hidden");
+          return;
+        }
+        var startValue = isPositionSlope ? positionAt("A", 0) : velocityAt("A", 0);
+        var endValue = isPositionSlope ? positionAt("A", time) : velocityAt("A", time);
+        var deltaValue = endValue - startValue;
+        var quotient = deltaValue / time;
+        var x0 = cache.xScale(0);
+        var x1 = cache.xScale(time);
+        var y0 = cache.yScale(startValue);
+        var y1 = cache.yScale(endValue);
+        var triangle = "M " + x0.toFixed(2) + " " + y0.toFixed(2) + " L " +
+          x1.toFixed(2) + " " + y0.toFixed(2) + " L " + x1.toFixed(2) + " " +
+          y1.toFixed(2) + " Z";
+        var legs = "M " + x0.toFixed(2) + " " + y0.toFixed(2) + " L " +
+          x1.toFixed(2) + " " + y0.toFixed(2) + " L " + x1.toFixed(2) + " " +
+          y1.toFixed(2);
+        aid.slopeGroup.setAttribute("visibility", "visible");
+        aid.slopeFill.setAttribute("d", triangle);
+        aid.slopeLegs.setAttribute("d", legs);
+        aid.slopeStart.setAttribute("cx", x0);
+        aid.slopeStart.setAttribute("cy", y0);
+        aid.slopeEnd.setAttribute("cx", x1);
+        aid.slopeEnd.setAttribute("cy", y1);
+
+        var dtY = y0 > cache.top + 28 ? y0 - 8 : y0 + 17;
+        dtY = clamp(dtY, cache.top + 12, cache.bottom - 6);
+        aid.slopeDt.setAttribute("x", (x0 + x1) / 2);
+        aid.slopeDt.setAttribute("y", dtY);
+        aid.slopeDt.textContent = "Δt = " + fmt(time, 2) + " s";
+        aid.slopeDt.setAttribute("opacity", x1 - x0 > 44 ? "1" : "0");
+
+        var labelOnRight = x1 < cache.right - 74;
+        aid.slopeDy.setAttribute("x", labelOnRight ? x1 + 7 : x1 - 7);
+        aid.slopeDy.setAttribute("y", clamp((y0 + y1) / 2 - 5, cache.top + 14, cache.bottom - 6));
+        aid.slopeDy.setAttribute("text-anchor", labelOnRight ? "start" : "end");
+        aid.slopeDy.textContent = (isPositionSlope ? "Δx = " : "Δv = ") + fmt(deltaValue) +
+          (isPositionSlope ? " m" : " m/s");
+        aid.slopeDy.setAttribute("opacity", Math.abs(y1 - y0) > 18 ? "1" : "0");
+
+        aid.slopeSummary1.textContent = "Δt = " + fmt(time, 2) + " s; " +
+          (isPositionSlope ? "Δx = " : "Δv = ") + fmt(deltaValue) +
+          (isPositionSlope ? " m" : " m/s");
+        aid.slopeSummary2.textContent = (isPositionSlope ? "v = Δx/Δt = " : "a = Δv/Δt = ") +
+          fmt(quotient) + (isPositionSlope ? " m/s" : " m/s²");
+      }
+
+      function updateTangentAnalysis(cache) {
+        var aid = cache.analysis;
+        if (!aid || !aid.tangentGroup || !aid.tangentLine || !aid.tangentLabel) {
+          return;
+        }
+        var time = state.time;
+        var currentPosition = positionAt("A", time);
+        var currentVelocity = velocityAt("A", time);
+        var tangentAtStart = currentPosition - currentVelocity * time;
+        var tangentAtEnd = currentPosition + currentVelocity * (cache.tMax - time);
+        var pointX = cache.xScale(time);
+        var pointY = cache.yScale(currentPosition);
+        aid.tangentLine.setAttribute("x1", cache.left);
+        aid.tangentLine.setAttribute("y1", cache.yScale(tangentAtStart));
+        aid.tangentLine.setAttribute("x2", cache.right);
+        aid.tangentLine.setAttribute("y2", cache.yScale(tangentAtEnd));
+        var labelOnRight = pointX < cache.right - 105;
+        aid.tangentLabel.setAttribute("x", labelOnRight ? pointX + 9 : pointX - 9);
+        aid.tangentLabel.setAttribute("text-anchor", labelOnRight ? "start" : "end");
+        aid.tangentLabel.setAttribute("y", clamp(pointY < cache.top + 27 ? pointY + 20 : pointY - 11,
+          cache.top + 14, cache.bottom - 7));
+        aid.tangentLabel.textContent = "v(t) = " + fmt(currentVelocity) + " m/s";
+      }
+
+      function updateVelocityAreaAnalysis(cache) {
+        var aid = cache.analysis;
+        if (!aid || !aid.areaGroup || !aid.areaShapes || !aid.areaLabel) {
+          return;
+        }
+        var time = state.time;
+        if (time <= 0.0001) {
+          aid.areaGroup.setAttribute("visibility", "hidden");
+          aid.areaShapes.innerHTML = "";
+          return;
+        }
+        var p = currentProfile();
+        var breaks = [0];
+        if (state.mode === "accelerated" && Math.abs(p.a) > 0.000001) {
+          var zeroTime = -p.v0 / p.a;
+          if (zeroTime > 0.000001 && zeroTime < time - 0.000001) {
+            breaks.push(zeroTime);
+          }
+        }
+        breaks.push(time);
+        var zeroY = cache.yScale(0);
+        var shapes = "";
+        for (var i = 0; i < breaks.length - 1; i += 1) {
+          var startTime = breaks[i];
+          var endTime = breaks[i + 1];
+          var startVelocity = velocityAt("A", startTime);
+          var endVelocity = velocityAt("A", endTime);
+          var middleVelocity = velocityAt("A", (startTime + endTime) / 2);
+          var startX = cache.xScale(startTime);
+          var endX = cache.xScale(endTime);
+          var color = middleVelocity < 0 ? COLORS.orange : COLORS.blue;
+          shapes += "<path d='M " + startX.toFixed(2) + " " + zeroY.toFixed(2) + " L " +
+            startX.toFixed(2) + " " + cache.yScale(startVelocity).toFixed(2) + " L " +
+            endX.toFixed(2) + " " + cache.yScale(endVelocity).toFixed(2) + " L " +
+            endX.toFixed(2) + " " + zeroY.toFixed(2) + " Z' fill='" + color +
+            "' fill-opacity='0.18' stroke='none' />";
+        }
+        aid.areaGroup.setAttribute("visibility", "visible");
+        aid.areaShapes.innerHTML = shapes;
+        aid.areaLabel.textContent = "Fläche: Δx = " +
+          fmt(positionAt("A", time) - positionAt("A", 0)) + " m";
+      }
+
+      function updatePlotAnalysis(plotId, cache) {
+        if (!state.analysisHelpers || !cache || !cache.analysis) {
+          return;
+        }
+        updateSlopeAnalysis(plotId, cache);
+        if (state.mode === "accelerated" && plotId === "position") {
+          updateTangentAnalysis(cache);
+        }
+        if ((state.mode === "single" || state.mode === "accelerated") && plotId === "velocity") {
+          updateVelocityAreaAnalysis(cache);
+        }
       }
 
       function updatePlotCursors() {
@@ -1176,8 +1508,9 @@
             }
           });
           if (cache.meetingMarker && Number.isFinite(cache.meetingTime)) {
-            cache.meetingMarker.setAttribute("opacity", state.time + 0.0001 >= cache.meetingTime ? "1" : "0");
+            cache.meetingMarker.setAttribute("opacity", meetingMarkerVisible(meetingAnalysis()) ? "1" : "0");
           }
+          updatePlotAnalysis(plotId, cache);
         });
       }
 
@@ -1793,6 +2126,9 @@
       }
 
       function bindEvents() {
+        if (els.analysisToggle) {
+          els.analysisToggle.addEventListener("click", toggleAnalysisHelpers);
+        }
         els.levelPicker.addEventListener("click", function (event) {
           var button = event.target.closest("[data-mode]");
           if (button) {
@@ -1836,6 +2172,11 @@
         });
 
         els.controlsBody.addEventListener("click", function (event) {
+          var meetingButton = event.target.closest("#meetingToggle");
+          if (meetingButton) {
+            toggleMeetingResult();
+            return;
+          }
           var button = event.target.closest("[data-preset]");
           if (button) {
             applyPreset(button.getAttribute("data-preset"));
@@ -1900,6 +2241,7 @@
         });
       }
 
+      setupAnalysisControls();
       setupBackLink();
       bindEvents();
       document.querySelectorAll(".level-button").forEach(function (button) {
