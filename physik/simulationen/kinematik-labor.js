@@ -61,25 +61,25 @@
       var definitions = {
         single: {
           main: [
-            { key: "x0", label: "Startort x₀", help: "Ort bei t = 0", unit: "m", min: -20, max: 100, step: 1 },
+            { key: "x0", label: "Anfangsort x₀", help: "Ort bei t = 0", unit: "m", min: -20, max: 100, step: 1 },
             { key: "v", label: "Geschwindigkeit v", help: "konstant", unit: "m/s", min: -12, max: 18, step: 0.5 }
           ],
           time: { key: "tMax", label: "Beobachtungszeit", help: "Länge der Simulation", unit: "s", min: 4, max: 20, step: 1 }
         },
         encounter: {
           a: [
-            { key: "xA0", label: "Startort xA₀", help: "Objekt A bei t = 0", unit: "m", min: -20, max: 100, step: 1 },
+            { key: "xA0", label: "Anfangsort xA₀", help: "Objekt A bei t = 0", unit: "m", min: -20, max: 100, step: 1 },
             { key: "vA", label: "Geschwindigkeit vA", help: "konstant", unit: "m/s", min: -12, max: 18, step: 0.5 }
           ],
           b: [
-            { key: "xB0", label: "Startort xB₀", help: "Objekt B bei t = 0", unit: "m", min: -20, max: 120, step: 1 },
+            { key: "xB0", label: "Anfangsort xB₀", help: "Objekt B bei t = 0", unit: "m", min: -20, max: 120, step: 1 },
             { key: "vB", label: "Geschwindigkeit vB", help: "konstant", unit: "m/s", min: -12, max: 18, step: 0.5 }
           ],
           time: { key: "tMax", label: "Beobachtungszeit", help: "sichtbares Zeitfenster", unit: "s", min: 4, max: 20, step: 1 }
         },
         accelerated: {
           main: [
-            { key: "x0", label: "Startort x₀", help: "Ort bei t = 0", unit: "m", min: -20, max: 100, step: 1 },
+            { key: "x0", label: "Anfangsort x₀", help: "Ort bei t = 0", unit: "m", min: -20, max: 100, step: 1 },
             { key: "v0", label: "Startgeschwindigkeit v₀", help: "Geschwindigkeit bei t = 0", unit: "m/s", min: -15, max: 20, step: 0.5 },
             { key: "a", label: "Beschleunigung a", help: "Änderung von v pro Sekunde", unit: "m/s²", min: -4, max: 4, step: 0.1 }
           ],
@@ -1656,9 +1656,9 @@
           {
             kind: "Vergleichen",
             visual: "xt-parallel",
-            visualAlt: "Zwei parallele x–t-Geraden mit verschiedenen Startorten",
+            visualAlt: "Zwei parallele x–t-Geraden mit verschiedenen Anfangsorten",
             prompt: "Zwei x–t-Linien verlaufen parallel. Was gilt für die Bewegungen?",
-            answers: ["Gleicher Startort, aber verschiedene Geschwindigkeiten.", "Gleiche Geschwindigkeit, aber verschiedene Startorte.", "Beide Bewegungen sind beschleunigt."],
+            answers: ["Gleicher Anfangsort, aber verschiedene Geschwindigkeiten.", "Gleiche Geschwindigkeit, aber verschiedene Anfangsorte.", "Beide Bewegungen sind beschleunigt."],
             correct: 1,
             explanation: "Parallele Geraden haben dieselbe Steigung und damit dieselbe Geschwindigkeit."
           }
@@ -1717,7 +1717,7 @@
             visual: "vt-gap",
             visualAlt: "Zwei waagrechte v–t-Linien mit markiertem vertikalem Abstand",
             prompt: "In einem neuen Fall ist der vertikale Abstand zwischen zwei waagrechten v–t-Linien grösser. Was bedeutet das?",
-            answers: ["Der Betrag der Relativgeschwindigkeit ist grösser; der Ortsunterschied ändert sich schneller.", "Nur die Startorte wurden verändert.", "Die Geschwindigkeiten sind nun gleich."],
+            answers: ["Der Betrag der Relativgeschwindigkeit ist grösser; der Ortsunterschied ändert sich schneller.", "Nur die Anfangsorte wurden verändert.", "Die Geschwindigkeiten sind nun gleich."],
             correct: 0,
             explanation: "Der Abstand der v–t-Linien zeigt den Betrag der relativen Geschwindigkeit."
           }
