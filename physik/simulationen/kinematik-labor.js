@@ -121,9 +121,9 @@
       var stageDomainCache = null;
       var resizeFrame = 0;
       var comparisonState = {
-        single: { measurement: null, axes: {}, timeMax: 0, revision: 0 },
-        encounter: { measurement: null, axes: {}, timeMax: 0, revision: 0 },
-        accelerated: { measurement: null, axes: {}, timeMax: 0, revision: 0 }
+        single: { measurement: null, axes: {}, timeMax: 0, requiredTimeMax: 0, revision: 0 },
+        encounter: { measurement: null, axes: {}, timeMax: 0, requiredTimeMax: 0, revision: 0 },
+        accelerated: { measurement: null, axes: {}, timeMax: 0, requiredTimeMax: 0, revision: 0 }
       };
 
       var els = {
@@ -293,15 +293,20 @@
         if (!actions) {
           actions = document.createElement("div");
           actions.className = "diagram-actions";
-          var syncChip = heading.querySelector(".sync-chip");
-          if (syncChip) {
-            syncChip.textContent = "Skala stabilisiert";
-            heading.insertBefore(actions, syncChip);
-            actions.appendChild(syncChip);
-          } else {
-            heading.appendChild(actions);
-          }
+          heading.appendChild(actions);
         }
+        actions.setAttribute("role", "group");
+        actions.setAttribute("aria-label", "Diagrammwerkzeuge");
+
+        els.analysisToggle = document.getElementById("analysisToggle");
+        if (!els.analysisToggle) {
+          els.analysisToggle = document.createElement("button");
+          els.analysisToggle.id = "analysisToggle";
+          els.analysisToggle.className = "analysis-toggle";
+          els.analysisToggle.type = "button";
+          els.analysisToggle.setAttribute("aria-controls", "plotsGrid");
+        }
+        actions.insertBefore(els.analysisToggle, actions.firstChild);
 
         els.comparisonSave = document.getElementById("comparisonSave");
         if (!els.comparisonSave) {
@@ -335,6 +340,7 @@
           els.scaleReset.setAttribute("aria-controls", "plotsGrid");
           els.scaleReset.textContent = "Skala anpassen";
           els.scaleReset.title = "Achsen neu an die aktuellen und gespeicherten Kurven anpassen";
+          els.scaleReset.hidden = true;
           actions.appendChild(els.scaleReset);
         }
 
@@ -346,15 +352,6 @@
           actions.appendChild(els.comparisonSummary);
         }
 
-        els.analysisToggle = document.getElementById("analysisToggle");
-        if (!els.analysisToggle) {
-          els.analysisToggle = document.createElement("button");
-          els.analysisToggle.id = "analysisToggle";
-          els.analysisToggle.className = "analysis-toggle";
-          els.analysisToggle.type = "button";
-          els.analysisToggle.setAttribute("aria-controls", "plotsGrid");
-          actions.appendChild(els.analysisToggle);
-        }
         updateAnalysisToggle();
         updateComparisonControls();
       }
@@ -364,8 +361,12 @@
           return;
         }
         els.analysisToggle.setAttribute("aria-pressed", state.analysisHelpers ? "true" : "false");
+        els.analysisToggle.setAttribute(
+          "aria-label",
+          state.analysisHelpers ? "Analysehilfen ausblenden" : "Analysehilfen einblenden"
+        );
         els.analysisToggle.textContent = state.analysisHelpers ?
-          "Analysehilfen ausblenden" : "Analysehilfen anzeigen";
+          "Analysehilfen: Ein" : "Analysehilfen: Aus";
       }
 
       function toggleAnalysisHelpers() {
@@ -389,12 +390,16 @@
           "Die aktuell sichtbaren Kurven als Vergleich speichern" :
           "Lassen Sie die Simulation zuerst ein Stück laufen";
         els.comparisonDelete.hidden = !hasMeasurement;
+        els.comparisonSummary.classList.toggle("sr-only", !hasMeasurement);
         if (hasMeasurement) {
           els.comparisonSummary.textContent = comparisonDescription(currentComparisonState().measurement);
         } else if (canSave) {
           els.comparisonSummary.textContent = "Die sichtbaren Kurven können jetzt als Vergleich gespeichert werden.";
         } else {
           els.comparisonSummary.textContent = "Für einen Vergleich die Simulation zuerst ein Stück laufen lassen.";
+        }
+        if (els.scaleReset) {
+          els.scaleReset.hidden = !scaleNeedsRefit();
         }
       }
 
@@ -426,7 +431,18 @@
         var comparison = comparisonState[mode];
         comparison.axes = {};
         comparison.timeMax = 0;
+        comparison.requiredTimeMax = 0;
         invalidateComparisonRender(mode);
+      }
+
+      function scaleNeedsRefit() {
+        var comparison = currentComparisonState();
+        if (comparison.timeMax > comparison.requiredTimeMax + 0.000001) {
+          return true;
+        }
+        return Object.keys(comparison.axes).some(function (key) {
+          return Boolean(comparison.axes[key].needsRefit);
+        });
       }
 
       function resetCurrentScale() {
@@ -947,12 +963,14 @@
       function stableDomain(axisKey, values, includeZero, tickTarget) {
         var comparison = currentComparisonState();
         var candidate = valueBounds(values, includeZero);
+        var idealDomain = makeDomain([candidate.min, candidate.max], includeZero, tickTarget);
         var axis = comparison.axes[axisKey];
         if (!axis) {
           axis = {
             rawMin: candidate.min,
             rawMax: candidate.max,
-            domain: makeDomain([candidate.min, candidate.max], includeZero, tickTarget)
+            domain: idealDomain,
+            needsRefit: false
           };
           comparison.axes[axisKey] = axis;
           return axis.domain;
@@ -963,12 +981,15 @@
         if (candidate.min < axis.domain.min - 0.000001 || candidate.max > axis.domain.max + 0.000001) {
           axis.domain = makeDomain([axis.rawMin, axis.rawMax], includeZero, tickTarget);
         }
+        axis.needsRefit = axis.domain.min < idealDomain.min - 0.000001 ||
+          axis.domain.max > idealDomain.max + 0.000001;
         return axis.domain;
       }
 
       function stableTimeMaximum(requiredMaximum) {
         var comparison = currentComparisonState();
-        comparison.timeMax = Math.max(comparison.timeMax, finite(requiredMaximum, 1), 1);
+        comparison.requiredTimeMax = Math.max(finite(requiredMaximum, 1), 1);
+        comparison.timeMax = Math.max(comparison.timeMax, comparison.requiredTimeMax);
         return comparison.timeMax;
       }
 
@@ -2421,11 +2442,11 @@
 
       function renderDynamic() {
         updateTransport();
-        updateComparisonControls();
         updateSceneHint();
         drawStage();
         renderMetrics();
         updatePlotCursors();
+        updateComparisonControls();
       }
 
       function animationFrame(timestamp) {
