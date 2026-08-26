@@ -82,7 +82,7 @@
         accelerated: {
           main: [
             { key: "x0", label: "Anfangsort x₀", help: "Ort bei t = 0", unit: "m", min: -20, max: 100, step: 1 },
-            { key: "v0", label: "Startgeschwindigkeit v₀", help: "Geschwindigkeit bei t = 0", unit: "m/s", min: -15, max: 20, step: 0.5 },
+            { key: "v0", label: "Anfangsgeschwindigkeit v₀", help: "Geschwindigkeit bei t = 0", unit: "m/s", min: -15, max: 20, step: 0.5 },
             { key: "a", label: "Beschleunigung a", help: "Änderung von v pro Sekunde", unit: "m/s²", min: -4, max: 4, step: 0.1 }
           ],
           time: { key: "tMax", label: "Beobachtungszeit", help: "Länge der Simulation", unit: "s", min: 4, max: 20, step: 1 }
@@ -204,6 +204,10 @@
 
       function signed(value, digits) {
         return (value < 0 ? "− " : "+ ") + fmt(Math.abs(value), digits);
+      }
+
+      function displayNumber(value, digits) {
+        return value < -0.0000001 ? "−" + fmt(Math.abs(value), digits) : fmt(value, digits);
       }
 
       function escapeHtml(value) {
@@ -1897,8 +1901,9 @@
         });
       }
 
-      function makeNumericQuestion(prompt, correctValue, candidates, unit, explanation, correctPosition, digits) {
+      function makeNumericQuestion(prompt, correctValue, candidates, unit, explanation, correctPosition, digits, options) {
         var places = typeof digits === "number" ? digits : 1;
+        var limits = options || {};
         var answerLabel = function (value) {
           return fmt(value, places) + (unit ? " " + unit : "");
         };
@@ -1906,7 +1911,9 @@
         var labels = [answerLabel(correctValue)];
         var addIfDistinct = function (candidate) {
           var label = answerLabel(candidate);
-          if (Number.isFinite(candidate) && labels.indexOf(label) === -1) {
+          var withinMinimum = typeof limits.min !== "number" || candidate >= limits.min - 0.0000001;
+          var withinMaximum = typeof limits.max !== "number" || candidate <= limits.max + 0.0000001;
+          if (Number.isFinite(candidate) && withinMinimum && withinMaximum && labels.indexOf(label) === -1) {
             values.push(candidate);
             labels.push(label);
           }
@@ -1944,47 +1951,97 @@
       function quizVisualMarkup(type) {
         var start = [
           "<svg viewBox='0 0 240 72' preserveAspectRatio='xMidYMid meet' aria-hidden='true'>",
+          "<defs><marker id='quizArrow' markerWidth='5' markerHeight='5' refX='4' refY='2.5' orient='auto'><path d='M0,0 L5,2.5 L0,5 Z' fill='#8794a8' /></marker></defs>",
           "<rect width='240' height='72' fill='#fbfcff' />",
-          "<path d='M 27 8 V 57 H 228' fill='none' stroke='#a8b3c3' stroke-width='1.4' />",
-          "<path d='M 27 33 H 228' fill='none' stroke='#e1e7f0' stroke-width='1' stroke-dasharray='4 4' />",
-          "<text x='226' y='68' text-anchor='end' fill='#68768d' font-size='8' font-weight='800'>t</text>"
+          "<path d='M 28 62 V 8' fill='none' stroke='#8794a8' stroke-width='1.35' marker-end='url(#quizArrow)' />",
+          "<path d='M 28 36 H 231' fill='none' stroke='#8794a8' stroke-width='1.35' marker-end='url(#quizArrow)' />",
+          "<path d='M 28 14 H 228 M 28 58 H 228' fill='none' stroke='#e7ebf2' stroke-width='1' stroke-dasharray='4 4' />",
+          "<text x='23' y='39' text-anchor='end' fill='#68768d' font-size='7.5' font-weight='800'>0</text>",
+          "<text x='229' y='32' text-anchor='end' fill='#68768d' font-size='8' font-weight='900'>t</text>"
         ].join("");
         var end = "</svg>";
-        var blue = COLORS.blue;
-        var orange = COLORS.orange;
-        var cyan = COLORS.cyan;
-        var green = COLORS.green;
+        var blue = COLORS.blueDark;
+        var orange = COLORS.orangeDark;
+        var cyan = COLORS.cyanDark;
+        var green = COLORS.greenDark;
         var content = "";
+        if (type === "combined-turn") {
+          return [
+            "<svg viewBox='0 0 240 72' preserveAspectRatio='xMidYMid meet' aria-hidden='true'>",
+            "<defs><marker id='quizArrowTurn' markerWidth='5' markerHeight='5' refX='4' refY='2.5' orient='auto'><path d='M0,0 L5,2.5 L0,5 Z' fill='#8794a8' /></marker></defs>",
+            "<rect width='240' height='72' fill='#fbfcff' />",
+            "<path d='M 18 62 V 8 M 18 36 H 113 M 132 62 V 8 M 132 36 H 232' fill='none' stroke='#8794a8' stroke-width='1.25' />",
+            "<path d='M 25 14 Q 66 61 108 15' fill='none' stroke='" + blue + "' stroke-width='3' stroke-linecap='round' />",
+            "<path d='M 138 55 L 226 16' fill='none' stroke='" + cyan + "' stroke-width='3' stroke-linecap='round' />",
+            "<path d='M 66 36 V 58 M 181 36 V 55' stroke='" + green + "' stroke-width='1.5' stroke-dasharray='3 3' />",
+            "<circle cx='66' cy='58.5' r='3.2' fill='#fff' stroke='" + green + "' stroke-width='2' />",
+            "<circle cx='181' cy='36' r='3.2' fill='#fff' stroke='" + green + "' stroke-width='2' />",
+            "<text x='7' y='12' fill='#68768d' font-size='8' font-weight='900'>x</text><text x='121' y='12' fill='#68768d' font-size='8' font-weight='900'>v</text>",
+            "<text x='110' y='32' text-anchor='end' fill='#68768d' font-size='8' font-weight='900'>t</text><text x='230' y='32' text-anchor='end' fill='#68768d' font-size='8' font-weight='900'>t</text>",
+            "<text x='14' y='39' text-anchor='end' fill='#68768d' font-size='7.5'>0</text><text x='128' y='39' text-anchor='end' fill='#68768d' font-size='7.5'>0</text>",
+            end
+          ].join("");
+        }
+        if (type === "speed-change") {
+          return [
+            "<svg viewBox='0 0 240 72' preserveAspectRatio='xMidYMid meet' aria-hidden='true'>",
+            "<rect width='240' height='72' fill='#fbfcff' />",
+            "<path d='M 18 61 V 9 M 18 56 H 113 M 132 61 V 9 M 132 56 H 232' fill='none' stroke='#8794a8' stroke-width='1.25' />",
+            "<path d='M 25 51 L 108 31' fill='none' stroke='#9aa6b8' stroke-width='2.5' />",
+            "<path d='M 25 51 L 108 13' fill='none' stroke='" + blue + "' stroke-width='3' />",
+            "<path d='M 139 42 H 226' fill='none' stroke='#9aa6b8' stroke-width='2.5' />",
+            "<path d='M 139 20 H 226' fill='none' stroke='" + blue + "' stroke-width='3' />",
+            "<text x='7' y='12' fill='#68768d' font-size='8' font-weight='900'>x</text><text x='121' y='12' fill='#68768d' font-size='8' font-weight='900'>v</text>",
+            "<text x='110' y='68' text-anchor='end' fill='#68768d' font-size='8' font-weight='900'>t</text><text x='230' y='68' text-anchor='end' fill='#68768d' font-size='8' font-weight='900'>t</text>",
+            "<text x='43' y='26' fill='" + blue + "' font-size='7' font-weight='900'>neu</text><text x='65' y='45' fill='#68768d' font-size='7'>vorher</text>",
+            end
+          ].join("");
+        }
+        if (type === "distance-zero") {
+          return [
+            "<svg viewBox='0 0 240 72' preserveAspectRatio='xMidYMid meet' aria-hidden='true'>",
+            "<rect width='240' height='72' fill='#fbfcff' />",
+            "<path d='M 28 62 V 8 M 28 58 H 231' fill='none' stroke='#8794a8' stroke-width='1.35' />",
+            "<path d='M 36 17 L 130 58 L 222 19' fill='none' stroke='" + green + "' stroke-width='3.2' stroke-linecap='round' stroke-linejoin='round' />",
+            "<circle cx='130' cy='58' r='3.8' fill='#fff' stroke='" + orange + "' stroke-width='2.2' />",
+            "<text x='8' y='12' fill='#68768d' font-size='8' font-weight='900'>Abstand</text><text x='229' y='68' text-anchor='end' fill='#68768d' font-size='8' font-weight='900'>t</text><text x='23' y='61' text-anchor='end' fill='#68768d' font-size='7.5'>0</text>",
+            end
+          ].join("");
+        }
         if (type === "xt-up") {
-          content = "<text x='10' y='13' fill='#68768d' font-size='8' font-weight='900'>x</text><path d='M 32 54 L 222 13' fill='none' stroke='" + blue + "' stroke-width='3.2' stroke-linecap='round' />";
+          content = "<text x='10' y='13' fill='#68768d' font-size='8' font-weight='900'>x</text><path d='M 36 52 L 218 15' fill='none' stroke='" + blue + "' stroke-width='3.2' stroke-linecap='round' />";
         } else if (type === "vt-negative") {
-          content = "<text x='10' y='13' fill='#68768d' font-size='8' font-weight='900'>v</text><path d='M 32 46 H 222' fill='none' stroke='" + blue + "' stroke-width='3.2' stroke-linecap='round' />";
+          content = "<text x='10' y='13' fill='#68768d' font-size='8' font-weight='900'>v</text><path d='M 36 50 H 218' fill='none' stroke='" + blue + "' stroke-width='3.2' stroke-linecap='round' /><text x='215' y='47' text-anchor='end' fill='" + blue + "' font-size='7.5' font-weight='900'>v &lt; 0</text>";
         } else if (type === "xt-horizontal") {
-          content = "<text x='10' y='13' fill='#68768d' font-size='8' font-weight='900'>x</text><path d='M 32 27 H 222' fill='none' stroke='" + blue + "' stroke-width='3.2' stroke-linecap='round' />";
+          content = "<text x='10' y='13' fill='#68768d' font-size='8' font-weight='900'>x</text><path d='M 36 23 H 218' fill='none' stroke='" + blue + "' stroke-width='3.2' stroke-linecap='round' />";
+        } else if (type === "xt-shift") {
+          content = "<text x='10' y='13' fill='#68768d' font-size='8' font-weight='900'>x</text><path d='M 36 48 L 218 19' fill='none' stroke='#9aa6b8' stroke-width='2.6' /><path d='M 36 57 L 218 28' fill='none' stroke='" + blue + "' stroke-width='3' /><text x='211' y='15' text-anchor='end' fill='#68768d' font-size='7'>vorher</text><text x='215' y='40' text-anchor='end' fill='" + blue + "' font-size='7' font-weight='900'>neuer x₀</text>";
         } else if (type === "xt-parallel") {
-          content = "<text x='10' y='13' fill='#68768d' font-size='8' font-weight='900'>x</text><path d='M 32 49 L 222 17' fill='none' stroke='" + blue + "' stroke-width='3' /><path d='M 32 58 L 222 26' fill='none' stroke='" + orange + "' stroke-width='3' />";
+          content = "<text x='10' y='13' fill='#68768d' font-size='8' font-weight='900'>x</text><path d='M 36 47 L 218 18' fill='none' stroke='" + blue + "' stroke-width='3' /><path d='M 36 57 L 218 28' fill='none' stroke='" + orange + "' stroke-width='3' /><text x='216' y='15' text-anchor='end' fill='" + blue + "' font-size='7.5' font-weight='900'>A</text><text x='216' y='39' text-anchor='end' fill='" + orange + "' font-size='7.5' font-weight='900'>B</text>";
         } else if (type === "xt-intersection") {
-          content = "<text x='10' y='13' fill='#68768d' font-size='8' font-weight='900'>x</text><path d='M 32 54 L 222 13' fill='none' stroke='" + blue + "' stroke-width='3' /><path d='M 32 17 L 222 48' fill='none' stroke='" + orange + "' stroke-width='3' /><circle cx='139' cy='31' r='4' fill='#fff' stroke='" + green + "' stroke-width='2.5' />";
+          content = "<text x='10' y='13' fill='#68768d' font-size='8' font-weight='900'>x</text><path d='M 36 54 L 218 14' fill='none' stroke='" + blue + "' stroke-width='3' /><path d='M 36 17 L 218 49' fill='none' stroke='" + orange + "' stroke-width='3' /><circle cx='129.5' cy='33.4' r='4' fill='#fff' stroke='" + green + "' stroke-width='2.5' /><text x='216' y='12' text-anchor='end' fill='" + blue + "' font-size='7.5' font-weight='900'>A</text><text x='216' y='58' text-anchor='end' fill='" + orange + "' font-size='7.5' font-weight='900'>B</text>";
         } else if (type === "xt-catchup") {
-          content = "<text x='10' y='13' fill='#68768d' font-size='8' font-weight='900'>x</text><path d='M 32 54 L 222 12' fill='none' stroke='" + blue + "' stroke-width='3' /><path d='M 32 30 L 222 20' fill='none' stroke='" + orange + "' stroke-width='3' /><circle cx='181' cy='21.5' r='4' fill='#fff' stroke='" + green + "' stroke-width='2.5' />";
+          content = "<text x='10' y='13' fill='#68768d' font-size='8' font-weight='900'>x</text><path d='M 36 55 L 218 13' fill='none' stroke='" + blue + "' stroke-width='3' /><path d='M 36 29 L 218 20' fill='none' stroke='" + orange + "' stroke-width='3' /><circle cx='179.4' cy='21.9' r='4' fill='#fff' stroke='" + green + "' stroke-width='2.5' /><text x='45' y='57' fill='" + blue + "' font-size='7.5' font-weight='900'>A</text><text x='45' y='26' fill='" + orange + "' font-size='7.5' font-weight='900'>B</text>";
         } else if (type === "vt-headon") {
-          content = "<text x='10' y='13' fill='#68768d' font-size='8' font-weight='900'>v</text><path d='M 32 18 H 222' fill='none' stroke='" + blue + "' stroke-width='3' /><path d='M 32 48 H 222' fill='none' stroke='" + orange + "' stroke-width='3' />";
+          content = "<text x='10' y='13' fill='#68768d' font-size='8' font-weight='900'>v</text><path d='M 36 18 H 218' fill='none' stroke='" + blue + "' stroke-width='3' /><path d='M 36 50 H 218' fill='none' stroke='" + orange + "' stroke-width='3' /><text x='215' y='15' text-anchor='end' fill='" + blue + "' font-size='7.5' font-weight='900'>A</text><text x='215' y='59' text-anchor='end' fill='" + orange + "' font-size='7.5' font-weight='900'>B</text>";
         } else if (type === "xt-window") {
-          content = "<text x='10' y='13' fill='#68768d' font-size='8' font-weight='900'>x</text><path d='M 32 53 L 222 34' fill='none' stroke='" + blue + "' stroke-width='3' /><path d='M 32 22 L 222 14' fill='none' stroke='" + orange + "' stroke-width='3' />";
+          content = "<text x='10' y='13' fill='#68768d' font-size='8' font-weight='900'>x</text><path d='M 36 54 L 218 35' fill='none' stroke='" + blue + "' stroke-width='3' /><path d='M 36 23 L 218 14' fill='none' stroke='" + orange + "' stroke-width='3' /><text x='44' y='57' fill='" + blue + "' font-size='7.5' font-weight='900'>A</text><text x='44' y='20' fill='" + orange + "' font-size='7.5' font-weight='900'>B</text>";
         } else if (type === "vt-gap") {
-          content = "<text x='10' y='13' fill='#68768d' font-size='8' font-weight='900'>v</text><path d='M 32 17 H 222' fill='none' stroke='" + blue + "' stroke-width='3' /><path d='M 32 49 H 222' fill='none' stroke='" + orange + "' stroke-width='3' /><path d='M 207 20 V 46' stroke='" + green + "' stroke-width='2' stroke-dasharray='3 3' />";
+          content = "<text x='10' y='13' fill='#68768d' font-size='8' font-weight='900'>v</text><path d='M 36 18 H 202' fill='none' stroke='" + blue + "' stroke-width='3' /><path d='M 36 50 H 202' fill='none' stroke='" + orange + "' stroke-width='3' /><path d='M 207 18 V 50 M 203 18 H 211 M 203 50 H 211' stroke='" + green + "' stroke-width='2' />";
         } else if (type === "vt-up") {
-          content = "<text x='10' y='13' fill='#68768d' font-size='8' font-weight='900'>v</text><path d='M 32 52 L 222 13' fill='none' stroke='" + blue + "' stroke-width='3.2' stroke-linecap='round' />";
+          content = "<text x='10' y='13' fill='#68768d' font-size='8' font-weight='900'>v</text><path d='M 36 30 L 218 12' fill='none' stroke='" + blue + "' stroke-width='3.2' stroke-linecap='round' />";
         } else if (type === "vt-crossdown") {
-          content = "<text x='10' y='13' fill='#68768d' font-size='8' font-weight='900'>v</text><path d='M 32 13 L 222 53' fill='none' stroke='" + blue + "' stroke-width='3.2' /><circle cx='127' cy='33' r='3.5' fill='#fff' stroke='" + orange + "' stroke-width='2' />";
+          content = "<text x='10' y='13' fill='#68768d' font-size='8' font-weight='900'>v</text><path d='M 36 13 L 218 55' fill='none' stroke='" + blue + "' stroke-width='3.2' /><circle cx='135.7' cy='36' r='3.5' fill='#fff' stroke='" + orange + "' stroke-width='2' />";
         } else if (type === "xt-flatten") {
-          content = "<text x='10' y='13' fill='#68768d' font-size='8' font-weight='900'>x</text><path d='M 32 54 Q 112 15 222 13' fill='none' stroke='" + blue + "' stroke-width='3.2' stroke-linecap='round' />";
-        } else if (type === "combined-turn") {
-          content = "<text x='8' y='13' fill='#68768d' font-size='8' font-weight='900'>x</text><path d='M 20 14 Q 66 58 113 17' fill='none' stroke='" + blue + "' stroke-width='3' /><path d='M 120 8 V 57 H 229' fill='none' stroke='#a8b3c3' stroke-width='1.2' /><path d='M 126 51 L 224 14' fill='none' stroke='" + cyan + "' stroke-width='3' /><text x='126' y='13' fill='#68768d' font-size='8' font-weight='900'>v</text>";
+          content = "<text x='10' y='13' fill='#68768d' font-size='8' font-weight='900'>x</text><path d='M 36 53 Q 110 16 218 15' fill='none' stroke='" + blue + "' stroke-width='3.2' stroke-linecap='round' />";
         } else if (type === "at-positive") {
-          content = "<text x='10' y='13' fill='#68768d' font-size='8' font-weight='900'>a</text><path d='M 32 19 H 222' fill='none' stroke='" + cyan + "' stroke-width='3.2' stroke-linecap='round' />";
+          content = "<text x='10' y='13' fill='#68768d' font-size='8' font-weight='900'>a</text><path d='M 36 18 H 218' fill='none' stroke='" + cyan + "' stroke-width='3.2' stroke-linecap='round' />";
         } else if (type === "vt-parallel") {
-          content = "<text x='10' y='13' fill='#68768d' font-size='8' font-weight='900'>v</text><path d='M 32 50 L 222 18' fill='none' stroke='" + blue + "' stroke-width='3' /><path d='M 32 57 L 222 25' fill='none' stroke='" + orange + "' stroke-width='3' />";
+          content = "<text x='10' y='13' fill='#68768d' font-size='8' font-weight='900'>v</text><path d='M 36 48 L 218 17' fill='none' stroke='" + blue + "' stroke-width='3' /><path d='M 36 58 L 218 27' fill='none' stroke='" + orange + "' stroke-width='3' />";
+        } else if (type === "vt-up-negative") {
+          content = "<text x='10' y='13' fill='#68768d' font-size='8' font-weight='900'>v</text><path d='M 36 55 L 218 43' fill='none' stroke='" + blue + "' stroke-width='3.2' stroke-linecap='round' /><text x='215' y='53' text-anchor='end' fill='" + blue + "' font-size='7.5' font-weight='900'>v &lt; 0</text>";
+        } else if (type === "vt-area-positive") {
+          content = "<text x='10' y='13' fill='#68768d' font-size='8' font-weight='900'>v</text><path d='M 58 18 H 207 V 36 H 58 Z' fill='" + blue + "' fill-opacity='0.18' /><path d='M 36 18 H 218' fill='none' stroke='" + blue + "' stroke-width='3.2' /><path d='M 58 18 V 39 M 207 18 V 39' stroke='" + green + "' stroke-width='1.6' stroke-dasharray='3 3' /><text x='58' y='47' text-anchor='middle' fill='#68768d' font-size='7'>t₁</text><text x='207' y='47' text-anchor='middle' fill='#68768d' font-size='7'>t₂</text>";
         }
         return start + content + end;
       }
@@ -2020,8 +2077,8 @@
           },
           {
             kind: "Neuer Fall",
-            visual: "xt-parallel",
-            visualAlt: "Zwei parallele Geraden in einem x–t-Diagramm",
+            visual: "xt-shift",
+            visualAlt: "Zwei getrennte parallele Geraden in einem x–t-Diagramm",
             prompt: "x₀ wird vergrössert, v bleibt gleich. Was ändert sich?",
             answers: ["Die x–t-Linie wird steiler und v–t liegt höher.", "Die x–t-Linie verschiebt sich parallel; v–t bleibt unverändert.", "Beide Diagramme bleiben unverändert."],
             correct: 1,
@@ -2029,21 +2086,21 @@
           },
           {
             kind: "Neuer Fall",
-            visual: "xt-up",
-            visualAlt: "Ansteigende Gerade in einem x–t-Diagramm",
+            visual: "speed-change",
+            visualAlt: "Vergleich: zwei x–t-Geraden mit gleichem Anfangspunkt sowie zwei waagrechte v–t-Linien auf unterschiedlicher Höhe",
             prompt: "Bei gleichem x₀ wird eine grössere konstante positive Geschwindigkeit gewählt. Was sieht man?",
             answers: ["x–t wird gekrümmt und v–t steigt an.", "x–t wird nur parallel verschoben.", "x–t wird steiler; v–t bleibt waagrecht, liegt aber höher."],
             correct: 2,
             explanation: "Ein grösseres konstantes v macht die Ortsgerade steiler und verschiebt die waagrechte v–t-Linie nach oben."
           },
           {
-            kind: "Vergleichen",
-            visual: "xt-parallel",
-            visualAlt: "Zwei parallele x–t-Geraden mit verschiedenen Anfangsorten",
-            prompt: "Zwei x–t-Linien verlaufen parallel. Was gilt für die Bewegungen?",
-            answers: ["Gleicher Anfangsort, aber verschiedene Geschwindigkeiten.", "Gleiche Geschwindigkeit, aber verschiedene Anfangsorte.", "Beide Bewegungen sind beschleunigt."],
-            correct: 1,
-            explanation: "Parallele Geraden haben dieselbe Steigung und damit dieselbe Geschwindigkeit."
+            kind: "Fläche deuten",
+            visual: "vt-area-positive",
+            visualAlt: "Waagrechte positive v–t-Linie mit markierter Fläche zwischen t eins und t zwei",
+            prompt: "Was beschreibt die markierte Fläche zwischen der v–t-Linie und v = 0?",
+            answers: ["Die Ortsänderung Δx zwischen t₁ und t₂.", "Die Geschwindigkeitsänderung Δv.", "Die Steigung des x–t-Diagramms."],
+            correct: 0,
+            explanation: "Die vorzeichenbehaftete Fläche unter v(t) ist die Ortsänderung Δx. Da v hier positiv ist, entspricht ihr Betrag zugleich der zurückgelegten Weglänge."
           }
         ];
       }
@@ -2071,7 +2128,7 @@
           {
             kind: "Neuer Fall",
             visual: "xt-catchup",
-            visualAlt: "Eine steilere x–t-Gerade holt eine andere Gerade ein",
+            visualAlt: "Eine zunächst tiefere, steilere x–t-Gerade schneidet eine flachere Gerade",
             prompt: "A startet hinter B, seine x–t-Linie ist aber steiler. Was geschieht?",
             answers: ["Beide wechseln die Richtung.", "B wird plötzlich beschleunigt.", "A holt B am Schnittpunkt ein."],
             correct: 2,
@@ -2087,22 +2144,31 @@
             explanation: "Konstante Geschwindigkeiten ergeben waagrechte Linien; ihre Richtung erkennt man am Vorzeichen."
           },
           {
-            kind: "Ausschnitt beurteilen",
+            kind: "Fortsetzung vorhersagen",
             visual: "xt-window",
             visualAlt: "Zwei x–t-Linien ohne Schnittpunkt im gezeigten Zeitfenster",
-            prompt: "Im sichtbaren Zeitfenster schneiden sich die Linien nicht. Was darf man sicher sagen?",
-            answers: ["Die Objekte treffen sich niemals.", "Im gezeigten Zeitfenster treffen sie sich nicht; über später weiss man noch nichts.", "Ihre Geschwindigkeiten sind gleich."],
+            prompt: "Die geraden Linien werden mit unveränderten Steigungen fortgesetzt. Was folgt aus der Skizze?",
+            answers: ["Die Objekte treffen sich nie.", "Sie treffen sich erst nach dem dargestellten Zeitfenster.", "Ihre Geschwindigkeiten sind gleich."],
             correct: 1,
-            explanation: "Ein Diagrammausschnitt erlaubt nur Aussagen über seinen dargestellten Bereich."
+            explanation: "A startet weiter hinten, seine x–t-Linie ist aber steiler. Bei gleichförmiger Fortsetzung erreicht A die Linie von B erst ausserhalb des gezeigten Zeitfensters."
           },
           {
             kind: "Vergleichen",
             visual: "vt-gap",
             visualAlt: "Zwei waagrechte v–t-Linien mit markiertem vertikalem Abstand",
-            prompt: "In einem neuen Fall ist der vertikale Abstand zwischen zwei waagrechten v–t-Linien grösser. Was bedeutet das?",
+            prompt: "Bei gleicher v-Achsenskalierung wird der Abstand zwischen zwei waagrechten v–t-Linien grösser. Was bedeutet das?",
             answers: ["Der Betrag der Relativgeschwindigkeit ist grösser; der Ortsunterschied ändert sich schneller.", "Nur die Anfangsorte wurden verändert.", "Die Geschwindigkeiten sind nun gleich."],
             correct: 0,
-            explanation: "Der Abstand der v–t-Linien zeigt den Betrag der relativen Geschwindigkeit."
+            explanation: "Bei gleicher Skalierung entspricht der vertikale Abstand dem Betrag |vA − vB| der Relativgeschwindigkeit."
+          },
+          {
+            kind: "Abstand deuten",
+            visual: "distance-zero",
+            visualAlt: "Abstand–Zeit-Linie, die bis null fällt und danach wieder steigt",
+            prompt: "Der Abstand fällt bis auf null und wächst danach wieder. Was ist am Tiefpunkt geschehen?",
+            answers: ["Die Objekte hatten dort dieselbe Geschwindigkeit.", "Die Objekte waren zur selben Zeit am selben Ort und bewegten sich danach wieder auseinander.", "Beide Objekte blieben dort stehen."],
+            correct: 1,
+            explanation: "Abstand null bedeutet gleicher Ort zur gleichen Zeit: Die Objekte begegnen sich. Der anschliessend wachsende Abstand zeigt, dass sie sich wieder voneinander entfernen."
           }
         ];
       }
@@ -2125,7 +2191,7 @@
             prompt: "Die v–t-Linie fällt und schneidet v = 0. Wie bewegt sich das Objekt?",
             answers: ["Es wird langsamer, ist kurz in Ruhe und bewegt sich danach rückwärts.", "Es bleibt ab dem Schnittpunkt dauerhaft stehen.", "Es wird vorwärts immer schneller."],
             correct: 0,
-            explanation: "Vor dem Schnittpunkt ist v positiv, am Schnittpunkt null und danach negativ."
+            explanation: "Vor dem Schnittpunkt ist v positiv und |v| nimmt ab. Bei v = 0 ruht das Objekt kurz; danach ist v negativ und |v| wächst wieder."
           },
           {
             kind: "Diagramme verknüpfen",
@@ -2149,19 +2215,19 @@
             kind: "Vergleichen",
             visual: "vt-parallel",
             visualAlt: "Zwei parallele ansteigende v–t-Geraden",
-            prompt: "Zwei Bewegungen haben dieselbe Beschleunigung, aber verschiedene Startgeschwindigkeiten. Wie sehen ihre v–t-Linien aus?",
+            prompt: "Zwei Bewegungen haben dieselbe positive Beschleunigung, aber verschiedene Anfangsgeschwindigkeiten. Wie sehen ihre v–t-Linien aus?",
             answers: ["Parallel, mit verschiedenen Anfangswerten.", "Vollständig identisch.", "Mit verschiedenen Steigungen und gleichem Anfangswert."],
             correct: 0,
-            explanation: "Dieselbe Beschleunigung bedeutet dieselbe Steigung; verschiedene v₀ verschieben die Geraden."
+            explanation: "Dieselbe Beschleunigung bedeutet dieselbe Steigung; verschiedene v₀ verschieben die Geraden vertikal. Da a positiv ist, steigen beide Linien."
           },
           {
-            kind: "Diagramme verknüpfen",
-            visual: "at-positive",
-            visualAlt: "Waagrechte a–t-Linie oberhalb von null",
-            prompt: "Die a–t-Linie liegt konstant oberhalb von null. Welche Kombination passt?",
-            answers: ["v–t ist waagrecht und x–t geradlinig.", "v–t fällt und x–t ist nach unten gekrümmt.", "v–t steigt geradlinig und x–t ist nach oben gekrümmt."],
-            correct: 2,
-            explanation: "Positives konstantes a lässt v linear steigen und krümmt x(t) nach oben."
+            kind: "Vorzeichen deuten",
+            visual: "vt-up-negative",
+            visualAlt: "Ansteigende v–t-Linie, die während des ganzen Ausschnitts unter v gleich null bleibt",
+            prompt: "v bleibt negativ, die v–t-Linie steigt jedoch an. Was geschieht mit der Schnelligkeit |v|?",
+            answers: ["Sie nimmt ab, obwohl a positiv ist.", "Sie nimmt zu, weil a positiv ist.", "Sie bleibt konstant."],
+            correct: 0,
+            explanation: "v ist negativ und bewegt sich in Richtung null. Deshalb wird |v| kleiner: Das Objekt wird langsamer. Das Vorzeichen von a allein sagt nicht, ob die Schnelligkeit wächst."
           }
         ];
       }
@@ -2180,27 +2246,51 @@
         var p = profiles.single;
         var tq = Math.min(4, p.tMax);
         var position = p.x0 + p.v * tq;
-        var deltaX = p.v * p.tMax;
-        return [
+        var displacement = p.v * p.tMax;
+        var questions = [
           makeNumericQuestion(
             "Wo befindet sich Objekt A nach " + fmt(tq) + " s?",
             position,
-            [p.v * tq, p.x0 + 0.5 * p.v * tq, p.x0 - p.v * tq],
+            [p.v * tq, p.x0 - p.v * tq, p.x0 + 0.5 * p.v * tq],
             "m",
-            "Mit x = x₀ + v·t erhält man " + fmt(p.x0) + " m + " + fmt(p.v) + " m/s · " + fmt(tq) + " s = " + fmt(position) + " m.",
+            "x = x₀ + v·t = " + displayNumber(p.x0) + " m " + signed(p.v, 1) + " m/s · " + fmt(tq) + " s = " + displayNumber(position) + " m.",
             1,
-            1
-          ),
-          makeNumericQuestion(
-            "Welche Ortsänderung Δx entsteht während der ganzen Beobachtungszeit?",
-            deltaX,
-            [Math.abs(deltaX), p.x0 + deltaX, p.x0],
-            "m",
-            "Für eine gleichförmige Bewegung gilt Δx = v·Δt = " + fmt(p.v) + " m/s · " + fmt(p.tMax) + " s = " + fmt(deltaX) + " m.",
-            2,
             1
           )
         ];
+        if (Math.abs(p.v) < 0.0000001) {
+          questions.push({
+            kind: "Sonderfall berechnen",
+            prompt: "Für v = 0 gilt während der ganzen Beobachtungszeit welche Kombination?",
+            answers: ["Δx = 0 m und Weglänge s = 0 m.", "Δx = x₀ und s = x₀.", "Δx = 0 m, aber s = " + fmt(p.tMax) + " m."],
+            correct: 0,
+            explanation: "Bei v = 0 bleibt x(t) = x₀. Weder die Ortsänderung noch die zurückgelegte Weglänge wächst."
+          });
+          return questions;
+        }
+        questions.push(
+          makeNumericQuestion(
+            "Welche Ortsänderung Δx entsteht während der ganzen Beobachtungszeit?",
+            displacement,
+            [-displacement, p.x0 + displacement, 0.5 * displacement],
+            "m",
+            "Δx = v·Δt = (" + displayNumber(p.v) + " m/s) · " + fmt(p.tMax) + " s = " + displayNumber(displacement) + " m. Das Vorzeichen gibt die Bewegungsrichtung an.",
+            2,
+            1
+          )
+        );
+        var pathLength = Math.abs(displacement);
+        questions.push(makeNumericQuestion(
+          "Welche Weglänge s legt A während der ganzen Beobachtungszeit zurück?",
+          pathLength,
+          [displacement, 0.5 * pathLength, Math.abs(p.v) * tq],
+          "m",
+          "Bei einer gleichförmigen Bewegung ohne Richtungswechsel ist s = |v|·Δt = " + fmt(Math.abs(p.v)) + " m/s · " + fmt(p.tMax) + " s = " + fmt(pathLength) + " m.",
+          0,
+          1,
+          { min: 0 }
+        ));
+        return questions;
       }
 
       function encounterCalculationQuestions() {
@@ -2214,51 +2304,80 @@
           startDistance,
           [Math.abs(p.xB0 + p.xA0), startDistance + 10, Math.abs(startDistance - 10)],
           "m",
-          "Der Anfangsabstand ist |xB₀ − xA₀| = " + fmt(startDistance) + " m.",
+          "Der Anfangsabstand ist |xB₀ − xA₀| = |" + displayNumber(p.xB0) + " m − (" + displayNumber(p.xA0) + " m)| = " + fmt(startDistance) + " m.",
           0,
-          1
+          1,
+          { min: 0 }
         ));
-        if (analysis.kind !== "always" && Number.isFinite(analysis.time) && analysis.time >= 0) {
-          questions.push(makeNumericQuestion(
-            "Nach welcher Zeit liegt die rechnerische Begegnung?",
-            analysis.time,
-            [Math.abs(p.xB0 - p.xA0) / Math.max(0.5, Math.abs(p.vA) + Math.abs(p.vB)), analysis.time + 2, Math.abs(p.xB0 - p.xA0) / Math.max(0.5, relative + 2)],
-            "s",
-            "Setze xA(t) = xB(t). Daraus folgt t = (xB₀ − xA₀)/(vA − vB) = " + fmt(analysis.time, 2) + " s.",
-            1,
-            2
-          ));
-        }
         questions.push(makeNumericQuestion(
           "Wie gross ist der Betrag der relativen Geschwindigkeit |vA − vB|?",
           relative,
           [Math.abs(p.vA + p.vB), relative + 1, relative + 2],
           "m/s",
-          "|vA − vB| = |" + fmt(p.vA) + " − (" + fmt(p.vB) + ")| = " + fmt(relative) + " m/s.",
+          "|vA − vB| = |" + displayNumber(p.vA) + " − (" + displayNumber(p.vB) + ")| m/s = " + fmt(relative) + " m/s.",
           0,
-          1
+          1,
+          { min: 0 }
         ));
         var tq = Math.min(4, p.tMax);
-        var distanceAtTq = Math.abs((p.xB0 + p.vB * tq) - (p.xA0 + p.vA * tq));
+        var xAAtTq = p.xA0 + p.vA * tq;
+        var xBAtTq = p.xB0 + p.vB * tq;
+        var distanceAtTq = Math.abs(xBAtTq - xAAtTq);
         questions.push(makeNumericQuestion(
           "Wie gross ist der Abstand nach " + fmt(tq) + " s?",
           distanceAtTq,
-          [startDistance + relative * tq, Math.abs(startDistance - 0.5 * relative * tq), startDistance],
+          [startDistance + relative * tq, Math.abs(startDistance - relative * tq), Math.abs(startDistance - 0.5 * relative * tq), startDistance],
           "m",
-          "Berechne zuerst beide Orte bei t = " + fmt(tq) + " s und bilde danach |xB − xA| = " + fmt(distanceAtTq) + " m.",
+          "Zuerst: xA = " + displayNumber(xAAtTq) + " m und xB = " + displayNumber(xBAtTq) + " m. Dann ist |xB − xA| = |" + displayNumber(xBAtTq) + " − (" + displayNumber(xAAtTq) + ")| m = " + fmt(distanceAtTq) + " m.",
           1,
-          1
+          1,
+          { min: 0 }
         ));
+
         if (analysis.kind !== "always" && Number.isFinite(analysis.time) && analysis.time >= 0) {
           questions.push(makeNumericQuestion(
-            "An welchem Ort liegt die rechnerische Begegnung?",
+            "Nach welcher Zeit liegt die Begegnung, auf 0,01 s gerundet?",
+            analysis.time,
+            [startDistance / Math.max(0.5, Math.abs(p.vA) + Math.abs(p.vB)), analysis.time + 2, startDistance / Math.max(0.5, relative + 2)],
+            "s",
+            "Aus xA(t) = xB(t) folgt tT = (xB₀ − xA₀)/(vA − vB) ≈ " + fmt(analysis.time, 2) + " s.",
+            1,
+            2,
+            { min: 0 }
+          ));
+          questions.push(makeNumericQuestion(
+            "An welchem Ort liegt die Begegnung, auf 0,1 m gerundet?",
             analysis.position,
-            [p.xA0 + p.vB * analysis.time, p.xB0 + p.vA * analysis.time, (p.xA0 + p.xB0) / 2],
+            [(p.xA0 + p.xB0) / 2, p.xA0 + p.vB * analysis.time, p.xB0 + p.vA * analysis.time],
             "m",
-            "Einsetzen in eine der Ortsfunktionen ergibt xT = " + fmt(analysis.position) + " m.",
+            "Einsetzen der Begegnungszeit in xA(t) ergibt xT = xA₀ + vA·tT ≈ " + fmt(analysis.position) + " m. Mit xB(t) erhält man denselben Ort.",
             2,
             1
           ));
+        } else if (analysis.kind === "always") {
+          questions.push({
+            kind: "Sonderfall beurteilen",
+            prompt: "A und B haben denselben Anfangsort und dieselbe Geschwindigkeit. Wie viele Begegnungszeiten gibt es?",
+            answers: ["Keine.", "Genau eine bei t = 0.", "Unendlich viele: Beide Ortsfunktionen sind identisch."],
+            correct: 2,
+            explanation: "xA(t) und xB(t) sind dieselbe Funktion. Daher befinden sich A und B zu jedem Zeitpunkt am selben Ort."
+          });
+        } else if (analysis.kind === "parallel") {
+          questions.push({
+            kind: "Sonderfall beurteilen",
+            prompt: "vA = vB, aber xA₀ ≠ xB₀. Warum gibt es keine Begegnungszeit?",
+            answers: ["Der Anfangsabstand bleibt konstant, weil vA − vB = 0.", "Beide Geschwindigkeiten werden mit der Zeit null.", "Eine Begegnung ist nur bei negativen Orten möglich."],
+            correct: 0,
+            explanation: "Beim Gleichsetzen fällt der gemeinsame v·t-Term weg; verschiedene Anfangsorte können dann nicht gleich werden. Die x–t-Geraden sind parallel."
+          });
+        } else if (analysis.kind === "past") {
+          questions.push({
+            kind: "Sonderfall beurteilen",
+            prompt: "Das Gleichsetzen liefert tT < 0. Was bedeutet dieses Resultat?",
+            answers: ["Die Geraden schneiden sich erst nach dem Zeitfenster.", "Die Begegnung läge vor dem gewählten Zeitpunkt t = 0; für t ≥ 0 gibt es keine zukünftige Begegnung.", "Negative Zeiten bedeuten, dass die Rechnung ungültig ist."],
+            correct: 1,
+            explanation: "Die linearen Ortsfunktionen besitzen zwar einen Schnittpunkt, doch er liegt in der rückwärts verlängerten Zeitachse vor Simulationsbeginn."
+          });
         }
         return questions;
       }
@@ -2268,13 +2387,38 @@
         var tq = Math.min(4, p.tMax);
         var velocity = p.v0 + p.a * tq;
         var position = p.x0 + p.v0 * tq + 0.5 * p.a * tq * tq;
+        if (Math.abs(p.v0) < 0.0000001 && Math.abs(p.a) < 0.0000001) {
+          return [
+            {
+              kind: "Einsetzen",
+              prompt: "Setze v₀ = 0 und a = 0 in v(t) = v₀ + a·t ein. Was folgt?",
+              answers: ["v(t) = 0 m/s für alle t.", "v(t) = t m/s.", "v(t) = x₀ m/s."],
+              correct: 0,
+              explanation: "v(t) = 0 + 0·t = 0 m/s. Ohne Anfangsgeschwindigkeit und ohne Beschleunigung bleibt das Objekt in Ruhe."
+            },
+            {
+              kind: "Einsetzen",
+              prompt: "Welche Ortsfunktion bleibt bei v₀ = 0 und a = 0 übrig?",
+              answers: ["x(t) = x₀ + t²", "x(t) = x₀", "x(t) = 0, unabhängig von x₀"],
+              correct: 1,
+              explanation: "x(t) = x₀ + 0·t + ½·0·t² = x₀. Der Anfangsort bleibt unverändert."
+            },
+            {
+              kind: "Sonderfall berechnen",
+              prompt: "Welche Änderungen entstehen während der ganzen Beobachtungszeit?",
+              answers: ["Δx = 0 m und Δv = 0 m/s.", "Δx = x₀ und Δv = 0 m/s.", "Δx = 0 m und Δv = " + fmt(p.tMax) + " m/s."],
+              correct: 0,
+              explanation: "Da x und v konstant bleiben, sind sowohl die Ortsänderung als auch die Geschwindigkeitsänderung null."
+            }
+          ];
+        }
         var questions = [
           makeNumericQuestion(
             "Welche Geschwindigkeit hat A nach " + fmt(tq) + " s?",
             velocity,
-            [p.a * tq, p.v0 + 0.5 * p.a * tq, p.v0 - p.a * tq],
+            [p.a * tq, p.v0, p.v0 - p.a * tq],
             "m/s",
-            "v = v₀ + a·t = " + fmt(p.v0) + " m/s " + signed(p.a, 1) + " m/s² · " + fmt(tq) + " s = " + fmt(velocity) + " m/s.",
+            "v = v₀ + a·t = " + displayNumber(p.v0) + " m/s " + signed(p.a, 1) + " m/s² · " + fmt(tq) + " s = " + displayNumber(velocity) + " m/s.",
             0,
             1
           ),
@@ -2283,21 +2427,22 @@
             position,
             [p.x0 + p.v0 * tq + p.a * tq * tq, p.v0 * tq + 0.5 * p.a * tq * tq, p.x0 + p.v0 * tq],
             "m",
-            "x = x₀ + v₀t + ½at². Eingesetzt ergibt das " + fmt(position) + " m.",
+            "x = x₀ + v₀t + ½at² = " + displayNumber(p.x0) + " m + (" + displayNumber(p.v0) + " m/s)·" + fmt(tq) + " s + ½·(" + displayNumber(p.a) + " m/s²)·(" + fmt(tq) + " s)² = " + displayNumber(position) + " m.",
             1,
             1
           )
         ];
         var stopTime = Math.abs(p.a) > 0.0001 ? -p.v0 / p.a : -1;
-        if (stopTime >= 0 && stopTime <= p.tMax) {
+        if (stopTime > 0.0001 && stopTime <= p.tMax) {
           questions.push(makeNumericQuestion(
-            "Wann ist A momentan in Ruhe, also v = 0?",
+            "Wann ist A momentan in Ruhe, auf 0,01 s gerundet?",
             stopTime,
             [stopTime + 1, stopTime * 2, stopTime / 2],
             "s",
-            "0 = v₀ + a·t liefert t = −v₀/a = " + fmt(stopTime, 2) + " s.",
+            "0 = v₀ + a·t liefert t = −v₀/a ≈ " + fmt(stopTime, 2) + " s.",
             2,
-            2
+            2,
+            { min: 0 }
           ));
         } else {
           var deltaV = p.a * p.tMax;
@@ -2306,11 +2451,45 @@
             deltaV,
             [0.5 * p.a * p.tMax, -p.a * p.tMax, p.v0 + deltaV],
             "m/s",
-            "Die Geschwindigkeitsänderung ist Δv = a·Δt = " + fmt(deltaV) + " m/s.",
+            "Δv = a·Δt = (" + displayNumber(p.a) + " m/s²)·" + fmt(p.tMax) + " s = " + displayNumber(deltaV) + " m/s.",
             2,
             1
           ));
         }
+        var endPosition = p.x0 + p.v0 * p.tMax + 0.5 * p.a * p.tMax * p.tMax;
+        var displacement = endPosition - p.x0;
+        questions.push(makeNumericQuestion(
+          "Welche Ortsänderung Δx entsteht während der ganzen Beobachtungszeit?",
+          displacement,
+          [endPosition, p.v0 * p.tMax, 0.5 * p.a * p.tMax * p.tMax],
+          "m",
+          "Δx = v₀·Δt + ½a·Δt² = (" + displayNumber(p.v0) + " m/s)·" + fmt(p.tMax) + " s + ½·(" + displayNumber(p.a) + " m/s²)·(" + fmt(p.tMax) + " s)² = " + displayNumber(displacement) + " m.",
+          1,
+          1
+        ));
+        var turnsInside = stopTime > 0.0001 && stopTime < p.tMax - 0.0001;
+        var pathLength;
+        var pathExplanation;
+        if (turnsInside) {
+          var turnPosition = p.x0 + p.v0 * stopTime + 0.5 * p.a * stopTime * stopTime;
+          var firstPart = Math.abs(turnPosition - p.x0);
+          var secondPart = Math.abs(endPosition - turnPosition);
+          pathLength = firstPart + secondPart;
+          pathExplanation = "Beim Richtungswechsel muss man beide Teilwege addieren: s = |xU − x₀| + |xEnde − xU| = " + fmt(firstPart) + " m + " + fmt(secondPart) + " m = " + fmt(pathLength) + " m.";
+        } else {
+          pathLength = Math.abs(displacement);
+          pathExplanation = "Ohne Richtungswechsel gilt s = |Δx| = " + fmt(pathLength) + " m.";
+        }
+        questions.push(makeNumericQuestion(
+          "Welche Weglänge s legt A während der ganzen Beobachtungszeit zurück?",
+          pathLength,
+          [Math.abs(displacement), Math.abs(p.v0 * p.tMax), Math.abs(0.5 * p.a * p.tMax * p.tMax)],
+          "m",
+          pathExplanation,
+          0,
+          1,
+          { min: 0 }
+        ));
         return questions;
       }
 
