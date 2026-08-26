@@ -223,13 +223,17 @@
         return comparisonState[state.mode];
       }
 
+      function modeSupportsComparison(mode) {
+        return mode !== "encounter";
+      }
+
       function cloneProfile(profile) {
         return Object.assign({}, profile);
       }
 
       function comparisonSignature() {
         var comparison = currentComparisonState();
-        return comparison.revision + "|" + (comparison.measurement ?
+        return comparison.revision + "|" + (modeSupportsComparison(state.mode) && comparison.measurement ?
           JSON.stringify(comparison.measurement) : "none");
       }
 
@@ -382,16 +386,20 @@
         if (!els.comparisonSave || !els.comparisonDelete || !els.comparisonSummary) {
           return;
         }
+        var comparisonEnabled = modeSupportsComparison(state.mode);
         var hasMeasurement = Boolean(currentComparisonState().measurement);
         var canSave = state.time > 0.0001;
+        els.comparisonSave.hidden = !comparisonEnabled;
         els.comparisonSave.disabled = !canSave;
         els.comparisonSave.textContent = hasMeasurement ? "Vergleich aktualisieren" : "Als Vergleich merken";
         els.comparisonSave.title = canSave ?
           "Die aktuell sichtbaren Kurven als Vergleich speichern" :
           "Lassen Sie die Simulation zuerst ein Stück laufen";
-        els.comparisonDelete.hidden = !hasMeasurement;
-        els.comparisonSummary.classList.toggle("sr-only", !hasMeasurement);
-        if (hasMeasurement) {
+        els.comparisonDelete.hidden = !comparisonEnabled || !hasMeasurement;
+        els.comparisonSummary.classList.toggle("sr-only", !comparisonEnabled || !hasMeasurement);
+        if (!comparisonEnabled) {
+          els.comparisonSummary.textContent = "Für dieses Level ist kein Kurvenvergleich vorgesehen.";
+        } else if (hasMeasurement) {
           els.comparisonSummary.textContent = comparisonDescription(currentComparisonState().measurement);
         } else if (canSave) {
           els.comparisonSummary.textContent = "Die sichtbaren Kurven können jetzt als Vergleich gespeichert werden.";
@@ -411,10 +419,6 @@
         var end = "bis t = " + fmt(measurement.visibleUntil) + " s";
         if (state.mode === "single") {
           return "Vergleich: x₀ = " + fmt(profile.x0) + " m · v = " + fmt(profile.v) + " m/s · " + end;
-        }
-        if (state.mode === "encounter") {
-          return "Vergleich: A (" + fmt(profile.xA0) + " m; " + fmt(profile.vA) + " m/s) · B (" +
-            fmt(profile.xB0) + " m; " + fmt(profile.vB) + " m/s) · " + end;
         }
         return "Vergleich: x₀ = " + fmt(profile.x0) + " m · v₀ = " + fmt(profile.v0) +
           " m/s · a = " + fmt(profile.a) + " m/s² · " + end;
@@ -452,7 +456,7 @@
       }
 
       function saveComparisonMeasurement() {
-        if (state.time <= 0.0001) {
+        if (!modeSupportsComparison(state.mode) || state.time <= 0.0001) {
           return;
         }
         pauseSimulation();
@@ -1429,7 +1433,7 @@
       }
 
       function comparisonSeriesFor(plotId, measurement) {
-        if (!measurement) {
+        if (!measurement || !modeSupportsComparison(state.mode)) {
           return [];
         }
         var mode = state.mode;
@@ -1479,7 +1483,7 @@
         var target = plotTarget(plotId);
         var config = plotConfiguration(plotId);
         var comparison = currentComparisonState();
-        var measurement = comparison.measurement;
+        var measurement = modeSupportsComparison(state.mode) ? comparison.measurement : null;
         var comparisonSeries = comparisonSeriesFor(plotId, measurement);
         var domainTimes = plotTimesForProfile(
           state.mode,
