@@ -718,11 +718,10 @@
     }
 
     .plots-heading {
-      display: flex;
-      flex-wrap: wrap;
-      align-items: center;
-      justify-content: space-between;
-      gap: 10px;
+      display: grid;
+      grid-template-columns: minmax(0, 1fr);
+      align-items: start;
+      gap: 6px;
       padding: 8px 12px 6px;
       border-bottom: 1px solid rgba(220, 227, 239, 0.8);
     }
@@ -734,12 +733,17 @@
     .diagram-actions {
       display: flex;
       flex-wrap: wrap;
-      flex: 1 1 290px;
+      width: 100%;
       min-width: 0;
       align-items: center;
-      justify-content: flex-end;
-      gap: 7px;
-      margin-left: auto;
+      justify-content: flex-start;
+      gap: 5px;
+      margin-left: 0;
+    }
+
+    .diagram-actions > button {
+      min-width: 0;
+      max-width: 100%;
     }
 
     .analysis-toggle {
@@ -774,6 +778,8 @@
     }
 
     .comparison-button {
+      flex: 0 1 auto;
+      min-width: 0;
       min-height: 28px;
       padding: 5px 9px;
       border: 1px solid rgba(127, 159, 227, 0.5);
@@ -782,7 +788,8 @@
       color: var(--blue-dark);
       font-size: 0.63rem;
       font-weight: 950;
-      white-space: nowrap;
+      white-space: normal;
+      overflow-wrap: anywhere;
       cursor: pointer;
     }
 

@@ -342,7 +342,7 @@
           els.scaleReset.className = "comparison-button scale-reset";
           els.scaleReset.type = "button";
           els.scaleReset.setAttribute("aria-controls", "plotsGrid");
-          els.scaleReset.textContent = "Skala anpassen";
+          els.scaleReset.textContent = "Skala neu";
           els.scaleReset.title = "Achsen neu an die aktuellen und gespeicherten Kurven anpassen";
           els.scaleReset.hidden = true;
           actions.appendChild(els.scaleReset);
@@ -391,7 +391,7 @@
         var canSave = state.time > 0.0001;
         els.comparisonSave.hidden = !comparisonEnabled;
         els.comparisonSave.disabled = !canSave;
-        els.comparisonSave.textContent = hasMeasurement ? "Vergleich aktualisieren" : "Als Vergleich merken";
+        els.comparisonSave.textContent = hasMeasurement ? "Vergleich aktualisieren" : "Vergleich merken";
         els.comparisonSave.title = canSave ?
           "Die aktuell sichtbaren Kurven als Vergleich speichern" :
           "Lassen Sie die Simulation zuerst ein Stück laufen";
