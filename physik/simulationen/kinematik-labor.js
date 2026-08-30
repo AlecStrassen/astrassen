@@ -901,9 +901,40 @@
           return "Die Geraden schneiden sich nur bei negativer Zeit. Nach t = 0 gibt es kein Treffen.";
         }
         if (analysis.kind === "later") {
-          return "Treffen erst bei t = " + fmt(analysis.time, 2) + " s und x = " + fmt(analysis.position) + " m.";
+          return "Treffen erst bei t_T = " + fmt(analysis.time, 2) + " s und x_T = " +
+            fmt(analysis.position) + " m.";
         }
-        return "Treffen bei t = " + fmt(analysis.time, 2) + " s und x = " + fmt(analysis.position) + " m.";
+        return "Treffen bei t_T = " + fmt(analysis.time, 2) + " s und x_T = " +
+          fmt(analysis.position) + " m.";
+      }
+
+      function meetingTimeMetric(analysis) {
+        if (!state.meetingRevealed) {
+          return "?";
+        }
+        if (!analysis || analysis.kind === "parallel") {
+          return "keine";
+        }
+        if (analysis.kind === "always") {
+          return "jederzeit";
+        }
+        if (analysis.kind === "past") {
+          return displayNumber(analysis.time, 2) + " s";
+        }
+        return fmt(analysis.time, 2) + " s";
+      }
+
+      function meetingPositionMetric(analysis) {
+        if (!state.meetingRevealed) {
+          return "?";
+        }
+        if (!analysis || analysis.kind === "parallel") {
+          return "keiner";
+        }
+        if (analysis.kind === "always" && Math.abs(profiles.encounter.vA) > 0.000001) {
+          return "zeitabhängig";
+        }
+        return displayNumber(analysis.position) + " m";
       }
 
       function updateMeetingResult() {
@@ -925,7 +956,7 @@
         var analysis = meetingAnalysis();
         var successful = analysis.kind === "within" || analysis.kind === "always" || analysis.kind === "start";
         result.classList.toggle("warning", !successful);
-        result.innerHTML = "<strong>Begegnungs-Check</strong>" + escapeHtml(meetingCopy(analysis));
+        result.innerHTML = "<strong>Begegnungs-Check</strong>" + notationHtml(meetingCopy(analysis));
       }
 
       function toggleMeetingResult() {
@@ -1317,6 +1348,9 @@
           html += metricMarkup("Ort x_A", fmt(xA) + " m");
           html += metricMarkup("Ort x_B", fmt(xB) + " m");
           html += metricMarkup("Abstand", fmt(Math.abs(xB - xA)) + " m");
+          var meeting = meetingAnalysis();
+          html += metricMarkup("Treffzeit t_T", meetingTimeMetric(meeting));
+          html += metricMarkup("Treffort x_T", meetingPositionMetric(meeting));
         } else {
           html += metricMarkup("Ort x", fmt(positionAt("A", state.time)) + " m");
           html += metricMarkup("Geschwindigkeit v", fmt(velocityAt("A", state.time)) + " m/s");
@@ -1326,14 +1360,15 @@
         }
         els.metricGrid.innerHTML = html;
         els.metricGrid.classList.toggle("single-mode", state.mode === "single");
+        els.metricGrid.classList.toggle("encounter-mode", state.mode === "encounter");
       }
 
       function updateSceneHint() {
         if (state.mode === "single") {
           els.sceneHint.textContent = "Konstantes v: Die Geschwindigkeit bleibt zu jedem Zeitpunkt gleich.";
         } else if (state.mode === "encounter") {
-          els.sceneHint.textContent = state.meetingRevealed ? meetingCopy(meetingAnalysis()) :
-            "Vorhersagemodus: Beobachte beide Bewegungen und schätze Treffzeit und Treffort.";
+          setNotationHtml(els.sceneHint, state.meetingRevealed ? meetingCopy(meetingAnalysis()) :
+            "Vorhersagemodus: Beobachte beide Bewegungen und schätze Treffzeit und Treffort.");
         } else {
           var a = currentProfile().a;
           if (Math.abs(a) < 0.001) {
@@ -1472,7 +1507,8 @@
           } else if (distanceAnalysis.kind === "past") {
             config.summary = "Das Treffen lag in der Vergangenheit; danach wächst der Abstand.";
           } else if (distanceAnalysis.kind === "later") {
-            config.summary = "Der Abstand erreicht erst bei t = " + fmt(distanceAnalysis.time, 2) + " s den Wert 0 m.";
+            config.summary = "Der Abstand erreicht erst bei t_T = " +
+              fmt(distanceAnalysis.time, 2) + " s den Wert 0 m.";
           } else if (distanceAnalysis.kind === "start") {
             config.summary = "Bei t = 0 ist der Abstand 0 m; danach trennen sich die Objekte.";
           } else {
@@ -2151,15 +2187,15 @@
         } else if (type === "xt-shift") {
           content = "<text x='10' y='13' fill='#68768d' font-size='8' font-weight='900'>x</text><path d='M 36 57 L 218 28' fill='none' stroke='#9aa6b8' stroke-width='2.6' /><path d='M 36 48 L 218 19' fill='none' stroke='" + blue + "' stroke-width='3' /><text x='211' y='40' text-anchor='end' fill='#68768d' font-size='7'>vorher</text><text x='215' y='15' text-anchor='end' fill='" + blue + "' font-size='7' font-weight='900'>neuer x₀</text>";
         } else if (type === "xt-parallel") {
-          content = "<text x='10' y='13' fill='#68768d' font-size='8' font-weight='900'>x</text><path d='M 36 47 L 218 18' fill='none' stroke='" + blue + "' stroke-width='3' /><path d='M 36 57 L 218 28' fill='none' stroke='" + orange + "' stroke-width='3' /><text x='216' y='15' text-anchor='end' fill='" + blue + "' font-size='7.5' font-weight='900'>A</text><text x='216' y='39' text-anchor='end' fill='" + orange + "' font-size='7.5' font-weight='900'>B</text>";
+          content = "<text x='10' y='13' fill='#68768d' font-size='8' font-weight='900'>x</text><path d='M 36 47 L 218 18' fill='none' stroke='" + blue + "' stroke-width='3' /><path d='M 36 57 L 218 28' fill='none' stroke='" + orange + "' stroke-width='3' /><text x='216' y='15' text-anchor='end' fill='" + blue + "' font-size='7.5' font-weight='900'>" + notationSvg("x_A") + "</text><text x='216' y='39' text-anchor='end' fill='" + orange + "' font-size='7.5' font-weight='900'>" + notationSvg("x_B") + "</text>";
         } else if (type === "xt-intersection") {
-          content = "<text x='10' y='13' fill='#68768d' font-size='8' font-weight='900'>x</text><path d='M 36 54 L 218 14' fill='none' stroke='" + blue + "' stroke-width='3' /><path d='M 36 17 L 218 49' fill='none' stroke='" + orange + "' stroke-width='3' /><circle cx='129.5' cy='33.4' r='4' fill='#fff' stroke='" + green + "' stroke-width='2.5' /><text x='216' y='12' text-anchor='end' fill='" + blue + "' font-size='7.5' font-weight='900'>A</text><text x='216' y='58' text-anchor='end' fill='" + orange + "' font-size='7.5' font-weight='900'>B</text>";
+          content = "<text x='10' y='13' fill='#68768d' font-size='8' font-weight='900'>x</text><path d='M 36 54 L 218 14' fill='none' stroke='" + blue + "' stroke-width='3' /><path d='M 36 17 L 218 49' fill='none' stroke='" + orange + "' stroke-width='3' /><circle cx='129.5' cy='33.4' r='4' fill='#fff' stroke='" + green + "' stroke-width='2.5' /><text x='216' y='12' text-anchor='end' fill='" + blue + "' font-size='7.5' font-weight='900'>" + notationSvg("x_A") + "</text><text x='216' y='58' text-anchor='end' fill='" + orange + "' font-size='7.5' font-weight='900'>" + notationSvg("x_B") + "</text>";
         } else if (type === "xt-catchup") {
-          content = "<text x='10' y='13' fill='#68768d' font-size='8' font-weight='900'>x</text><path d='M 36 55 L 218 13' fill='none' stroke='" + blue + "' stroke-width='3' /><path d='M 36 29 L 218 20' fill='none' stroke='" + orange + "' stroke-width='3' /><circle cx='179.4' cy='21.9' r='4' fill='#fff' stroke='" + green + "' stroke-width='2.5' /><text x='45' y='57' fill='" + blue + "' font-size='7.5' font-weight='900'>A</text><text x='45' y='26' fill='" + orange + "' font-size='7.5' font-weight='900'>B</text>";
+          content = "<text x='10' y='13' fill='#68768d' font-size='8' font-weight='900'>x</text><path d='M 36 55 L 218 13' fill='none' stroke='" + blue + "' stroke-width='3' /><path d='M 36 29 L 218 20' fill='none' stroke='" + orange + "' stroke-width='3' /><circle cx='179.4' cy='21.9' r='4' fill='#fff' stroke='" + green + "' stroke-width='2.5' /><text x='45' y='57' fill='" + blue + "' font-size='7.5' font-weight='900'>" + notationSvg("x_A") + "</text><text x='45' y='26' fill='" + orange + "' font-size='7.5' font-weight='900'>" + notationSvg("x_B") + "</text>";
         } else if (type === "vt-headon") {
-          content = "<text x='10' y='13' fill='#68768d' font-size='8' font-weight='900'>v</text><path d='M 36 18 H 218' fill='none' stroke='" + blue + "' stroke-width='3' /><path d='M 36 50 H 218' fill='none' stroke='" + orange + "' stroke-width='3' /><text x='215' y='15' text-anchor='end' fill='" + blue + "' font-size='7.5' font-weight='900'>A</text><text x='215' y='59' text-anchor='end' fill='" + orange + "' font-size='7.5' font-weight='900'>B</text>";
+          content = "<text x='10' y='13' fill='#68768d' font-size='8' font-weight='900'>v</text><path d='M 36 18 H 218' fill='none' stroke='" + blue + "' stroke-width='3' /><path d='M 36 50 H 218' fill='none' stroke='" + orange + "' stroke-width='3' /><text x='215' y='15' text-anchor='end' fill='" + blue + "' font-size='7.5' font-weight='900'>" + notationSvg("v_A") + "</text><text x='215' y='59' text-anchor='end' fill='" + orange + "' font-size='7.5' font-weight='900'>" + notationSvg("v_B") + "</text>";
         } else if (type === "xt-window") {
-          content = "<text x='10' y='13' fill='#68768d' font-size='8' font-weight='900'>x</text><path d='M 36 54 L 218 35' fill='none' stroke='" + blue + "' stroke-width='3' /><path d='M 36 23 L 218 14' fill='none' stroke='" + orange + "' stroke-width='3' /><text x='44' y='57' fill='" + blue + "' font-size='7.5' font-weight='900'>A</text><text x='44' y='20' fill='" + orange + "' font-size='7.5' font-weight='900'>B</text>";
+          content = "<text x='10' y='13' fill='#68768d' font-size='8' font-weight='900'>x</text><path d='M 36 54 L 218 35' fill='none' stroke='" + blue + "' stroke-width='3' /><path d='M 36 23 L 218 14' fill='none' stroke='" + orange + "' stroke-width='3' /><text x='44' y='57' fill='" + blue + "' font-size='7.5' font-weight='900'>" + notationSvg("x_A") + "</text><text x='44' y='20' fill='" + orange + "' font-size='7.5' font-weight='900'>" + notationSvg("x_B") + "</text>";
         } else if (type === "vt-gap") {
           content = "<text x='10' y='13' fill='#68768d' font-size='8' font-weight='900'>v</text><path d='M 36 18 H 202' fill='none' stroke='" + blue + "' stroke-width='3' /><path d='M 36 50 H 202' fill='none' stroke='" + orange + "' stroke-width='3' /><path d='M 207 18 V 50 M 203 18 H 211 M 203 50 H 211' stroke='" + green + "' stroke-width='2' />";
         } else if (type === "vt-up") {

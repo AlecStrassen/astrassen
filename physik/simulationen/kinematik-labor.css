@@ -682,6 +682,10 @@
       grid-template-columns: repeat(3, minmax(0, 1fr));
     }
 
+    .metric-grid.encounter-mode {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
     .metric {
       min-width: 0;
       padding: 6px 8px;
@@ -1571,6 +1575,10 @@
       }
 
       .metric-grid.single-mode {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .metric-grid.encounter-mode {
         grid-template-columns: repeat(2, minmax(0, 1fr));
       }
 
