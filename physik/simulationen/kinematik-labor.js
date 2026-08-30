@@ -26,7 +26,7 @@
           level: "Level 2",
           title: "Geradlinig gleichförmig · zwei Objekte",
           controls: "Vergleiche zwei konstante Geschwindigkeiten und finde eine mögliche Begegnung.",
-          formula: "xA,B(t) = xA,B₀ + vA,B · t"
+          formula: "x_A,B(t) = x_A,B0 + v_A,B · t"
         },
         accelerated: {
           level: "Level 3",
@@ -70,12 +70,12 @@
         },
         encounter: {
           a: [
-            { key: "xA0", label: "Anfangsort xA₀", help: "Objekt A bei t = 0", unit: "m", min: -20, max: 100, step: 1 },
-            { key: "vA", label: "Geschwindigkeit vA", help: "konstant", unit: "m/s", min: -12, max: 18, step: 0.5 }
+            { key: "xA0", label: "Anfangsort x_A0", help: "Objekt A bei t = 0", unit: "m", min: -20, max: 100, step: 1 },
+            { key: "vA", label: "Geschwindigkeit v_A", help: "konstant", unit: "m/s", min: -12, max: 18, step: 0.5 }
           ],
           b: [
-            { key: "xB0", label: "Anfangsort xB₀", help: "Objekt B bei t = 0", unit: "m", min: -20, max: 120, step: 1 },
-            { key: "vB", label: "Geschwindigkeit vB", help: "konstant", unit: "m/s", min: -12, max: 18, step: 0.5 }
+            { key: "xB0", label: "Anfangsort x_B0", help: "Objekt B bei t = 0", unit: "m", min: -20, max: 120, step: 1 },
+            { key: "vB", label: "Geschwindigkeit v_B", help: "konstant", unit: "m/s", min: -12, max: 18, step: 0.5 }
           ],
           time: { key: "tMax", label: "Beobachtungszeit", help: "sichtbares Zeitfenster", unit: "s", min: 4, max: 20, step: 1 }
         },
@@ -217,6 +217,64 @@
           .replace(/>/g, "&gt;")
           .replace(/"/g, "&quot;")
           .replace(/'/g, "&#039;");
+      }
+
+      var notationParts = {
+        "x_A,B0": { base: "x", sub: "A,B,0" },
+        "x_A,B": { base: "x", sub: "A,B" },
+        "v_A,B": { base: "v", sub: "A,B" },
+        "x_A0": { base: "x", sub: "A,0" },
+        "x_B0": { base: "x", sub: "B,0" },
+        "x_A": { base: "x", sub: "A" },
+        "x_B": { base: "x", sub: "B" },
+        "v_A": { base: "v", sub: "A" },
+        "v_B": { base: "v", sub: "B" },
+        "v_rel": { base: "v", sub: "rel" },
+        "t_T": { base: "t", sub: "T" },
+        "x_T": { base: "x", sub: "T" }
+      };
+      var notationPattern = /x_A,B0|x_A,B|v_A,B|x_A0|x_B0|x_A|x_B|v_A|v_B|v_rel|t_T|x_T/g;
+
+      function notationMarkup(value, svg) {
+        var text = String(value);
+        var markup = "";
+        var lastIndex = 0;
+        var match;
+        notationPattern.lastIndex = 0;
+        while ((match = notationPattern.exec(text)) !== null) {
+          var parts = notationParts[match[0]];
+          markup += escapeHtml(text.slice(lastIndex, match.index));
+          markup += escapeHtml(parts.base);
+          markup += svg ?
+            "<tspan baseline-shift='sub' font-size='72%'>" + escapeHtml(parts.sub) + "</tspan>" :
+            "<sub>" + escapeHtml(parts.sub) + "</sub>";
+          lastIndex = match.index + match[0].length;
+        }
+        return markup + escapeHtml(text.slice(lastIndex));
+      }
+
+      function notationHtml(value) {
+        return notationMarkup(value, false);
+      }
+
+      function notationSvg(value) {
+        return notationMarkup(value, true);
+      }
+
+      function notationPlainText(value) {
+        notationPattern.lastIndex = 0;
+        return String(value).replace(notationPattern, function (token) {
+          var parts = notationParts[token];
+          return parts.base + " " + parts.sub.replace(/,/g, " ");
+        });
+      }
+
+      function setNotationHtml(element, value) {
+        element.innerHTML = notationHtml(value);
+      }
+
+      function setNotationSvg(element, value) {
+        element.innerHTML = notationSvg(value);
       }
 
       function currentProfile() {
@@ -383,7 +441,10 @@
         updateAnalysisToggle();
         renderDynamic();
         els.simulationStatus.textContent = state.analysisHelpers ?
-          "Analysehilfen eingeblendet." : "Analysehilfen ausgeblendet.";
+          (state.mode === "encounter" ?
+            "Analysehilfen eingeblendet: aktueller Abstand und Relativgeschwindigkeit." :
+            "Analysehilfen eingeblendet.") :
+          "Analysehilfen ausgeblendet.";
       }
 
       function updateComparisonControls() {
@@ -517,7 +578,7 @@
           "<div class='control'>",
             "<div class='control-top'>",
               "<label class='control-label' for='", idBase, "-number'>",
-                escapeHtml(definition.label),
+                notationHtml(definition.label),
                 "<small>", escapeHtml(definition.help), "</small>",
               "</label>",
               "<span class='number-wrap'>",
@@ -530,7 +591,7 @@
             "<input id='", idBase, "-range' type='range'",
               " min='", definition.min, "' max='", definition.max, "' step='", definition.step, "'",
               " value='", value, "' data-value-key='", definition.key, "'",
-              " aria-label='", escapeHtml(definition.label), "' />",
+              " aria-label='", escapeHtml(notationPlainText(definition.label)), "' />",
           "</div>"
         ].join("");
       }
@@ -744,7 +805,7 @@
         els.controlsIntro.textContent = meta.controls;
         els.sceneEyebrow.textContent = meta.level;
         els.sceneTitle.textContent = meta.title;
-        els.formulaBadge.textContent = meta.formula;
+        setNotationHtml(els.formulaBadge, meta.formula);
         els.quizLevel.textContent = meta.level;
         renderControls();
         configurePlotCards();
@@ -1098,7 +1159,7 @@
       function velocityArrow(x, y, value, color, label, stageWidth) {
         if (Math.abs(value) < 0.01) {
           return "<text x='" + x + "' y='" + (y - 38) + "' text-anchor='middle' fill='" + color +
-            "' font-size='13' font-weight='850'>" + escapeHtml(label) + " = 0</text>";
+            "' font-size='13' font-weight='850'>" + notationSvg(label) + " = 0</text>";
         }
         var direction = value > 0 ? 1 : -1;
         var length = clamp(Math.abs(value) * 5, 26, 92);
@@ -1113,7 +1174,7 @@
           "<polygon points='", tip, "' fill='", color, "' />",
           "<text x='", (start + end) / 2, "' y='", y - 51,
             "' text-anchor='middle' fill='", color, "' font-size='12' font-weight='850'>",
-            escapeHtml(label), " = ", fmt(value), " m/s</text>"
+            notationSvg(label), " = ", fmt(value), " m/s</text>"
         ].join("");
       }
 
@@ -1161,7 +1222,8 @@
             "<text x='", x, "' y='", bodyY + 21, "' text-anchor='middle' fill='#fff' font-size='14' font-weight='950'>",
               id, "</text>",
           "</g>",
-          velocityArrow(x, y, velocity, id === "B" ? COLORS.orangeDark : COLORS.blueDark, "v" + (state.mode === "encounter" ? id : ""), stageWidth),
+          velocityArrow(x, y, velocity, id === "B" ? COLORS.orangeDark : COLORS.blueDark,
+            state.mode === "encounter" ? "v_" + id : "v", stageWidth),
           id === "A" ? accelerationArrow(x, y, accelerationAt(), stageWidth) : ""
         ].join("");
       }
@@ -1243,7 +1305,8 @@
       }
 
       function metricMarkup(label, value) {
-        return "<div class='metric'><span>" + escapeHtml(label) + "</span><strong>" + escapeHtml(value) + "</strong></div>";
+        return "<div class='metric'><span>" + notationHtml(label) + "</span><strong>" +
+          notationHtml(value) + "</strong></div>";
       }
 
       function renderMetrics() {
@@ -1251,8 +1314,8 @@
         if (state.mode === "encounter") {
           var xA = positionAt("A", state.time);
           var xB = positionAt("B", state.time);
-          html += metricMarkup("Ort xA", fmt(xA) + " m");
-          html += metricMarkup("Ort xB", fmt(xB) + " m");
+          html += metricMarkup("Ort x_A", fmt(xA) + " m");
+          html += metricMarkup("Ort x_B", fmt(xB) + " m");
           html += metricMarkup("Abstand", fmt(Math.abs(xB - xA)) + " m");
         } else {
           html += metricMarkup("Ort x", fmt(positionAt("A", state.time)) + " m");
@@ -1340,7 +1403,7 @@
           config.series = objectIds().map(function (id) {
             return {
               id: id,
-              label: state.mode === "encounter" ? "x" + id : "x",
+              label: state.mode === "encounter" ? "x_" + id : "x",
               color: id === "B" ? COLORS.orangeDark : COLORS.blueDark,
               value: function (time) { return positionAt(id, time); }
             };
@@ -1355,7 +1418,7 @@
             config.summary = state.mode === "single" ?
               "Die konstante Steigung der Geraden ist die Geschwindigkeit v." :
               state.mode === "encounter" ?
-                "Ein Schnittpunkt bedeutet: gleicher Ort zur gleichen Zeit." :
+                "Die Klammer zeigt den aktuellen Abstand; ein Schnittpunkt bedeutet eine Begegnung." :
                 Math.abs(currentProfile().a) < 0.0001 ?
                   "Bei a = 0 ist auch diese Ortsfunktion eine Gerade." :
                   "Die Tangentensteigung ist die momentane Geschwindigkeit v(t).";
@@ -1367,7 +1430,7 @@
           config.series = objectIds().map(function (id) {
             return {
               id: id,
-              label: state.mode === "encounter" ? "v" + id : "v",
+              label: state.mode === "encounter" ? "v_" + id : "v",
               color: id === "B" ? COLORS.orangeDark : COLORS.blueDark,
               value: function (time) { return velocityAt(id, time); }
             };
@@ -1382,7 +1445,7 @@
             config.summary = state.mode === "single" ?
               "Eine waagrechte Linie zeigt: v ist konstant; die Fläche entspricht Δx." :
               state.mode === "encounter" ?
-                "Beide waagrechten Linien zeigen konstante Geschwindigkeiten." :
+                "Der Linienabstand zeigt |v_A − v_B|: wie schnell sich der Ortsunterschied ändert." :
                 "Die Steigung der Geraden ist die Beschleunigung a; die Fläche entspricht Δx.";
           }
         } else if (plotId === "distance") {
@@ -1391,7 +1454,7 @@
           config.unit = "m";
           config.series = [{
             id: "distance",
-            label: "|xB − xA|",
+            label: "|x_B − x_A|",
             color: COLORS.greenDark,
             value: function (time) {
               return Math.abs(positionAt("B", time) - positionAt("A", time));
@@ -1399,7 +1462,9 @@
           }];
           var distanceAnalysis = meetingAnalysis();
           if (!state.meetingRevealed) {
-            config.summary = "Beobachte den Abstand und vermute, ob und wann er 0 m erreicht.";
+            config.summary = state.analysisHelpers ?
+              "Der Punkt am Zeitcursor zeigt denselben Abstand wie die Klammer im x–t-Diagramm." :
+              "Beobachte den Abstand und vermute, ob und wann er 0 m erreicht.";
           } else if (distanceAnalysis.kind === "always") {
             config.summary = "Identische Bewegungen: Der Abstand bleibt immer 0 m.";
           } else if (distanceAnalysis.kind === "parallel") {
@@ -1447,7 +1512,7 @@
           return ids.map(function (id) {
             return {
               id: id,
-              label: mode === "encounter" ? "x" + id : "x",
+              label: mode === "encounter" ? "x_" + id : "x",
               color: id === "B" ? COLORS.orangeDark : COLORS.blueDark,
               value: function (time) { return positionFor(mode, profile, id, time); }
             };
@@ -1457,7 +1522,7 @@
           return ids.map(function (id) {
             return {
               id: id,
-              label: mode === "encounter" ? "v" + id : "v",
+              label: mode === "encounter" ? "v_" + id : "v",
               color: id === "B" ? COLORS.orangeDark : COLORS.blueDark,
               value: function (time) { return velocityFor(mode, profile, id, time); }
             };
@@ -1466,7 +1531,7 @@
         if (plotId === "distance") {
           return [{
             id: "distance",
-            label: "|xB − xA|",
+            label: "|x_B − x_A|",
             color: COLORS.greenDark,
             value: function (time) {
               return Math.abs(
@@ -1604,6 +1669,22 @@
             "' stroke-width='3.5' stroke-linecap='round' stroke-linejoin='round' />";
         });
 
+        if (state.analysisHelpers && state.mode === "encounter" &&
+            (plotId === "position" || plotId === "velocity")) {
+          var encounterAidBoxWidth = Math.min(224, Math.max(160, plotWidth - 12));
+          var encounterAidBoxX = plotRight - encounterAidBoxWidth - 5;
+          markup += "<g id='plotEncounterAid-" + plotId + "' class='plot-analysis-aid' aria-hidden='true'>" +
+            "<path id='plotEncounterBracket-" + plotId + "' fill='none' stroke='" + COLORS.green +
+            "' stroke-width='2.2' stroke-linecap='round' />" +
+            "<text id='plotEncounterBracketLabel-" + plotId + "' fill='#39845b' font-size='10.5' font-weight='900' paint-order='stroke' stroke='#fff' stroke-width='4' stroke-linejoin='round'></text>" +
+            "<rect x='" + encounterAidBoxX + "' y='" + (top + 5) + "' width='" + encounterAidBoxWidth +
+            "' height='38' rx='9' fill='#effaf4' fill-opacity='0.94' stroke='#8bd0a7' />" +
+            "<text id='plotEncounterSummary1-" + plotId + "' x='" + (encounterAidBoxX + 8) + "' y='" +
+            (top + 20) + "' fill='#39845b' font-size='10.5' font-weight='850'></text>" +
+            "<text id='plotEncounterSummary2-" + plotId + "' x='" + (encounterAidBoxX + 8) + "' y='" +
+            (top + 36) + "' fill='#2f6f4d' font-size='10.5' font-weight='950'></text></g>";
+        }
+
         var showSlopeAid = state.analysisHelpers &&
           ((state.mode === "single" && plotId === "position") ||
             (state.mode === "accelerated" && plotId === "velocity"));
@@ -1658,7 +1739,7 @@
 
         target.svg.innerHTML = markup;
         target.title.textContent = config.title;
-        target.summary.textContent = config.summary;
+        setNotationHtml(target.summary, config.summary);
         var plotAria = config.title + "-Diagramm, " + config.axis + " über t";
         if (state.analysisHelpers && state.mode === "single" && plotId === "position") {
           plotAria += ". Analysehilfe mit Steigungsdreieck für Geschwindigkeit.";
@@ -1668,6 +1749,10 @@
           plotAria += ". Analysehilfe mit Tangente für die momentane Geschwindigkeit.";
         } else if (state.analysisHelpers && state.mode === "accelerated" && plotId === "velocity") {
           plotAria += ". Analysehilfe mit Steigungsdreieck für Beschleunigung und schattierter Fläche für Ortsänderung.";
+        } else if (state.analysisHelpers && state.mode === "encounter" && plotId === "position") {
+          plotAria += ". Analysehilfe mit dem aktuellen Abstand zwischen beiden Objekten.";
+        } else if (state.analysisHelpers && state.mode === "encounter" && plotId === "velocity") {
+          plotAria += ". Analysehilfe mit der Relativgeschwindigkeit beider Objekte.";
         }
         if (comparisonSeries.length) {
           plotAria += ". Gestrichelte Kurven zeigen die gespeicherte Vergleichsmessung. " +
@@ -1676,13 +1761,13 @@
         target.svg.setAttribute("aria-label", plotAria);
         var legendMarkup = config.series.map(function (series) {
           return "<span class='legend-item legend-current'><span class='legend-line' style='border-color:" +
-            series.color + "'></span>" + escapeHtml(series.label + (comparisonSeries.length ? " aktuell" : "")) +
+            series.color + "'></span>" + notationHtml(series.label + (comparisonSeries.length ? " aktuell" : "")) +
             "</span>";
         }).join("");
         if (comparisonSeries.length) {
           legendMarkup += comparisonSeries.map(function (series) {
             return "<span class='legend-item legend-comparison'><span class='legend-line' style='border-color:" +
-              series.color + "'></span>" + escapeHtml(series.label + " Vergleich") + "</span>";
+              series.color + "'></span>" + notationHtml(series.label + " Vergleich") + "</span>";
           }).join("");
         }
         target.legend.innerHTML = legendMarkup;
@@ -1725,7 +1810,12 @@
             tangentLabel: target.svg.querySelector("#plotTangentLabel-" + plotId),
             areaGroup: target.svg.querySelector("#plotAreaAid-" + plotId),
             areaShapes: target.svg.querySelector("#plotAreaShapes-" + plotId),
-            areaLabel: target.svg.querySelector("#plotAreaLabel-" + plotId)
+            areaLabel: target.svg.querySelector("#plotAreaLabel-" + plotId),
+            encounterGroup: target.svg.querySelector("#plotEncounterAid-" + plotId),
+            encounterBracket: target.svg.querySelector("#plotEncounterBracket-" + plotId),
+            encounterBracketLabel: target.svg.querySelector("#plotEncounterBracketLabel-" + plotId),
+            encounterSummary1: target.svg.querySelector("#plotEncounterSummary1-" + plotId),
+            encounterSummary2: target.svg.querySelector("#plotEncounterSummary2-" + plotId)
           }
         };
         updatePlotAnalysis(plotId, plotCaches[plotId]);
@@ -1858,6 +1948,47 @@
           fmt(positionAt("A", time) - positionAt("A", 0)) + " m";
       }
 
+      function updateEncounterAnalysis(plotId, cache) {
+        var aid = cache.analysis;
+        if (!aid || !aid.encounterGroup || !aid.encounterBracket ||
+            !aid.encounterBracketLabel || !aid.encounterSummary1 || !aid.encounterSummary2) {
+          return;
+        }
+        var time = state.time;
+        var valueA = plotId === "position" ? positionAt("A", time) : velocityAt("A", time);
+        var valueB = plotId === "position" ? positionAt("B", time) : velocityAt("B", time);
+        var yA = cache.yScale(valueA);
+        var yB = cache.yScale(valueB);
+        var cursorX = cache.xScale(time);
+        var bracketOnRight = cursorX < cache.right - 104;
+        var bracketX = clamp(cursorX + (bracketOnRight ? 13 : -13), cache.left + 8, cache.right - 8);
+        var capDirection = bracketOnRight ? 1 : -1;
+        var capLength = 7 * capDirection;
+        aid.encounterBracket.setAttribute("d", "M " + bracketX.toFixed(2) + " " + yA.toFixed(2) +
+          " h " + capLength + " M " + bracketX.toFixed(2) + " " + yA.toFixed(2) + " V " +
+          yB.toFixed(2) + " M " + bracketX.toFixed(2) + " " + yB.toFixed(2) + " h " + capLength);
+        aid.encounterBracketLabel.setAttribute("x", bracketX + (bracketOnRight ? 10 : -10));
+        aid.encounterBracketLabel.setAttribute("y", clamp((yA + yB) / 2 - 5, cache.top + 14, cache.bottom - 7));
+        aid.encounterBracketLabel.setAttribute("text-anchor", bracketOnRight ? "start" : "end");
+
+        if (plotId === "position") {
+          var distance = Math.abs(valueB - valueA);
+          aid.encounterBracketLabel.textContent = "|Δx| = " + fmt(distance) + " m";
+          aid.encounterBracketLabel.setAttribute("opacity", Math.abs(yB - yA) > 24 ? "1" : "0");
+          setNotationSvg(aid.encounterSummary1, "x_A(t) = " + displayNumber(valueA) +
+            " m; x_B(t) = " + displayNumber(valueB) + " m");
+          setNotationSvg(aid.encounterSummary2, "Abstand |x_B − x_A| = " + fmt(distance) + " m");
+        } else {
+          var relativeVelocity = valueA - valueB;
+          aid.encounterBracketLabel.textContent = "|Δv| = " + fmt(Math.abs(relativeVelocity)) + " m/s";
+          aid.encounterBracketLabel.setAttribute("opacity", Math.abs(yB - yA) > 24 ? "1" : "0");
+          setNotationSvg(aid.encounterSummary1, "v_A = " + displayNumber(valueA) + " m/s; v_B = " +
+            displayNumber(valueB) + " m/s");
+          setNotationSvg(aid.encounterSummary2, "v_rel = v_A − v_B = " +
+            displayNumber(relativeVelocity) + " m/s");
+        }
+      }
+
       function updatePlotAnalysis(plotId, cache) {
         if (!state.analysisHelpers || !cache || !cache.analysis) {
           return;
@@ -1868,6 +1999,9 @@
         }
         if ((state.mode === "single" || state.mode === "accelerated") && plotId === "velocity") {
           updateVelocityAreaAnalysis(cache);
+        }
+        if (state.mode === "encounter" && (plotId === "position" || plotId === "velocity")) {
+          updateEncounterAnalysis(plotId, cache);
         }
       }
 
@@ -2015,7 +2149,7 @@
         } else if (type === "xt-horizontal") {
           content = "<text x='10' y='13' fill='#68768d' font-size='8' font-weight='900'>x</text><path d='M 36 23 H 218' fill='none' stroke='" + blue + "' stroke-width='3.2' stroke-linecap='round' />";
         } else if (type === "xt-shift") {
-          content = "<text x='10' y='13' fill='#68768d' font-size='8' font-weight='900'>x</text><path d='M 36 48 L 218 19' fill='none' stroke='#9aa6b8' stroke-width='2.6' /><path d='M 36 57 L 218 28' fill='none' stroke='" + blue + "' stroke-width='3' /><text x='211' y='15' text-anchor='end' fill='#68768d' font-size='7'>vorher</text><text x='215' y='40' text-anchor='end' fill='" + blue + "' font-size='7' font-weight='900'>neuer x₀</text>";
+          content = "<text x='10' y='13' fill='#68768d' font-size='8' font-weight='900'>x</text><path d='M 36 57 L 218 28' fill='none' stroke='#9aa6b8' stroke-width='2.6' /><path d='M 36 48 L 218 19' fill='none' stroke='" + blue + "' stroke-width='3' /><text x='211' y='40' text-anchor='end' fill='#68768d' font-size='7'>vorher</text><text x='215' y='15' text-anchor='end' fill='" + blue + "' font-size='7' font-weight='900'>neuer x₀</text>";
         } else if (type === "xt-parallel") {
           content = "<text x='10' y='13' fill='#68768d' font-size='8' font-weight='900'>x</text><path d='M 36 47 L 218 18' fill='none' stroke='" + blue + "' stroke-width='3' /><path d='M 36 57 L 218 28' fill='none' stroke='" + orange + "' stroke-width='3' /><text x='216' y='15' text-anchor='end' fill='" + blue + "' font-size='7.5' font-weight='900'>A</text><text x='216' y='39' text-anchor='end' fill='" + orange + "' font-size='7.5' font-weight='900'>B</text>";
         } else if (type === "xt-intersection") {
@@ -2159,7 +2293,7 @@
             prompt: "Bei gleicher v-Achsenskalierung wird der Abstand zwischen zwei waagrechten v–t-Linien grösser. Was bedeutet das?",
             answers: ["Der Betrag der Relativgeschwindigkeit ist grösser; der Ortsunterschied ändert sich schneller.", "Nur die Anfangsorte wurden verändert.", "Die Geschwindigkeiten sind nun gleich."],
             correct: 0,
-            explanation: "Bei gleicher Skalierung entspricht der vertikale Abstand dem Betrag |vA − vB| der Relativgeschwindigkeit."
+            explanation: "Bei gleicher Skalierung entspricht der vertikale Abstand dem Betrag |v_A − v_B| der Relativgeschwindigkeit."
           },
           {
             kind: "Abstand deuten",
@@ -2304,17 +2438,19 @@
           startDistance,
           [Math.abs(p.xB0 + p.xA0), startDistance + 10, Math.abs(startDistance - 10)],
           "m",
-          "Der Anfangsabstand ist |xB₀ − xA₀| = |" + displayNumber(p.xB0) + " m − (" + displayNumber(p.xA0) + " m)| = " + fmt(startDistance) + " m.",
+          "Der Anfangsabstand ist |x_B0 − x_A0| = |" + displayNumber(p.xB0) +
+            " m − (" + displayNumber(p.xA0) + " m)| = " + fmt(startDistance) + " m.",
           0,
           1,
           { min: 0 }
         ));
         questions.push(makeNumericQuestion(
-          "Wie gross ist der Betrag der relativen Geschwindigkeit |vA − vB|?",
+          "Wie gross ist der Betrag der relativen Geschwindigkeit |v_A − v_B|?",
           relative,
           [Math.abs(p.vA + p.vB), relative + 1, relative + 2],
           "m/s",
-          "|vA − vB| = |" + displayNumber(p.vA) + " − (" + displayNumber(p.vB) + ")| m/s = " + fmt(relative) + " m/s.",
+          "|v_A − v_B| = |" + displayNumber(p.vA) + " − (" +
+            displayNumber(p.vB) + ")| m/s = " + fmt(relative) + " m/s.",
           0,
           1,
           { min: 0 }
@@ -2328,7 +2464,10 @@
           distanceAtTq,
           [startDistance + relative * tq, Math.abs(startDistance - relative * tq), Math.abs(startDistance - 0.5 * relative * tq), startDistance],
           "m",
-          "Zuerst: xA = " + displayNumber(xAAtTq) + " m und xB = " + displayNumber(xBAtTq) + " m. Dann ist |xB − xA| = |" + displayNumber(xBAtTq) + " − (" + displayNumber(xAAtTq) + ")| m = " + fmt(distanceAtTq) + " m.",
+          "Zuerst: x_A = " + displayNumber(xAAtTq) + " m und x_B = " +
+            displayNumber(xBAtTq) + " m. Dann ist |x_B − x_A| = |" +
+            displayNumber(xBAtTq) + " − (" + displayNumber(xAAtTq) + ")| m = " +
+            fmt(distanceAtTq) + " m.",
           1,
           1,
           { min: 0 }
@@ -2340,7 +2479,8 @@
             analysis.time,
             [startDistance / Math.max(0.5, Math.abs(p.vA) + Math.abs(p.vB)), analysis.time + 2, startDistance / Math.max(0.5, relative + 2)],
             "s",
-            "Aus xA(t) = xB(t) folgt tT = (xB₀ − xA₀)/(vA − vB) ≈ " + fmt(analysis.time, 2) + " s.",
+            "Aus x_A(t) = x_B(t) folgt t_T = (x_B0 − x_A0)/(v_A − v_B) ≈ " +
+              fmt(analysis.time, 2) + " s.",
             1,
             2,
             { min: 0 }
@@ -2350,7 +2490,8 @@
             analysis.position,
             [(p.xA0 + p.xB0) / 2, p.xA0 + p.vB * analysis.time, p.xB0 + p.vA * analysis.time],
             "m",
-            "Einsetzen der Begegnungszeit in xA(t) ergibt xT = xA₀ + vA·tT ≈ " + fmt(analysis.position) + " m. Mit xB(t) erhält man denselben Ort.",
+            "Einsetzen der Begegnungszeit in x_A(t) ergibt x_T = x_A0 + v_A·t_T ≈ " +
+              fmt(analysis.position) + " m. Mit x_B(t) erhält man denselben Ort.",
             2,
             1
           ));
@@ -2360,20 +2501,20 @@
             prompt: "A und B haben denselben Anfangsort und dieselbe Geschwindigkeit. Wie viele Begegnungszeiten gibt es?",
             answers: ["Keine.", "Genau eine bei t = 0.", "Unendlich viele: Beide Ortsfunktionen sind identisch."],
             correct: 2,
-            explanation: "xA(t) und xB(t) sind dieselbe Funktion. Daher befinden sich A und B zu jedem Zeitpunkt am selben Ort."
+            explanation: "x_A(t) und x_B(t) sind dieselbe Funktion. Daher befinden sich A und B zu jedem Zeitpunkt am selben Ort."
           });
         } else if (analysis.kind === "parallel") {
           questions.push({
             kind: "Sonderfall beurteilen",
-            prompt: "vA = vB, aber xA₀ ≠ xB₀. Warum gibt es keine Begegnungszeit?",
-            answers: ["Der Anfangsabstand bleibt konstant, weil vA − vB = 0.", "Beide Geschwindigkeiten werden mit der Zeit null.", "Eine Begegnung ist nur bei negativen Orten möglich."],
+            prompt: "v_A = v_B, aber x_A0 ≠ x_B0. Warum gibt es keine Begegnungszeit?",
+            answers: ["Der Anfangsabstand bleibt konstant, weil v_A − v_B = 0.", "Beide Geschwindigkeiten werden mit der Zeit null.", "Eine Begegnung ist nur bei negativen Orten möglich."],
             correct: 0,
             explanation: "Beim Gleichsetzen fällt der gemeinsame v·t-Term weg; verschiedene Anfangsorte können dann nicht gleich werden. Die x–t-Geraden sind parallel."
           });
         } else if (analysis.kind === "past") {
           questions.push({
             kind: "Sonderfall beurteilen",
-            prompt: "Das Gleichsetzen liefert tT < 0. Was bedeutet dieses Resultat?",
+            prompt: "Das Gleichsetzen liefert t_T < 0. Was bedeutet dieses Resultat?",
             answers: ["Die Geraden schneiden sich erst nach dem Zeitfenster.", "Die Begegnung läge vor dem gewählten Zeitpunkt t = 0; für t ≥ 0 gibt es keine zukünftige Begegnung.", "Negative Zeiten bedeuten, dass die Rechnung ungültig ist."],
             correct: 1,
             explanation: "Die linearen Ortsfunktionen besitzen zwar einen Schnittpunkt, doch er liegt in der rückwärts verlängerten Zeitachse vor Simulationsbeginn."
@@ -2531,7 +2672,7 @@
         els.quizScore.textContent = quiz.score + " / " + questions.length;
         els.quizCounter.textContent = "Frage " + (quiz.index + 1) + " von " + questions.length;
         els.quizKind.textContent = question.kind || (understanding ? "Verstehen" : "Rechnen");
-        els.quizQuestion.textContent = question.prompt;
+        setNotationHtml(els.quizQuestion, question.prompt);
         if (question.visual) {
           els.quizVisual.hidden = false;
           els.quizVisual.innerHTML = quizVisualMarkup(question.visual);
@@ -2551,7 +2692,7 @@
           }
           return "<button class='" + classes + "' type='button' data-answer='" + index + "'" +
             (quiz.answered ? " disabled" : "") + "><span class='answer-letter'>" + letters[index] +
-            "</span><span>" + escapeHtml(answer) + "</span></button>";
+            "</span><span>" + notationHtml(answer) + "</span></button>";
         }).join("");
         var progress = (quiz.index + (quiz.answered ? 1 : 0)) / questions.length * 100;
         els.quizProgress.style.width = progress + "%";
@@ -2559,9 +2700,13 @@
         if (quiz.answered) {
           var correct = quiz.selected === question.correct;
           els.quizFeedback.className = "quiz-feedback " + (correct ? "success" : "error");
-          els.quizFeedback.textContent = (correct ? "Richtig. " : "Noch nicht. ") + question.explanation;
+          var roundComplete = quiz.index === questions.length - 1;
+          var roundSummary = roundComplete ?
+            " Runde abgeschlossen: " + quiz.score + " von " + questions.length + " richtig." : "";
+          setNotationHtml(els.quizFeedback, (correct ? "Richtig. " : "Nicht ganz. ") +
+            question.explanation + roundSummary);
           els.nextQuestion.disabled = false;
-          els.nextQuestion.textContent = quiz.index === questions.length - 1 ? "Neue Quizrunde" : "Nächste Frage";
+          els.nextQuestion.textContent = roundComplete ? "Neue Runde starten" : "Nächste Frage";
         } else {
           els.quizFeedback.className = "quiz-feedback";
           els.quizFeedback.textContent = understanding ?
