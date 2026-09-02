@@ -1193,15 +1193,19 @@
             "' font-size='13' font-weight='850'>" + notationSvg(label) + " = 0</text>";
         }
         var direction = value > 0 ? 1 : -1;
-        var length = clamp(Math.abs(value) * 5, 26, 92);
-        var start = x - direction * 4;
+        var length = clamp(Math.abs(value) * 5, 0, 92);
+        var start = x;
         var end = clamp(x + direction * length, 14, stageWidth - 14);
-        var tip = direction > 0 ?
-          (end + "," + (y - 42) + " " + (end - 10) + "," + (y - 48) + " " + (end - 10) + "," + (y - 36)) :
-          (end + "," + (y - 42) + " " + (end + 10) + "," + (y - 48) + " " + (end + 10) + "," + (y - 36));
+        var visibleLength = Math.abs(end - start);
+        var strokeWidth = Math.min(3, visibleLength);
+        var headLength = Math.min(10, visibleLength * 0.55);
+        var headHalfHeight = Math.min(6, visibleLength * 0.32);
+        var headBase = end - direction * headLength;
+        var tip = end + "," + (y - 42) + " " + headBase + "," + (y - 42 - headHalfHeight) +
+          " " + headBase + "," + (y - 42 + headHalfHeight);
         return [
           "<line x1='", start, "' y1='", y - 42, "' x2='", end, "' y2='", y - 42,
-            "' stroke='", color, "' stroke-width='3' stroke-linecap='round' />",
+            "' stroke='", color, "' stroke-width='", strokeWidth, "' stroke-linecap='round' />",
           "<polygon points='", tip, "' fill='", color, "' />",
           "<text x='", (start + end) / 2, "' y='", y - 51,
             "' text-anchor='middle' fill='", color, "' font-size='12' font-weight='850'>",
