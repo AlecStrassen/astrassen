@@ -1,0 +1,3384 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#f3f5fb" />
+  <title>Labor für lineare Funktionen</title>
+  <link rel="icon" href="../../favicon.svg" type="image/svg+xml" />
+  <style>
+    :root {
+      --bg: #f3f5fb;
+      --card: rgba(252, 253, 255, 0.92);
+      --card-solid: #fcfdff;
+      --text: #354158;
+      --muted: #68768d;
+      --line: #dce3ef;
+      --blue: #7f9fe3;
+      --blue-dark: #5574b8;
+      --green: #81c9a1;
+      --green-dark: #39845b;
+      --orange: #e9a078;
+      --orange-dark: #b96f49;
+      --cyan: #91c9d5;
+      --cyan-dark: #4f91a0;
+      --red: #df8c89;
+      --dark: #465268;
+      --shadow: 0 20px 48px rgba(72, 86, 112, 0.1);
+      --radius: 24px;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    sub {
+      position: relative;
+      bottom: -0.24em;
+      font-size: 0.7em;
+      line-height: 0;
+      vertical-align: baseline;
+    }
+
+    html,
+    body {
+      min-height: 100%;
+      width: 100%;
+    }
+
+    body {
+      margin: 0;
+      color: var(--text);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background:
+        radial-gradient(circle at 8% 8%, rgba(163, 184, 230, 0.24), transparent 34%),
+        radial-gradient(circle at 96% 6%, rgba(169, 215, 222, 0.22), transparent 29%),
+        linear-gradient(180deg, #fafbff 0%, var(--bg) 100%);
+    }
+
+    button,
+    input,
+    select {
+      font: inherit;
+    }
+
+    button {
+      color: inherit;
+    }
+
+    button:focus-visible,
+    input:focus-visible,
+    select:focus-visible,
+    a:focus-visible,
+    [tabindex]:focus-visible {
+      outline: 3px solid rgba(127, 159, 227, 0.44);
+      outline-offset: 2px;
+    }
+
+    button:disabled,
+    input:disabled {
+      cursor: not-allowed;
+    }
+
+    [hidden] {
+      display: none !important;
+    }
+
+    .app-shell {
+      width: min(1540px, calc(100vw - 24px));
+      margin: 0 auto;
+      padding: 14px 0 20px;
+      display: grid;
+      gap: 10px;
+    }
+
+    .app-header {
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      gap: 22px;
+      min-width: 0;
+    }
+
+    .title-wrap {
+      min-width: 0;
+    }
+
+    .eyebrow,
+    .panel-kicker {
+      display: block;
+      color: var(--blue-dark);
+      font-weight: 900;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+    }
+
+    .eyebrow {
+      margin-bottom: 4px;
+      font-size: 0.73rem;
+    }
+
+    h1,
+    h2,
+    h3,
+    p {
+      overflow-wrap: anywhere;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: 2.35rem;
+      line-height: 1.05;
+      letter-spacing: 0;
+    }
+
+    .subtitle {
+      margin: 5px 0 0;
+      color: var(--muted);
+      font-size: 0.96rem;
+      line-height: 1.35;
+    }
+
+    .back-link {
+      display: inline-flex;
+      flex: 0 0 auto;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      min-height: 42px;
+      padding: 9px 14px;
+      border: 1px solid rgba(127, 159, 227, 0.32);
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.76);
+      color: #536da8;
+      box-shadow: 0 10px 24px rgba(72, 86, 112, 0.08);
+      text-decoration: none;
+      font-size: 0.86rem;
+      font-weight: 850;
+      white-space: nowrap;
+      transition: border-color 0.16s ease, background 0.16s ease, transform 0.16s ease;
+    }
+
+    .back-link:hover {
+      border-color: rgba(127, 159, 227, 0.58);
+      background: rgba(255, 255, 255, 0.96);
+      transform: translateY(-1px);
+    }
+
+    .context-picker {
+      display: grid;
+      grid-template-columns: repeat(5, minmax(0, 1fr));
+      gap: 7px;
+      padding: 7px;
+      border: 1px solid rgba(217, 226, 239, 0.96);
+      border-radius: 22px;
+      background: rgba(252, 253, 255, 0.76);
+      box-shadow: 0 13px 34px rgba(72, 86, 112, 0.08);
+      backdrop-filter: blur(14px);
+    }
+
+    .context-button {
+      appearance: none;
+      display: grid;
+      grid-template-columns: auto minmax(0, 1fr);
+      align-items: center;
+      gap: 9px;
+      min-width: 0;
+      min-height: 58px;
+      padding: 8px 11px;
+      border: 1px solid transparent;
+      border-radius: 16px;
+      background: transparent;
+      text-align: left;
+      cursor: pointer;
+      transition: background 0.16s ease, border-color 0.16s ease, box-shadow 0.16s ease, transform 0.16s ease;
+    }
+
+    .context-button:hover {
+      background: rgba(255, 255, 255, 0.8);
+      transform: translateY(-1px);
+    }
+
+    .context-button[aria-checked="true"] {
+      border-color: rgba(127, 159, 227, 0.38);
+      background: #ffffff;
+      box-shadow: 0 0 0 3px rgba(127, 159, 227, 0.08), 0 10px 24px rgba(72, 86, 112, 0.08);
+    }
+
+    .context-symbol {
+      display: grid;
+      width: 36px;
+      height: 36px;
+      place-items: center;
+      border-radius: 12px;
+      background: #edf2fc;
+      color: var(--blue-dark);
+      font-family: "Cambria Math", Cambria, Georgia, serif;
+      font-size: 0.86rem;
+      font-weight: 850;
+    }
+
+    .context-button[aria-checked="true"] .context-symbol {
+      background: linear-gradient(145deg, #8eabe9, #6f91d9);
+      color: #fff;
+      box-shadow: 0 7px 15px rgba(127, 159, 227, 0.26);
+    }
+
+    .context-copy,
+    .context-copy strong,
+    .context-copy small {
+      min-width: 0;
+    }
+
+    .context-copy strong,
+    .context-copy small {
+      display: block;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .context-copy strong {
+      font-size: 0.88rem;
+    }
+
+    .context-copy small {
+      margin-top: 2px;
+      color: var(--muted);
+      font-size: 0.68rem;
+    }
+
+    .workspace {
+      display: grid;
+      grid-template-columns: minmax(250px, 292px) minmax(470px, 1fr) minmax(330px, 390px);
+      grid-template-areas:
+        "controls graph insights"
+        "quiz quiz quiz";
+      gap: 10px;
+      min-width: 0;
+      align-items: stretch;
+    }
+
+    .panel {
+      min-width: 0;
+      min-height: 0;
+      overflow: hidden;
+      border: 1px solid rgba(217, 226, 239, 0.96);
+      border-radius: var(--radius);
+      background: var(--card);
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(14px);
+    }
+
+    .panel-heading,
+    .graph-heading {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 14px 15px 10px;
+      border-bottom: 1px solid rgba(220, 227, 239, 0.86);
+    }
+
+    .panel-heading > div,
+    .graph-heading > div {
+      min-width: 0;
+    }
+
+    .panel-kicker {
+      margin-bottom: 3px;
+      font-size: 0.66rem;
+    }
+
+    .panel h2,
+    .panel h3 {
+      margin: 0;
+      letter-spacing: 0;
+    }
+
+    .panel h2 {
+      font-size: 1rem;
+    }
+
+    .panel h3 {
+      font-size: 0.94rem;
+    }
+
+    .panel-description {
+      margin: 4px 0 0;
+      color: var(--muted);
+      font-size: 0.77rem;
+      line-height: 1.35;
+    }
+
+    .controls-panel {
+      grid-area: controls;
+      display: grid;
+      grid-template-rows: auto minmax(0, 1fr);
+      min-height: 650px;
+    }
+
+    .panel-scroll {
+      min-height: 0;
+      overflow: auto;
+      overscroll-behavior: contain;
+      padding: 12px 14px 14px;
+      scrollbar-width: thin;
+      scrollbar-color: #cbd6e7 transparent;
+    }
+
+    .section-label {
+      display: block;
+      margin-bottom: 7px;
+      color: var(--muted);
+      font-size: 0.69rem;
+      font-weight: 850;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+    }
+
+    .preset-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-bottom: 11px;
+    }
+
+    .preset-button,
+    .small-button {
+      min-height: 34px;
+      padding: 6px 10px;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      background: #fff;
+      color: #5e6c83;
+      font-size: 0.72rem;
+      font-weight: 850;
+      cursor: pointer;
+      transition: border-color 0.15s ease, background 0.15s ease, color 0.15s ease, transform 0.15s ease;
+    }
+
+    .preset-button:hover,
+    .small-button:hover:not(:disabled) {
+      border-color: rgba(127, 159, 227, 0.65);
+      color: var(--blue-dark);
+      transform: translateY(-1px);
+    }
+
+    .preset-button.active,
+    .small-button[aria-pressed="true"] {
+      border-color: rgba(127, 159, 227, 0.55);
+      background: #eef3fd;
+      color: var(--blue-dark);
+    }
+
+    .small-button:disabled {
+      opacity: 0.48;
+    }
+
+    .control-stack {
+      display: grid;
+      gap: 9px;
+    }
+
+    .control {
+      padding: 9px 10px;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      background: var(--card-solid);
+    }
+
+    .control.slope-control {
+      border-left: 4px solid var(--blue);
+    }
+
+    .control.intercept-control {
+      border-left: 4px solid var(--orange);
+    }
+
+    .control-top {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      align-items: center;
+      gap: 7px;
+      margin-bottom: 6px;
+    }
+
+    .control-label {
+      min-width: 0;
+      font-size: 0.77rem;
+      font-weight: 900;
+    }
+
+    .control-label small {
+      display: block;
+      margin-top: 2px;
+      overflow: hidden;
+      color: var(--muted);
+      font-size: 0.64rem;
+      font-weight: 650;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .number-wrap {
+      display: grid;
+      grid-template-columns: minmax(50px, 64px) auto;
+      align-items: center;
+      overflow: hidden;
+      border: 1px solid #d5deec;
+      border-radius: 9px;
+      background: #fff;
+    }
+
+    .number-wrap input {
+      width: 100%;
+      min-width: 0;
+      padding: 5px 3px 5px 7px;
+      border: 0;
+      outline: 0;
+      background: transparent;
+      color: var(--dark);
+      font-size: 0.74rem;
+      font-weight: 900;
+      text-align: right;
+    }
+
+    .number-wrap span {
+      padding: 0 6px 0 2px;
+      color: var(--muted);
+      font-size: 0.64rem;
+      font-weight: 800;
+      white-space: nowrap;
+    }
+
+    input[type="range"] {
+      width: 100%;
+      height: 24px;
+      margin: -4px 0;
+      border-radius: 999px;
+      accent-color: var(--blue);
+      cursor: pointer;
+    }
+
+    .intercept-control input[type="range"] {
+      accent-color: var(--orange);
+    }
+
+    .formula-note {
+      margin-top: 12px;
+      padding: 10px;
+      border: 1px solid rgba(145, 201, 213, 0.48);
+      border-radius: 14px;
+      background: #f2fafb;
+      color: #536d75;
+      font-size: 0.72rem;
+      line-height: 1.4;
+    }
+
+    .formula-note strong {
+      display: block;
+      margin-bottom: 3px;
+      color: var(--dark);
+    }
+
+    .formula-units {
+      display: block;
+      margin-top: 7px;
+      padding-top: 7px;
+      border-top: 1px solid rgba(145, 201, 213, 0.4);
+      color: #3f6067;
+    }
+
+    .formula-units-label {
+      color: var(--dark);
+      font-weight: 800;
+    }
+
+    .formula-font {
+      font-family: "Cambria Math", Cambria, Georgia, serif;
+    }
+
+    .graph-panel {
+      grid-area: graph;
+      display: grid;
+      grid-template-rows: auto auto minmax(390px, 1fr) auto auto;
+      min-height: 650px;
+    }
+
+    .graph-heading {
+      padding: 12px 14px 9px;
+    }
+
+    .formula-badge {
+      align-self: center;
+      max-width: 62%;
+      min-height: 34px;
+      padding: 7px 10px;
+      border: 1px solid rgba(127, 159, 227, 0.34);
+      border-radius: 10px;
+      background: #f3f6fd;
+      color: #536da8;
+      font-family: "Cambria Math", Cambria, Georgia, serif;
+      font-size: 0.8rem;
+      font-weight: 800;
+      font-variant-numeric: tabular-nums;
+      overflow: hidden;
+      text-align: right;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .graph-toolbar {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 6px;
+      padding: 7px 10px;
+      border-bottom: 1px solid var(--line);
+      background: rgba(248, 250, 253, 0.82);
+    }
+
+    .graph-toolbar .comparison-delete {
+      color: var(--orange-dark);
+    }
+
+    .toolbar-status {
+      flex: 1 1 150px;
+      min-width: 0;
+      color: var(--muted);
+      font-size: 0.67rem;
+      font-weight: 750;
+      text-align: right;
+    }
+
+    .graph-stage {
+      position: relative;
+      min-width: 0;
+      min-height: 0;
+      overflow: hidden;
+      background:
+        radial-gradient(circle, rgba(127, 159, 227, 0.17) 1.15px, transparent 1.25px) 0 0 / 20px 20px,
+        linear-gradient(180deg, #fbfdff 0%, #f5f8fc 100%);
+    }
+
+    #lineGraph {
+      display: block;
+      width: 100%;
+      height: 100%;
+      min-height: 390px;
+      touch-action: none;
+    }
+
+    #lineGraph text,
+    #quizVisualSvg text {
+      fill: var(--text);
+      font-family: Inter, ui-sans-serif, system-ui, sans-serif;
+      font-size: 12px;
+    }
+
+    #lineGraph .grid-line,
+    #quizVisualSvg .grid-line {
+      stroke: #dde5f0;
+      stroke-width: 1;
+    }
+
+    #lineGraph .axis-line,
+    #quizVisualSvg .axis-line {
+      stroke: #8d99ac;
+      stroke-width: 1.35;
+    }
+
+    #lineGraph .frame-line,
+    #quizVisualSvg .frame-line {
+      fill: rgba(255, 255, 255, 0.72);
+      stroke: #cfd9e7;
+      stroke-width: 1;
+    }
+
+    #lineGraph .model-line,
+    #quizVisualSvg .model-line {
+      fill: none;
+      stroke: var(--blue-dark);
+      stroke-width: 3.2;
+      stroke-linecap: round;
+    }
+
+    #lineGraph .comparison-line {
+      fill: none;
+      stroke: var(--orange-dark);
+      stroke-width: 2.4;
+      stroke-dasharray: 8 6;
+      stroke-linecap: round;
+    }
+
+    #lineGraph .guide-line {
+      fill: none;
+      stroke: var(--cyan-dark);
+      stroke-width: 1.7;
+      stroke-dasharray: 6 5;
+    }
+
+    #lineGraph .triangle-fill {
+      fill: rgba(68, 164, 115, 0.22);
+      stroke: none;
+    }
+
+    #lineGraph .triangle-line {
+      fill: none;
+      stroke: var(--green-dark);
+      stroke-width: 3.4;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      filter: drop-shadow(0 2px 2px rgba(37, 105, 74, 0.18));
+    }
+
+    #lineGraph .slope-formula-box {
+      fill: rgba(224, 239, 255, 0.76);
+      stroke: rgba(109, 142, 201, 0.42);
+      stroke-width: 1.2;
+    }
+
+    #lineGraph .slope-formula-label {
+      fill: var(--dark);
+      font-size: 12px;
+      font-weight: 900;
+      paint-order: normal;
+      stroke: none;
+    }
+
+    #lineGraph .probe-dot {
+      fill: #fff;
+      stroke: var(--green-dark);
+      stroke-width: 2.2;
+      pointer-events: none;
+    }
+
+    #lineGraph .tick-label {
+      fill: var(--muted);
+      font-size: 11px;
+    }
+
+    #lineGraph .axis-title {
+      fill: var(--dark);
+      font-size: 12px;
+      font-weight: 850;
+    }
+
+    #lineGraph .value-label {
+      fill: var(--dark);
+      font-size: 12px;
+      font-weight: 900;
+      paint-order: stroke;
+      stroke: #fff;
+      stroke-width: 5px;
+      stroke-linejoin: round;
+    }
+
+    #lineGraph .triangle-vertical-label {
+      dominant-baseline: middle;
+    }
+
+    #lineGraph .svg-subscript {
+      font-size: 70%;
+      baseline-shift: sub;
+    }
+
+    #lineGraph .series-label.current {
+      fill: var(--blue-dark);
+    }
+
+    #lineGraph .series-label.comparison {
+      fill: var(--orange-dark);
+    }
+
+    #quizVisualSvg .quiz-secondary {
+      fill: none;
+      stroke: var(--orange-dark);
+      stroke-width: 2.5;
+      stroke-dasharray: 7 5;
+      stroke-linecap: round;
+    }
+
+    #quizVisualSvg .quiz-triangle {
+      fill: rgba(129, 201, 161, 0.14);
+      stroke: var(--green-dark);
+      stroke-width: 1.8;
+    }
+
+    #quizVisualSvg .quiz-marker {
+      fill: var(--orange);
+      stroke: #fff;
+      stroke-width: 2.2;
+    }
+
+    .probe-control {
+      display: grid;
+      grid-template-columns: minmax(112px, auto) minmax(100px, 1fr) minmax(110px, auto);
+      align-items: center;
+      gap: 10px;
+      padding: 9px 12px;
+      border-top: 1px solid var(--line);
+      background: rgba(255, 255, 255, 0.78);
+    }
+
+    .probe-control label {
+      color: var(--dark);
+      font-size: 0.72rem;
+      font-weight: 900;
+    }
+
+    .probe-control output {
+      min-width: 0;
+      color: var(--orange-dark);
+      font-size: 0.73rem;
+      font-variant-numeric: tabular-nums;
+      font-weight: 900;
+      text-align: right;
+    }
+
+    .metric-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 6px;
+      padding: 7px 10px 9px;
+      background: rgba(246, 249, 253, 0.94);
+    }
+
+    .metric {
+      min-width: 0;
+      padding: 7px 8px;
+      border: 1px solid var(--line);
+      border-radius: 11px;
+      background: #fff;
+    }
+
+    .metric span,
+    .metric strong {
+      display: block;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .metric span {
+      color: var(--muted);
+      font-size: 0.62rem;
+      font-weight: 750;
+    }
+
+    .metric strong {
+      margin-top: 2px;
+      color: var(--dark);
+      font-size: 0.8rem;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .insights-panel {
+      grid-area: insights;
+      display: grid;
+      grid-template-rows: auto auto minmax(0, 1fr);
+      min-height: 650px;
+    }
+
+    .view-tabs,
+    .quiz-type-picker {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 5px;
+      padding: 7px;
+      border-bottom: 1px solid var(--line);
+      background: rgba(247, 249, 253, 0.86);
+    }
+
+    .view-tabs button,
+    .quiz-type-picker button {
+      min-width: 0;
+      min-height: 35px;
+      padding: 7px 8px;
+      border: 1px solid transparent;
+      border-radius: 10px;
+      background: transparent;
+      color: var(--muted);
+      font-size: 0.7rem;
+      font-weight: 900;
+      cursor: pointer;
+    }
+
+    .view-tabs button:hover,
+    .quiz-type-picker button:hover {
+      background: #fff;
+      color: var(--blue-dark);
+    }
+
+    .view-tabs button[aria-selected="true"],
+    .quiz-type-picker button[aria-pressed="true"] {
+      border-color: rgba(127, 159, 227, 0.38);
+      background: #fff;
+      color: var(--blue-dark);
+      box-shadow: 0 5px 12px rgba(72, 86, 112, 0.08);
+    }
+
+    .insights-body {
+      min-height: 0;
+      overflow: auto;
+      padding: 13px 14px 15px;
+      scrollbar-width: thin;
+      scrollbar-color: #cbd6e7 transparent;
+    }
+
+    .formula-bridge {
+      display: grid;
+      gap: 7px;
+      margin-bottom: 13px;
+      padding: 10px 11px;
+      border: 1px solid rgba(127, 159, 227, 0.28);
+      border-radius: 14px;
+      background: #f5f7fd;
+    }
+
+    .formula-row {
+      display: grid;
+      grid-template-columns: 88px minmax(0, 1fr);
+      align-items: baseline;
+      gap: 8px;
+      font-size: 0.76rem;
+    }
+
+    .formula-row span:first-child {
+      color: var(--muted);
+      font-size: 0.65rem;
+      font-weight: 800;
+      text-transform: uppercase;
+    }
+
+    .formula-row strong {
+      color: var(--dark);
+      font-family: "Cambria Math", Cambria, Georgia, serif;
+      font-size: 0.82rem;
+    }
+
+    .formula-row.units {
+      align-items: start;
+    }
+
+    .formula-row.units strong {
+      overflow-wrap: anywhere;
+      font-size: 0.76rem;
+      line-height: 1.45;
+    }
+
+    .meaning-list {
+      display: grid;
+      gap: 9px;
+    }
+
+    .meaning-item {
+      padding: 10px 11px;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      background: #fff;
+      font-size: 0.75rem;
+      line-height: 1.42;
+    }
+
+    .meaning-item.slope {
+      border-left: 4px solid var(--blue);
+    }
+
+    .meaning-item.intercept {
+      border-left: 4px solid var(--orange);
+    }
+
+    .meaning-item strong {
+      display: block;
+      margin-bottom: 3px;
+      color: var(--dark);
+      font-size: 0.77rem;
+    }
+
+    .model-note,
+    .comparison-note {
+      margin: 10px 0 0;
+      padding: 9px 10px;
+      border-radius: 12px;
+      font-size: 0.7rem;
+      line-height: 1.4;
+    }
+
+    .model-note {
+      border: 1px solid rgba(145, 201, 213, 0.48);
+      background: #f2fafb;
+      color: #536d75;
+    }
+
+    .comparison-note {
+      border: 1px solid rgba(233, 160, 120, 0.45);
+      background: #fff7f2;
+      color: #855d49;
+    }
+
+    .value-table {
+      width: 100%;
+      border-collapse: collapse;
+      table-layout: fixed;
+      font-size: 0.74rem;
+    }
+
+    .value-table th,
+    .value-table td {
+      padding: 9px 7px;
+      border-bottom: 1px solid var(--line);
+      text-align: right;
+      vertical-align: middle;
+      overflow-wrap: anywhere;
+    }
+
+    .value-table th {
+      color: var(--muted);
+      font-size: 0.65rem;
+      font-weight: 850;
+    }
+
+    .value-table th:first-child,
+    .value-table td:first-child {
+      text-align: left;
+    }
+
+    .value-table td {
+      color: var(--dark);
+      font-variant-numeric: tabular-nums;
+      font-weight: 750;
+    }
+
+    .task-meta {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 10px;
+      color: var(--muted);
+      font-size: 0.68rem;
+      font-weight: 850;
+    }
+
+    .task-chip,
+    .score-chip {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 28px;
+      padding: 4px 9px;
+      border-radius: 999px;
+      background: #edf2fc;
+      color: var(--blue-dark);
+      font-size: 0.7rem;
+      font-weight: 900;
+      white-space: nowrap;
+    }
+
+    .task-prompt {
+      margin: 0 0 12px;
+      color: var(--dark);
+      font-size: 0.93rem;
+      font-weight: 800;
+      line-height: 1.42;
+    }
+
+    .task-actions {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 7px;
+    }
+
+    .task-actions .primary-button {
+      grid-column: 1 / -1;
+    }
+
+    .primary-button {
+      min-height: 42px;
+      padding: 8px 12px;
+      border: 1px solid rgba(127, 159, 227, 0.5);
+      border-radius: 11px;
+      background: linear-gradient(145deg, #8ea9e5, #7294dc);
+      color: #fff;
+      box-shadow: 0 8px 18px rgba(127, 159, 227, 0.2);
+      font-size: 0.78rem;
+      font-weight: 900;
+      cursor: pointer;
+    }
+
+    .primary-button:hover {
+      transform: translateY(-1px);
+    }
+
+    .task-feedback {
+      min-height: 64px;
+      margin-top: 10px;
+      padding: 10px;
+      border: 1px dashed var(--line);
+      border-radius: 13px;
+      background: #f8fafc;
+      color: var(--muted);
+      font-size: 0.74rem;
+      line-height: 1.42;
+    }
+
+    .task-feedback.success {
+      border-style: solid;
+      border-color: rgba(129, 201, 161, 0.5);
+      background: #f0faf4;
+      color: #47715a;
+    }
+
+    .task-feedback.error {
+      border-style: solid;
+      border-color: rgba(233, 160, 120, 0.5);
+      background: #fff6f1;
+      color: #865d49;
+    }
+
+    .quiz-panel {
+      grid-area: quiz;
+      display: grid;
+      grid-template-rows: auto auto auto;
+    }
+
+    .quiz-heading {
+      align-items: center;
+    }
+
+    .quiz-type-picker {
+      grid-template-columns: repeat(2, minmax(0, 190px));
+      justify-content: center;
+    }
+
+    .quiz-body {
+      display: grid;
+      grid-template-columns: minmax(0, 1.28fr) minmax(320px, 0.72fr);
+      grid-template-areas:
+        "progress progress"
+        "meta meta"
+        "question response";
+      gap: 11px 18px;
+      width: 100%;
+      max-width: 1280px;
+      margin: 0 auto;
+      padding: 15px 18px 18px;
+    }
+
+    .progress-track {
+      grid-area: progress;
+      height: 6px;
+      overflow: hidden;
+      border-radius: 999px;
+      background: #e8edf5;
+    }
+
+    .progress-bar {
+      width: 0;
+      height: 100%;
+      border-radius: inherit;
+      background: linear-gradient(90deg, var(--blue), var(--cyan));
+      transition: width 0.2s ease;
+    }
+
+    .quiz-meta {
+      grid-area: meta;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      color: var(--muted);
+      font-size: 0.74rem;
+      font-weight: 850;
+    }
+
+    .quiz-question-column {
+      grid-area: question;
+      min-width: 0;
+    }
+
+    .quiz-response-column {
+      grid-area: response;
+      min-width: 0;
+    }
+
+    .quiz-question {
+      margin: 0 0 11px;
+      color: var(--dark);
+      font-size: 1.05rem;
+      line-height: 1.4;
+      letter-spacing: 0;
+    }
+
+    .quiz-visual {
+      height: 142px;
+      margin-bottom: 11px;
+      overflow: hidden;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      background: #fff;
+    }
+
+    #quizVisualSvg {
+      display: block;
+      width: 100%;
+      height: 100%;
+    }
+
+    .answer-list {
+      display: grid;
+      gap: 8px;
+    }
+
+    .answer-button {
+      display: grid;
+      grid-template-columns: 32px minmax(0, 1fr);
+      align-items: center;
+      gap: 10px;
+      width: 100%;
+      min-height: 50px;
+      padding: 9px 11px;
+      border: 1px solid var(--line);
+      border-radius: 13px;
+      background: #fff;
+      color: #536075;
+      text-align: left;
+      font-size: 0.82rem;
+      font-weight: 800;
+      cursor: pointer;
+      transition: border-color 0.14s ease, background 0.14s ease, transform 0.14s ease;
+    }
+
+    .answer-button:not(:disabled):hover {
+      border-color: rgba(127, 159, 227, 0.62);
+      background: #f7f9fe;
+      transform: translateY(-1px);
+    }
+
+    .answer-letter {
+      display: grid;
+      width: 32px;
+      height: 32px;
+      place-items: center;
+      border-radius: 9px;
+      background: #edf1f7;
+      color: #68768d;
+      font-size: 0.75rem;
+      font-weight: 900;
+    }
+
+    .answer-button.correct {
+      border-color: rgba(76, 164, 111, 0.5);
+      background: #effaf4;
+      color: #356f4d;
+    }
+
+    .answer-button.correct .answer-letter {
+      background: var(--green);
+      color: #fff;
+    }
+
+    .answer-button.wrong {
+      border-color: rgba(223, 140, 137, 0.54);
+      background: #fff3f2;
+      color: #935653;
+    }
+
+    .answer-button.wrong .answer-letter {
+      background: var(--red);
+      color: #fff;
+    }
+
+    .quiz-feedback {
+      min-height: 94px;
+      padding: 12px;
+      border: 1px dashed var(--line);
+      border-radius: 13px;
+      background: #f8fafc;
+      color: var(--muted);
+      font-size: 0.79rem;
+      line-height: 1.44;
+    }
+
+    .quiz-feedback.success {
+      border-style: solid;
+      border-color: rgba(129, 201, 161, 0.5);
+      background: #f0faf4;
+      color: #47715a;
+    }
+
+    .quiz-feedback.error {
+      border-style: solid;
+      border-color: rgba(233, 160, 120, 0.5);
+      background: #fff6f1;
+      color: #865d49;
+    }
+
+    .next-question {
+      width: 100%;
+      min-height: 46px;
+      margin-top: 10px;
+      padding: 9px 14px;
+      border: 1px solid rgba(127, 159, 227, 0.5);
+      border-radius: 12px;
+      background: linear-gradient(145deg, #8ea9e5, #7294dc);
+      color: #fff;
+      box-shadow: 0 8px 18px rgba(127, 159, 227, 0.2);
+      font-size: 0.82rem;
+      font-weight: 900;
+      cursor: pointer;
+    }
+
+    .next-question:disabled {
+      border-color: var(--line);
+      background: #e8edf5;
+      color: #9aa6b7;
+      box-shadow: none;
+    }
+
+    .sr-only {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      white-space: nowrap;
+      border: 0;
+    }
+
+    @media (max-width: 1240px) {
+      .workspace {
+        grid-template-columns: minmax(250px, 290px) minmax(470px, 1fr);
+        grid-template-areas:
+          "controls graph"
+          "insights insights"
+          "quiz quiz";
+      }
+
+      .insights-panel {
+        min-height: 0;
+      }
+
+      .insights-body {
+        overflow: visible;
+      }
+
+      .meaning-list {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .model-note,
+      .comparison-note {
+        grid-column: 1 / -1;
+      }
+    }
+
+    @media (max-width: 980px) {
+      h1 {
+        font-size: 2rem;
+      }
+
+      .context-picker {
+        grid-template-columns: repeat(5, minmax(150px, 1fr));
+        overflow-x: auto;
+        scroll-snap-type: x proximity;
+      }
+
+      .context-button {
+        scroll-snap-align: start;
+      }
+
+      .workspace {
+        grid-template-columns: 270px minmax(0, 1fr);
+      }
+
+      .formula-badge {
+        max-width: 56%;
+      }
+    }
+
+    @media (max-width: 820px) {
+      .app-shell {
+        width: min(100% - 14px, 720px);
+        padding-top: 8px;
+      }
+
+      .app-header {
+        align-items: flex-start;
+      }
+
+      .subtitle {
+        font-size: 0.86rem;
+      }
+
+      .back-link {
+        min-height: 38px;
+        padding: 7px 10px;
+        font-size: 0.76rem;
+      }
+
+      .workspace {
+        grid-template-columns: minmax(0, 1fr);
+        grid-template-areas:
+          "controls"
+          "graph"
+          "insights"
+          "quiz";
+      }
+
+      .controls-panel,
+      .graph-panel,
+      .insights-panel {
+        min-height: 0;
+      }
+
+      .panel-scroll,
+      .insights-body {
+        overflow: visible;
+      }
+
+      .graph-panel {
+        grid-template-rows: auto auto auto auto auto;
+      }
+
+      .graph-stage,
+      #lineGraph {
+        min-height: 420px;
+      }
+
+      .quiz-body {
+        grid-template-columns: minmax(0, 1fr);
+        grid-template-areas:
+          "progress"
+          "meta"
+          "question"
+          "response";
+      }
+
+      .quiz-response-column {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) minmax(160px, 0.45fr);
+        gap: 10px;
+      }
+
+      .next-question {
+        margin-top: 0;
+      }
+    }
+
+    @media (max-width: 560px) {
+      .app-header {
+        display: grid;
+        gap: 10px;
+      }
+
+      h1 {
+        font-size: 1.75rem;
+      }
+
+      .back-link {
+        justify-self: start;
+      }
+
+      .panel {
+        border-radius: 20px;
+      }
+
+      .context-picker {
+        grid-template-columns: repeat(5, minmax(142px, 1fr));
+      }
+
+      .context-button {
+        min-height: 54px;
+      }
+
+      .graph-heading {
+        display: grid;
+      }
+
+      .formula-badge {
+        max-width: 100%;
+        justify-self: start;
+        text-align: left;
+      }
+
+      .graph-stage,
+      #lineGraph {
+        min-height: 350px;
+      }
+
+      .toolbar-status {
+        flex-basis: 100%;
+        text-align: left;
+      }
+
+      .probe-control {
+        grid-template-columns: minmax(0, 1fr) auto;
+      }
+
+      .probe-control input {
+        grid-column: 1 / -1;
+        grid-row: 2;
+      }
+
+      .metric-grid,
+      .meaning-list,
+      .quiz-response-column {
+        grid-template-columns: minmax(0, 1fr);
+      }
+
+      .metric-grid {
+        gap: 5px;
+      }
+
+      .metric {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) auto;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .metric strong {
+        margin-top: 0;
+      }
+
+      .view-tabs button,
+      .quiz-type-picker button {
+        min-height: 42px;
+      }
+
+      .quiz-body {
+        padding: 13px 12px 15px;
+      }
+
+      .quiz-type-picker {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .quiz-visual {
+        height: 128px;
+      }
+
+      .task-actions {
+        grid-template-columns: minmax(0, 1fr);
+      }
+
+      .task-actions .primary-button {
+        grid-column: auto;
+      }
+
+      .answer-button {
+        min-height: 54px;
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *,
+      *::before,
+      *::after {
+        scroll-behavior: auto !important;
+        transition-duration: 0.01ms !important;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="app-shell">
+    <header class="app-header">
+      <div class="title-wrap">
+        <span class="eyebrow">Interaktive Simulation</span>
+        <h1>Labor für lineare Funktionen</h1>
+        <p class="subtitle">Eine Gerade, viele Bedeutungen: Parameter verändern, Graphen deuten und Verständnis prüfen.</p>
+      </div>
+      <a class="back-link" id="backLink" href="../">← Zurück zur Physik-Seite</a>
+    </header>
+
+    <nav class="context-picker" id="contextPicker" role="radiogroup" aria-label="Mathematischen oder physikalischen Kontext wählen">
+      <button class="context-button" type="button" role="radio" aria-checked="true" data-context="math">
+        <span class="context-symbol">f</span>
+        <span class="context-copy"><strong>Mathematik</strong><small>y = mx + b</small></span>
+      </button>
+      <button class="context-button" type="button" role="radio" aria-checked="false" data-context="motion">
+        <span class="context-symbol">x</span>
+        <span class="context-copy"><strong>Bewegung</strong><small>x(t) = v · t + x<sub>0</sub></small></span>
+      </button>
+      <button class="context-button" type="button" role="radio" aria-checked="false" data-context="density">
+        <span class="context-symbol">ρ</span>
+        <span class="context-copy"><strong>Masse &amp; Volumen</strong><small>Dichte bestimmen</small></span>
+      </button>
+      <button class="context-button" type="button" role="radio" aria-checked="false" data-context="temperature">
+        <span class="context-symbol">T</span>
+        <span class="context-copy"><strong>Temperatur</strong><small>Erwärmen &amp; Abkühlen</small></span>
+      </button>
+      <button class="context-button" type="button" role="radio" aria-checked="false" data-context="electricity">
+        <span class="context-symbol">U</span>
+        <span class="context-copy"><strong>Elektrik</strong><small>Spannung und Strom</small></span>
+      </button>
+    </nav>
+
+    <div class="workspace">
+      <aside class="panel controls-panel" aria-labelledby="controlsTitle">
+        <div class="panel-heading">
+          <div>
+            <span class="panel-kicker">Einstellungen</span>
+            <h2 id="controlsTitle">Parameter der Geraden</h2>
+            <p class="panel-description" id="controlsIntro"></p>
+          </div>
+        </div>
+        <div class="panel-scroll" id="controlsBody"></div>
+      </aside>
+
+      <section class="panel graph-panel" aria-labelledby="graphTitle">
+        <div class="graph-heading">
+          <div>
+            <span class="panel-kicker" id="graphKicker">Mathematik</span>
+            <h2 id="graphTitle">Graph und Parameter</h2>
+            <p class="panel-description" id="graphDescription"></p>
+          </div>
+          <div class="formula-badge" id="formulaBadge"></div>
+        </div>
+
+        <div class="graph-toolbar" role="group" aria-label="Graphwerkzeuge">
+          <button class="small-button" id="triangleToggle" type="button" aria-pressed="true">Steigungsdreieck</button>
+          <button class="small-button" id="fitPlot" type="button">Ansicht einpassen</button>
+          <button class="small-button" id="saveComparison" type="button">Vergleich merken</button>
+          <button class="small-button comparison-delete" id="deleteComparison" type="button" disabled>Vergleich löschen</button>
+          <span class="toolbar-status" id="comparisonStatus">Noch keine Vergleichsgerade gespeichert.</span>
+        </div>
+
+        <div class="graph-stage" id="graphStage">
+          <svg id="lineGraph" role="img" aria-labelledby="graphSvgTitle graphSvgDesc"></svg>
+        </div>
+
+        <div class="probe-control">
+          <label id="probeLabel" for="probeSlider">Punkt untersuchen</label>
+          <input id="probeSlider" type="range" />
+          <output id="probeOutput" for="probeSlider"></output>
+        </div>
+
+        <div class="metric-grid" id="metricGrid" aria-live="polite"></div>
+      </section>
+
+      <aside class="panel insights-panel" aria-labelledby="insightsTitle">
+        <div class="panel-heading">
+          <div>
+            <span class="panel-kicker">Darstellungen</span>
+            <h2 id="insightsTitle">Zusammenhänge verstehen</h2>
+            <p class="panel-description">Formel, Graph und Wertetabelle gehören zusammen.</p>
+          </div>
+        </div>
+
+        <div class="view-tabs" id="viewTabs" role="tablist" aria-label="Darstellung wählen">
+          <button id="meaningTab" type="button" role="tab" aria-selected="true" aria-controls="insightsBody" data-view="meaning">Bedeutung</button>
+          <button id="tableTab" type="button" role="tab" aria-selected="false" aria-controls="insightsBody" data-view="table">Wertetabelle</button>
+          <button id="taskTab" type="button" role="tab" aria-selected="false" aria-controls="insightsBody" data-view="task">Auftrag</button>
+        </div>
+
+        <div class="insights-body" id="insightsBody" role="tabpanel" aria-live="polite"></div>
+      </aside>
+
+      <section class="panel quiz-panel" aria-labelledby="quizTitle">
+        <div class="panel-heading quiz-heading">
+          <div>
+            <span class="panel-kicker" id="quizContext">Mathematik</span>
+            <h2 id="quizTitle">Verständnis-Quiz</h2>
+            <p class="panel-description" id="quizIntro">Variablen, Einheiten und Graphen sicher deuten.</p>
+          </div>
+          <span class="score-chip" id="quizScore">0 / 4</span>
+        </div>
+
+        <div class="quiz-type-picker" id="quizTypePicker" role="group" aria-label="Aufgabentyp wählen">
+          <button type="button" data-quiz-type="understanding" aria-pressed="true">Verstehen</button>
+          <button type="button" data-quiz-type="application" aria-pressed="false">Anwenden</button>
+        </div>
+
+        <div class="quiz-body">
+          <div class="progress-track" id="quizProgressTrack" role="progressbar" aria-label="Quizfortschritt" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+            <div class="progress-bar" id="quizProgress"></div>
+          </div>
+          <div class="quiz-meta">
+            <span id="quizCounter">Frage 1 von 4</span>
+            <span id="quizKind">Grundidee</span>
+          </div>
+          <div class="quiz-question-column">
+            <div class="quiz-visual" id="quizVisual" role="img" hidden>
+              <svg id="quizVisualSvg" aria-hidden="true"></svg>
+            </div>
+            <h3 class="quiz-question" id="quizQuestion"></h3>
+            <div class="answer-list" id="quizAnswers"></div>
+          </div>
+          <div class="quiz-response-column">
+            <div class="quiz-feedback" id="quizFeedback" aria-live="polite">Wähle eine Antwort. Danach folgt eine kurze Erklärung.</div>
+            <button class="next-question" id="nextQuestion" type="button" disabled>Nächste Frage</button>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <p class="sr-only" id="liveStatus" aria-live="polite"></p>
+  </main>
+
+  <script>
+    (function () {
+      "use strict";
+
+      var backLink = document.getElementById("backLink");
+      var backTargets = {
+        gymnasium: {
+          href: "../gymi/simulationen/",
+          label: "← Zurück zu Gymnasium-Simulationen"
+        },
+        fms: {
+          href: "../fms/simulationen/",
+          label: "← Zurück zu FMS-Simulationen"
+        }
+      };
+
+      if (backLink) {
+        var pageParams = new URLSearchParams(window.location.search);
+        var source = pageParams.get("from");
+
+        if (!source && document.referrer.includes("/physik/gymi/simulationen")) {
+          source = "gymnasium";
+        }
+
+        if (!source && document.referrer.includes("/physik/fms/simulationen")) {
+          source = "fms";
+        }
+
+        if (backTargets[source]) {
+          backLink.href = backTargets[source].href;
+          backLink.textContent = backTargets[source].label;
+        }
+      }
+
+      var contexts = {
+        math: {
+          title: "Mathematik",
+          kicker: "Grundform",
+          graphTitle: "Graph und Parameter",
+          graphDescription: "Steigung und y-Achsenabschnitt werden links mit den Reglern verändert.",
+          controlsTitle: "Parameter der Geraden",
+          controlsIntro: "Verändere m und b oder wähle einen Startfall.",
+          formulaGeneric: "f(x) = m · x + b",
+          formulaUnits: "",
+          lhsHtml: "f(x)",
+          lhsPlain: "f(x)",
+          x: { symbolHtml: "x", symbolPlain: "x", name: "x-Wert", axis: "x", unit: "", min: -6, max: 6, step: 0.5, tick: 2, probe: 2 },
+          y: { symbolHtml: "f(x)", symbolPlain: "f(x)", name: "Funktionswert", axis: "y = f(x)", unit: "", min: -12, max: 12, tick: 4 },
+          slope: { symbolHtml: "m", symbolPlain: "m", name: "Steigung", unit: "", min: -4, max: 4, step: 0.25, value: 1.5 },
+          intercept: { symbolHtml: "b", symbolPlain: "b", name: "y-Achsenabschnitt", unit: "", min: -8, max: 8, step: 0.5, value: 2 },
+          triangleDx: 3,
+          handleDx: 1,
+          tableXs: [-4, -2, 0, 2, 4],
+          modelNote: "Eine lineare Funktion ist für alle reellen x definiert. Im Diagramm siehst du nur den gewählten Ausschnitt.",
+          presets: [
+            { id: "rising", label: "steigend", m: 2, b: 0 },
+            { id: "falling", label: "fallend", m: -1.5, b: 3 },
+            { id: "constant", label: "konstant", m: 0, b: 2 }
+          ],
+          tasks: [
+            { prompt: "Stelle eine Gerade ein, die pro x-Einheit um 2 steigt und die y-Achse bei −3 schneidet.", m: 2, b: -3, success: "Richtig: f(x) = 2 · x − 3." },
+            { prompt: "Stelle eine Gerade ein, die bei y = 4 beginnt und pro x-Einheit um 1,5 fällt.", m: -1.5, b: 4, success: "Richtig: Eine fallende Gerade besitzt eine negative Steigung." },
+            { prompt: "Bei x = 0 soll y = −2 sein. Wenn x um 2 wächst, soll y um 5 wachsen.", m: 2.5, b: -2, success: "Richtig: m = Δy / Δx = 5 / 2 = 2,5." }
+          ],
+          understanding: [
+            {
+              kind: "Steigung deuten",
+              prompt: "Was bedeutet m = −2?",
+              answers: ["Von links nach rechts fällt die Gerade pro x-Einheit um 2.", "Die Gerade schneidet die y-Achse bei −2.", "Die gesamte Gerade liegt unterhalb der x-Achse."],
+              correct: 0,
+              explanation: "Das Vorzeichen beschreibt die Richtung; der Betrag 2 beschreibt die Änderung pro x-Einheit.",
+              visual: { type: "line", m: -2, b: 2 }
+            },
+            {
+              kind: "Achsenabschnitt",
+              prompt: "Was beschreibt b in f(x) = m · x + b?",
+              answers: ["Die Nullstelle der Funktion.", "Den Funktionswert bei x = 0.", "Die Änderung von x pro y-Einheit."],
+              correct: 1,
+              explanation: "Setzt man x = 0, bleibt f(0) = b.",
+              visual: { type: "intercept", m: 1, b: 2 }
+            },
+            {
+              kind: "Sonderfall",
+              prompt: "Wie sieht der Graph für m = 0 aus?",
+              answers: ["Senkrecht.", "Er verläuft immer durch den Ursprung.", "Waagrecht bei y = b."],
+              correct: 2,
+              explanation: "Ohne Änderung bleibt der Funktionswert für alle x gleich b.",
+              visual: { type: "line", m: 0, b: 2 }
+            },
+            {
+              kind: "Parameter verändern",
+              prompt: "Nur b wird größer. Was geschieht mit der Geraden?",
+              answers: ["Sie wird steiler.", "Sie wird parallel nach oben verschoben.", "Sie dreht sich um den Ursprung."],
+              correct: 1,
+              explanation: "Die Steigung bleibt gleich; jeder Funktionswert wird um denselben Betrag größer.",
+              visual: { type: "parallel", m: 1, b: -1, b2: 2 }
+            }
+          ],
+          application: [
+            {
+              kind: "Einsetzen",
+              prompt: "Für f(x) = −1,5 · x + 4: Welchen Wert hat f(x) bei x = 2?",
+              answers: ["1", "2,5", "7"],
+              correct: 0,
+              explanation: "f(2) = −1,5 · 2 + 4 = 1."
+            },
+            {
+              kind: "Steigung berechnen",
+              prompt: "Eine Gerade geht durch (1 | 2) und (3 | 8). Wie groß ist ihre Steigung?",
+              answers: ["2", "3", "6"],
+              correct: 1,
+              explanation: "m = (8 − 2) / (3 − 1) = 6 / 2 = 3."
+            },
+            {
+              kind: "Formel zuordnen",
+              prompt: "Welche Formel hat die Steigung 2,5 und den y-Achsenabschnitt −2?",
+              answers: ["f(x) = −2 · x + 2,5", "f(x) = 2,5 · x + 2", "f(x) = 2,5 · x − 2"],
+              correct: 2,
+              explanation: "Die Steigung steht vor x, der Achsenabschnitt wird addiert."
+            }
+          ]
+        },
+        motion: {
+          title: "Bewegung",
+          kicker: "Ort-Zeit-Diagramm",
+          graphTitle: "Gleichförmige Bewegung",
+          graphDescription: "Dieselbe Gerade beschreibt jetzt, wie sich der Ort mit der Zeit ändert.",
+          controlsTitle: "Bewegung festlegen",
+          controlsIntro: "Geschwindigkeit v und Anfangsort x_0 bestimmen die Bewegung.",
+          formulaGeneric: "x(t) = v · t + x_0",
+          formulaUnits: "[x] = [x_0] = m; [t] = s; [v] = m/s",
+          lhsHtml: "x(t)",
+          lhsPlain: "x(t)",
+          x: { symbolHtml: "t", symbolPlain: "t", name: "Zeit", axis: "Zeit t", unit: "s", min: 0, max: 10, step: 0.5, tick: 2, probe: 4 },
+          y: { symbolHtml: "x", symbolPlain: "x", name: "Ort", axis: "Ort x", unit: "m", min: -35, max: 50, tick: 10 },
+          slope: { symbolHtml: "v", symbolPlain: "v", name: "Geschwindigkeit", unit: "m/s", min: -4, max: 4, step: 0.5, value: 1.5 },
+          intercept: { symbolHtml: "x<sub>0</sub>", symbolPlain: "x_0", name: "Anfangsort", unit: "m", min: -10, max: 10, step: 1, value: 2 },
+          triangleDx: 5,
+          handleDx: 2,
+          tableXs: [0, 2, 4, 6, 8],
+          modelNote: "Das Modell gilt für eine gleichförmige Bewegung: Die Geschwindigkeit bleibt im betrachteten Zeitraum konstant.",
+          presets: [
+            { id: "forward", label: "vorwärts", m: 2, b: -4 },
+            { id: "backward", label: "rückwärts", m: -2, b: 8 },
+            { id: "rest", label: "in Ruhe", m: 0, b: 4 }
+          ],
+          tasks: [
+            { prompt: "Ein Körper startet bei 6 m und bewegt sich mit 1,5 m/s in positive Richtung.", m: 1.5, b: 6, success: "Richtig: x(t) = (1,5 m/s) · t + 6 m." },
+            { prompt: "Ein Körper startet bei −4 m und bewegt sich mit 3 m/s.", m: 3, b: -4, success: "Richtig: x(t) = (3 m/s) · t − 4 m." },
+            { prompt: "Ein Körper startet bei 8 m und sein Ort nimmt jede Sekunde um 2,5 m ab.", m: -2.5, b: 8, success: "Richtig: x(t) = (−2,5 m/s) · t + 8 m." }
+          ],
+          understanding: [
+            {
+              kind: "Einheiten",
+              prompt: "Welche Einheit hat die Geschwindigkeit v, also die Steigung im Ort-Zeit-Diagramm?",
+              answers: ["m/s", "m", "s/m"],
+              correct: 0,
+              explanation: "Die Steigung ist Ortsänderung pro Zeitänderung: Meter pro Sekunde.",
+              visual: { type: "triangle", m: 2, b: 0 }
+            },
+            {
+              kind: "Vorzeichen",
+              prompt: "Was bedeutet eine negative Geschwindigkeit v?",
+              answers: ["Die Zeit läuft rückwärts.", "Der Ort x wird mit zunehmender Zeit kleiner.", "Der Körper befindet sich immer links vom Ursprung."],
+              correct: 1,
+              explanation: "Negativ beschreibt die Bewegungsrichtung relativ zur gewählten Ortsachse.",
+              visual: { type: "line", m: -1.5, b: 4 }
+            },
+            {
+              kind: "Anfangswert",
+              prompt: "Was beschreibt x_0?",
+              answers: ["Den Ort bei t = 0 s.", "Den Ort nach einer Sekunde.", "Die insgesamt zurückgelegte Strecke."],
+              correct: 0,
+              explanation: "x_0 ist der Schnittpunkt mit der Ortsachse und damit der Anfangsort.",
+              visual: { type: "intercept", m: 1, b: 2 }
+            },
+            {
+              kind: "Stillstand",
+              prompt: "Was bedeutet eine waagrechte Linie im Ort-Zeit-Diagramm?",
+              answers: ["Der Körper beschleunigt.", "Der Körper bewegt sich gleichmäßig weiter.", "Der Körper bleibt an einem festen Ort."],
+              correct: 2,
+              explanation: "Eine waagrechte Linie hat v = 0 m/s; der Ort ändert sich nicht.",
+              visual: { type: "line", m: 0, b: 2 }
+            }
+          ],
+          application: [
+            { kind: "Ort berechnen", prompt: "Für x(t) = (2 m/s) · t + 3 m: Wo befindet sich der Körper nach 4 s?", answers: ["11 m", "9 m", "8 m"], correct: 0, explanation: "x(4 s) = (2 m/s) · 4 s + 3 m = 11 m." },
+            { kind: "Geschwindigkeit", prompt: "Bei t = 1 s liegt der Körper bei 2 m, bei t = 4 s bei 8 m. Wie groß ist v?", answers: ["1,5 m/s", "2 m/s", "3 m/s"], correct: 1, explanation: "v = (8 m − 2 m) / (4 s − 1 s) = 6 m / 3 s = 2 m/s." },
+            { kind: "Nullstelle deuten", prompt: "Für x(t) = (−1 m/s) · t + 5 m: Wann erreicht der Körper den Ort x = 0 m?", answers: ["Nach 4 s", "Nach 5 s", "Nach 6 s"], correct: 1, explanation: "0 m = (−1 m/s) · t + 5 m ergibt t = 5 s." }
+          ]
+        },
+        density: {
+          title: "Masse & Volumen",
+          kicker: "Masse-Volumen-Diagramm",
+          graphTitle: "Flüssigkeit im Gefäß",
+          graphDescription: "Die Steigung ρ beschreibt die Massenzunahme pro Volumen.",
+          controlsTitle: "Zusammenhang festlegen",
+          controlsIntro: "Dichte ρ und Gefäßmasse m_G bestimmen die Gerade.",
+          formulaGeneric: "m_ges(V) = ρ · V + m_G",
+          formulaUnits: "[m_ges] = [m_G] = g; [V] = cm³; [ρ] = g/cm³",
+          lhsHtml: "m<sub>ges</sub>(V)",
+          lhsPlain: "m_ges(V)",
+          x: { symbolHtml: "V", symbolPlain: "V", name: "Volumen", axis: "Volumen V", unit: "cm³", min: 0, max: 100, step: 5, tick: 20, probe: 40 },
+          y: { symbolHtml: "m<sub>ges</sub>", symbolPlain: "m_ges", name: "Gesamtmasse", axis: "Gesamtmasse m_ges", unit: "g", min: 0, max: 500, tick: 100 },
+          slope: { symbolHtml: "ρ", symbolPlain: "ρ", name: "Dichte", unit: "g/cm³", min: 0.5, max: 4, step: 0.5, value: 1 },
+          intercept: { symbolHtml: "m<sub>G</sub>", symbolPlain: "m_G", name: "Gefäßmasse", unit: "g", min: 0, max: 100, step: 10, value: 30 },
+          triangleDx: 50,
+          handleDx: 20,
+          tableXs: [0, 20, 40, 60, 80],
+          modelNote: "Der lineare Zusammenhang gilt, solange dasselbe homogene Material eingefüllt und die Waage nicht überlastet wird.",
+          presets: [
+            { id: "water", label: "Wasser", m: 1, b: 30 },
+            { id: "oil", label: "leichter Stoff", m: 0.5, b: 40 },
+            { id: "dense", label: "dichter Stoff", m: 3, b: 20 }
+          ],
+          tasks: [
+            { prompt: "Ein Gefäß wiegt 30 g. Die eingefüllte Flüssigkeit hat eine Dichte von 1 g/cm³.", m: 1, b: 30, success: "Richtig: m_ges(V) = (1 g/cm³) · V + 30 g." },
+            { prompt: "Die Waage ist tariert. Ein Material besitzt die Dichte 2,5 g/cm³.", m: 2.5, b: 0, success: "Richtig: m_ges(V) = (2,5 g/cm³) · V + 0 g." },
+            { prompt: "Ein 80-g-Gefäß wird mit einem Stoff der Dichte 0,5 g/cm³ gefüllt.", m: 0.5, b: 80, success: "Richtig: m_ges(V) = (0,5 g/cm³) · V + 80 g." }
+          ],
+          understanding: [
+            { kind: "Steigung deuten", prompt: "Was beschreibt die Steigung im Masse-Volumen-Diagramm?", answers: ["Die Gefäßmasse.", "Die Dichte.", "Das größte Volumen."], correct: 1, explanation: "Die Dichte ist Massezunahme pro Volumenzunahme.", visual: { type: "triangle", m: 2, b: 1 } },
+            { kind: "Achsenabschnitt", prompt: "Was bedeutet der y-Achsenabschnitt m_G?", answers: ["Die Masse des leeren Gefäßes.", "Das Volumen des Gefäßes.", "Die Dichte bei V = 0 cm³."], correct: 0, explanation: "Bei V = 0 cm³ befindet sich noch kein Stoff im Gefäß; übrig bleibt seine Masse.", visual: { type: "intercept", m: 1, b: 2 } },
+            { kind: "Tarieren", prompt: "Die Waage wird mit dem leeren Gefäß tariert. Welcher Wert gilt danach für m_G?", answers: ["100 g", "Die Dichte des Stoffes", "0 g"], correct: 2, explanation: "Beim Tarieren wird die Gefäßmasse als Nullwert abgezogen." },
+            { kind: "Geraden vergleichen", prompt: "Zwei Geraden nutzen dieselben Achsen. Welche gehört zum dichteren Stoff?", answers: ["Die steilere Gerade.", "Die Gerade mit dem größeren Achsenabschnitt.", "Immer die längere Gerade."], correct: 0, explanation: "Eine größere Steigung bedeutet mehr Masse pro cm³ und damit eine größere Dichte.", visual: { type: "compareSlope", m: 0.7, m2: 1.6, b: 0 } }
+          ],
+          application: [
+            { kind: "Masse berechnen", prompt: "m_ges(V) = (1,5 g/cm³) · V + 20 g. Welche Masse zeigt die Waage bei 40 cm³?", answers: ["60 g", "80 g", "90 g"], correct: 1, explanation: "(1,5 g/cm³) · 40 cm³ + 20 g = 80 g." },
+            { kind: "Dichte berechnen", prompt: "Bei einer Volumenzunahme um 20 cm³ wächst die Masse um 50 g. Wie groß ist ρ?", answers: ["0,4 g/cm³", "2 g/cm³", "2,5 g/cm³"], correct: 2, explanation: "ρ = Δm / ΔV = 50 g / 20 cm³ = 2,5 g/cm³." },
+            { kind: "Gefäßmasse lesen", prompt: "Was lässt sich aus m_ges(V) = (0,8 g/cm³) · V + 60 g über das Gefäß ablesen?", answers: ["Es wiegt 60 g.", "Es fasst höchstens 60 cm³.", "Seine Dichte beträgt 60 g/cm³."], correct: 0, explanation: "Der konstante Summand 60 g ist die Masse bei V = 0 cm³." }
+          ]
+        },
+        temperature: {
+          title: "Temperatur",
+          kicker: "Temperatur-Zeit-Diagramm",
+          graphTitle: "Erwärmen und Abkühlen",
+          graphDescription: "Die Steigung r ist die Temperaturänderung pro Minute.",
+          controlsTitle: "Temperaturverlauf",
+          controlsIntro: "Temperaturänderung r und Anfangstemperatur T_0 bestimmen das Modell.",
+          formulaGeneric: "T(t) = r · t + T_0",
+          formulaUnits: "[T] = [T_0] = °C; [t] = min; [r] = °C/min",
+          lhsHtml: "T(t)",
+          lhsPlain: "T(t)",
+          x: { symbolHtml: "t", symbolPlain: "t", name: "Zeit", axis: "Zeit t", unit: "min", min: 0, max: 10, step: 0.5, tick: 2, probe: 6 },
+          y: { symbolHtml: "T", symbolPlain: "T", name: "Temperatur", axis: "Temperatur T", unit: "°C", min: -30, max: 80, tick: 20 },
+          slope: { symbolHtml: "r", symbolPlain: "r", name: "Temperaturänderung", unit: "°C/min", min: -3, max: 3, step: 0.5, value: 1 },
+          intercept: { symbolHtml: "T<sub>0</sub>", symbolPlain: "T_0", name: "Anfangstemperatur", unit: "°C", min: 0, max: 40, step: 5, value: 20 },
+          triangleDx: 5,
+          handleDx: 2,
+          tableXs: [0, 2, 4, 6, 8],
+          modelNote: "Ein linearer Temperaturverlauf ist meist nur im betrachteten Zeitraum eine gute Näherung. Reale Raten können sich ändern.",
+          presets: [
+            { id: "warming", label: "Erwärmen", m: 2, b: 20 },
+            { id: "cooling", label: "Abkühlen", m: -1.5, b: 35 },
+            { id: "steady", label: "konstant", m: 0, b: 20 }
+          ],
+          tasks: [
+            { prompt: "Eine Probe startet bei 20 °C und erwärmt sich pro Minute um 2 °C.", m: 2, b: 20, success: "Richtig: T(t) = (2 °C/min) · t + 20 °C." },
+            { prompt: "Eine Flüssigkeit startet bei 35 °C und kühlt pro Minute um 1,5 °C ab.", m: -1.5, b: 35, success: "Richtig: T(t) = (−1,5 °C/min) · t + 35 °C." },
+            { prompt: "Eine Probe bleibt im betrachteten Zeitraum konstant bei 15 °C.", m: 0, b: 15, success: "Richtig: T(t) = (0 °C/min) · t + 15 °C." }
+          ],
+          understanding: [
+            { kind: "Rate deuten", prompt: "Was bedeutet r = −2 °C/min?", answers: ["Die Temperatur sinkt pro Minute um 2 °C.", "Die Anfangstemperatur beträgt −2 °C.", "Nach 2 Minuten beträgt die Temperatur 0 °C."], correct: 0, explanation: "r beschreibt die Temperaturänderung pro Minute.", visual: { type: "line", m: -1.5, b: 3 } },
+            { kind: "Anfangswert", prompt: "Was beschreibt T_0?", answers: ["Die tiefste Temperatur.", "Die Temperatur bei t = 0 min.", "Die Änderung pro Minute."], correct: 1, explanation: "T_0 ist die Anfangstemperatur bei t = 0 min.", visual: { type: "intercept", m: 1, b: 2 } },
+            { kind: "Einheiten", prompt: "Welche Einheit besitzt die Steigung im Temperatur-Zeit-Diagramm?", answers: ["°C", "min/°C", "°C/min"], correct: 2, explanation: "Steigung bedeutet Temperaturänderung geteilt durch Zeitänderung.", visual: { type: "triangle", m: 1, b: 0 } },
+            { kind: "Modellgrenze", prompt: "Warum darf eine lineare Erwärmungsgerade meist nicht beliebig weit verlängert werden?", answers: ["Weil sich reale Erwärmungsraten außerhalb des Messbereichs ändern können.", "Weil lineare Funktionen nur bis t = 10 min existieren.", "Weil Temperaturen keine negativen Werte annehmen dürfen."], correct: 0, explanation: "Die Gerade ist ein Modell für einen begrenzten Messbereich, kein unbegrenzt gültiges Naturgesetz." }
+          ],
+          application: [
+            { kind: "Temperatur berechnen", prompt: "T(t) = (1,5 °C/min) · t + 20 °C. Welche Temperatur wird nach 8 min vorhergesagt?", answers: ["28 °C", "32 °C", "40 °C"], correct: 1, explanation: "T(8 min) = (1,5 °C/min) · 8 min + 20 °C = 32 °C." },
+            { kind: "Rate berechnen", prompt: "Eine Probe kühlt in 6 min von 30 °C auf 18 °C ab. Wie groß ist r?", answers: ["−2 °C/min", "−3 °C/min", "2 °C/min"], correct: 0, explanation: "r = (18 °C − 30 °C) / 6 min = −12 °C / 6 min = −2 °C/min." },
+            { kind: "Zeit bestimmen", prompt: "Für T(t) = (−2,5 °C/min) · t + 35 °C: Wann erreicht die Probe 20 °C?", answers: ["Nach 5 min", "Nach 6 min", "Nach 8 min"], correct: 1, explanation: "20 °C = (−2,5 °C/min) · t + 35 °C ergibt t = 6 min." }
+          ]
+        },
+        electricity: {
+          title: "Elektrik",
+          kicker: "Spannung-Strom-Diagramm",
+          graphTitle: "Ohmscher Widerstand",
+          graphDescription: "Widerstand R und Nullpunktfehler U_off werden im U-I-Diagramm sichtbar.",
+          controlsTitle: "Elektrischen Zusammenhang festlegen",
+          controlsIntro: "Widerstand R und Nullpunktfehler U_off legen die Gerade fest.",
+          formulaGeneric: "U_mess(I) = R · I + U_off",
+          formulaUnits: "[U_mess] = [U_off] = V; [I] = A; [R] = Ω = V/A",
+          lhsHtml: "U<sub>mess</sub>(I)",
+          lhsPlain: "U_mess(I)",
+          x: { symbolHtml: "I", symbolPlain: "I", name: "Stromstärke", axis: "Stromstärke I", unit: "A", min: 0, max: 2, step: 0.1, tick: 0.5, probe: 1 },
+          y: { symbolHtml: "U<sub>mess</sub>", symbolPlain: "U_mess", name: "gemessene Spannung", axis: "Spannung U_mess", unit: "V", min: -4, max: 24, tick: 5 },
+          slope: { symbolHtml: "R", symbolPlain: "R", name: "Widerstand", unit: "Ω", min: 1, max: 10, step: 0.5, value: 4 },
+          intercept: { symbolHtml: "U<sub>off</sub>", symbolPlain: "U_off", name: "Nullpunktfehler", unit: "V", min: -2, max: 2, step: 0.5, value: 0 },
+          triangleDx: 0.75,
+          handleDx: 0.5,
+          tableXs: [0, 0.5, 1, 1.5, 2],
+          modelNote: "Für einen idealen ohmschen Widerstand und ein korrekt genulltes Gerät gilt U_off = 0 V. Dann verläuft die Gerade durch den Ursprung.",
+          presets: [
+            { id: "ideal", label: "ideal 4 Ω", m: 4, b: 0 },
+            { id: "offset", label: "mit Offset", m: 6, b: 1 },
+            { id: "steep", label: "großes R", m: 9, b: 0 }
+          ],
+          tasks: [
+            { prompt: "Miss einen idealen 4-Ω-Widerstand mit korrekt genulltem Spannungsmessgerät.", m: 4, b: 0, success: "Richtig: U = (4 Ω) · I; die Gerade verläuft durch den Ursprung." },
+            { prompt: "Der Widerstand beträgt 7 Ω. Das Messgerät zeigt stets 0,5 V zu wenig an.", m: 7, b: -0.5, success: "Richtig: U_mess(I) = (7 Ω) · I − 0,5 V." },
+            { prompt: "Der Widerstand beträgt 2 Ω. Bei I = 0 A zeigt das Messgerät bereits 1,5 V an.", m: 2, b: 1.5, success: "Richtig: U_mess(I) = (2 Ω) · I + 1,5 V." }
+          ],
+          understanding: [
+            { kind: "Widerstand", prompt: "Was beschreibt die Steigung im U-I-Diagramm mit U auf der y-Achse?", answers: ["Den Widerstand R.", "Die elektrische Leistung.", "Den Nullpunktfehler."], correct: 0, explanation: "Nach U = R · I gilt R = ΔU / ΔI; seine Einheit ist V/A = Ω.", visual: { type: "triangle", m: 1.6, b: 0 } },
+            { kind: "Nullpunktfehler", prompt: "Was bedeutet U_off?", answers: ["Die größte erlaubte Spannung.", "Die Anzeige des Messgeräts bei I = 0 A.", "Die Stromstärke bei U = 0 V."], correct: 1, explanation: "U_off ist der konstante Messwert, der auch bei I = 0 A angezeigt wird.", visual: { type: "intercept", m: 1, b: 2 } },
+            { kind: "Idealfall", prompt: "Wie verläuft die Gerade eines idealen ohmschen Widerstands bei korrekt genulltem Messgerät?", answers: ["Waagrecht.", "Durch einen beliebigen y-Achsenabschnitt.", "Durch den Ursprung."], correct: 2, explanation: "Bei I = 0 A gilt dann auch U = 0 V.", visual: { type: "line", m: 1.4, b: 0 } },
+            { kind: "Vergleichen", prompt: "Zwei Widerstände werden mit denselben Achsen dargestellt. Welcher ist größer?", answers: ["Der mit der steileren U-I-Geraden.", "Der mit dem kleineren Spannungswert.", "Der mit dem größeren Nullpunktfehler."], correct: 0, explanation: "Je größer R = ΔU/ΔI, desto steiler ist die Gerade.", visual: { type: "compareSlope", m: 0.7, m2: 1.6, b: 0 } }
+          ],
+          application: [
+            { kind: "Spannung berechnen", prompt: "U_mess(I) = (4 Ω) · I + 0,5 V. Was zeigt das Gerät bei I = 1,5 A?", answers: ["4,5 V", "6 V", "6,5 V"], correct: 2, explanation: "U_mess = (4 Ω) · 1,5 A + 0,5 V = 6,5 V." },
+            { kind: "Widerstand berechnen", prompt: "Bei 0,5 A werden 3 V und bei 1,5 A werden 7 V gemessen. Wie groß ist R?", answers: ["2 Ω", "4 Ω", "5 Ω"], correct: 1, explanation: "R = (7 V − 3 V) / (1,5 A − 0,5 A) = 4 V / 1 A = 4 Ω." },
+            { kind: "Strom bestimmen", prompt: "Für U_mess(I) = (5 Ω) · I − 0,5 V: Bei welcher Stromstärke zeigt das Gerät 9,5 V?", answers: ["1,8 A", "2 A", "2,5 A"], correct: 1, explanation: "9,5 V = (5 Ω) · I − 0,5 V ergibt I = 2 A." }
+          ]
+        }
+      };
+
+      var contextOrder = ["math", "motion", "density", "temperature", "electricity"];
+      var profiles = {};
+      var plotViews = {};
+      var comparisons = {};
+      var tasksState = {};
+      var quizStates = {};
+      var state = {
+        context: "math",
+        view: "meaning",
+        quizType: "understanding",
+        showTriangle: true,
+        drag: null,
+        viewAnimation: 0,
+        pendingGraphResize: false,
+        lastGraphWidth: 0,
+        lastGraphHeight: 0,
+        resizeFrame: 0
+      };
+
+      contextOrder.forEach(function (key) {
+        var context = contexts[key];
+        profiles[key] = {
+          m: context.slope.value,
+          b: context.intercept.value,
+          probe: context.x.probe
+        };
+        plotViews[key] = {
+          yMin: context.y.min,
+          yMax: context.y.max,
+          tickStep: context.y.tick
+        };
+        tasksState[key] = { index: 0, hint: 0, attempts: 0, feedback: "", feedbackClass: "" };
+      });
+
+      var els = {
+        contextPicker: document.getElementById("contextPicker"),
+        controlsTitle: document.getElementById("controlsTitle"),
+        controlsIntro: document.getElementById("controlsIntro"),
+        controlsBody: document.getElementById("controlsBody"),
+        graphKicker: document.getElementById("graphKicker"),
+        graphTitle: document.getElementById("graphTitle"),
+        graphDescription: document.getElementById("graphDescription"),
+        formulaBadge: document.getElementById("formulaBadge"),
+        triangleToggle: document.getElementById("triangleToggle"),
+        fitPlot: document.getElementById("fitPlot"),
+        saveComparison: document.getElementById("saveComparison"),
+        deleteComparison: document.getElementById("deleteComparison"),
+        comparisonStatus: document.getElementById("comparisonStatus"),
+        graphStage: document.getElementById("graphStage"),
+        lineGraph: document.getElementById("lineGraph"),
+        probeLabel: document.getElementById("probeLabel"),
+        probeSlider: document.getElementById("probeSlider"),
+        probeOutput: document.getElementById("probeOutput"),
+        metricGrid: document.getElementById("metricGrid"),
+        viewTabs: document.getElementById("viewTabs"),
+        insightsBody: document.getElementById("insightsBody"),
+        quizContext: document.getElementById("quizContext"),
+        quizTitle: document.getElementById("quizTitle"),
+        quizIntro: document.getElementById("quizIntro"),
+        quizScore: document.getElementById("quizScore"),
+        quizTypePicker: document.getElementById("quizTypePicker"),
+        quizProgressTrack: document.getElementById("quizProgressTrack"),
+        quizProgress: document.getElementById("quizProgress"),
+        quizCounter: document.getElementById("quizCounter"),
+        quizKind: document.getElementById("quizKind"),
+        quizVisual: document.getElementById("quizVisual"),
+        quizVisualSvg: document.getElementById("quizVisualSvg"),
+        quizQuestion: document.getElementById("quizQuestion"),
+        quizAnswers: document.getElementById("quizAnswers"),
+        quizFeedback: document.getElementById("quizFeedback"),
+        nextQuestion: document.getElementById("nextQuestion"),
+        liveStatus: document.getElementById("liveStatus")
+      };
+
+      function currentContext() {
+        return contexts[state.context];
+      }
+
+      function currentProfile() {
+        return profiles[state.context];
+      }
+
+      function currentPlotView() {
+        return plotViews[state.context];
+      }
+
+      function clamp(value, min, max) {
+        return Math.min(max, Math.max(min, value));
+      }
+
+      function finite(value, fallback) {
+        return Number.isFinite(value) ? value : fallback;
+      }
+
+      function decimalsForStep(step) {
+        var text = String(step);
+        return text.indexOf(".") === -1 ? 0 : text.length - text.indexOf(".") - 1;
+      }
+
+      function fineStep(definition) {
+        return Number((definition.step / 5).toPrecision(10));
+      }
+
+      function parameterDigits(definition) {
+        return decimalsForStep(fineStep(definition));
+      }
+
+      function roundToStep(value, definition, stepOverride) {
+        var step = stepOverride || definition.step;
+        var rounded = Math.round((value - definition.min) / step) * step + definition.min;
+        return Number(clamp(rounded, definition.min, definition.max).toFixed(Math.max(0, decimalsForStep(step))));
+      }
+
+      function fmt(value, digits) {
+        var safe = Math.abs(value) < 0.0000001 ? 0 : value;
+        var maximum = typeof digits === "number" ? digits : 2;
+        return safe.toLocaleString("de-DE", {
+          minimumFractionDigits: 0,
+          maximumFractionDigits: maximum
+        });
+      }
+
+      function fmtByStep(value, step) {
+        return fmt(value, Math.max(0, decimalsForStep(step)));
+      }
+
+      function withUnit(value, unit, digits) {
+        return fmt(value, digits) + (unit ? " " + unit : "");
+      }
+
+      function escapeHtml(value) {
+        return String(value)
+          .replace(/&/g, "&amp;")
+          .replace(/</g, "&lt;")
+          .replace(/>/g, "&gt;")
+          .replace(/"/g, "&quot;")
+          .replace(/'/g, "&#039;");
+      }
+
+      function normalizeNotation(value) {
+        var subscriptDigits = {
+          "₀": "0", "₁": "1", "₂": "2", "₃": "3", "₄": "4",
+          "₅": "5", "₆": "6", "₇": "7", "₈": "8", "₉": "9"
+        };
+        return String(value)
+          .replace(/<sub>([^<]+)<\/sub>/gi, "_$1")
+          .replace(/([A-Za-z])₍([A-Za-z]+)₎/g, "$1_$2")
+          .replace(/([A-Za-z])([₀-₉]+)/g, function (_match, base, digits) {
+            return base + "_" + digits.split("").map(function (digit) {
+              return subscriptDigits[digit];
+            }).join("");
+          });
+      }
+
+      function notationHtml(value) {
+        return escapeHtml(normalizeNotation(value))
+          .replace(/([A-Za-z])_([A-Za-z0-9]+)/g, "$1<sub>$2</sub>");
+      }
+
+      function notationAccessibleText(value) {
+        return normalizeNotation(value)
+          .replace(/([A-Za-z])_([A-Za-z0-9]+)/g, "$1 Index $2");
+      }
+
+      function svgNotationMarkup(value) {
+        return escapeHtml(normalizeNotation(value))
+          .replace(/([A-Za-z])_([A-Za-z0-9]+)/g,
+            "$1<tspan class='svg-subscript' baseline-shift='sub'>$2</tspan>");
+      }
+
+      function formulaWithValues(context, profile) {
+        var slopeValue = withUnit(profile.m, context.slope.unit, parameterDigits(context.slope));
+        var m = context.slope.unit ? "(" + slopeValue + ")" : slopeValue;
+        var b = Math.abs(profile.b) < 0.0000001 ? 0 : profile.b;
+        var operator = b < 0 ? " − " : " + ";
+        var interceptUnit = context.intercept.unit || context.y.unit;
+        return context.lhsHtml + " = " + m + " · " + context.x.symbolHtml + operator +
+          withUnit(Math.abs(b), interceptUnit, parameterDigits(context.intercept));
+      }
+
+      function axisLabel(axis) {
+        return axis.axis + (axis.unit ? " [" + axis.unit + "]" : "");
+      }
+
+      function valueAt(profile, x) {
+        return profile.m * x + profile.b;
+      }
+
+      function directionWord(value) {
+        if (value > 0) {
+          return "steigt";
+        }
+        if (value < 0) {
+          return "fällt";
+        }
+        return "bleibt konstant";
+      }
+
+      function signCopy(context, profile) {
+        if (Math.abs(profile.m) < 0.0000001) {
+          return "Die Gerade ist waagrecht: " + context.y.name + " bleibt konstant.";
+        }
+        return "Von links nach rechts " + directionWord(profile.m) + " die Gerade. Der Betrag " +
+          fmtByStep(Math.abs(profile.m), context.slope.step) + " bestimmt ihre Steilheit.";
+      }
+
+      function slopeMeaning(context, profile) {
+        var amount = fmt(Math.abs(profile.m), parameterDigits(context.slope));
+        var change = function (subject, unit) {
+          if (profile.m > 0) {
+            return subject + " nimmt um " + amount + (unit ? " " + unit : "") + " zu.";
+          }
+          if (profile.m < 0) {
+            return subject + " nimmt um " + amount + (unit ? " " + unit : "") + " ab.";
+          }
+          return subject + " ändert sich nicht.";
+        };
+        if (context === contexts.math) {
+          return "Wenn x um 1 wächst, " + change("f(x)", "");
+        }
+        if (context === contexts.motion) {
+          return "Pro 1 s gilt: " + change("Der Ort", "m") + " Das ist die Geschwindigkeit.";
+        }
+        if (context === contexts.density) {
+          return "Pro 1 cm³ Flüssigkeit nimmt die Gesamtmasse um " + amount + " g zu. Dieser Quotient ist die Dichte.";
+        }
+        if (context === contexts.temperature) {
+          return "Pro 1 min gilt: " + change("Die Temperatur", "°C");
+        }
+        return "Pro 1 A Stromstärke gilt: " + change("Die gemessene Spannung", "V") + " Dieser Quotient ist der Widerstand.";
+      }
+
+      function interceptMeaning(context, profile) {
+        var value = withUnit(profile.b, context.y.unit, parameterDigits(context.intercept));
+        if (context === contexts.math) {
+          return "Bei x = 0 gilt f(0) = " + value + ". Dort schneidet die Gerade die y-Achse.";
+        }
+        if (context === contexts.motion) {
+          return "Zum Zeitpunkt t = 0 s befindet sich der Körper am Ort " + value + ".";
+        }
+        if (context === contexts.density) {
+          return "Bei V = 0 cm³ zeigt die Waage " + value + ": Das ist die Masse des leeren Gefäßes.";
+        }
+        if (context === contexts.temperature) {
+          return "Zu Beginn bei t = 0 min beträgt die Temperatur " + value + ".";
+        }
+        return "Bei I = 0 A zeigt das Messgerät " + value + ". Das ist sein Nullpunktfehler.";
+      }
+
+      function controlMarkup(definition, value, type) {
+        var context = currentContext();
+        var unit = definition.unit || "";
+        var inputStep = fineStep(definition);
+        var cssClass = type === "m" ? "slope-control" : "intercept-control";
+        var detail = type === "m" ?
+          context.y.name + " pro " + context.x.name :
+          context.y.name + " bei " + context.x.symbolPlain + " = 0";
+        return [
+          "<div class='control ", cssClass, "'>",
+            "<div class='control-top'>",
+              "<label class='control-label' for='", type, "Number'>",
+                definition.symbolHtml, " · ", escapeHtml(definition.name),
+                "<small>", escapeHtml(detail), "</small>",
+              "</label>",
+              "<span class='number-wrap'>",
+                "<input id='", type, "Number' type='number' min='", definition.min, "' max='", definition.max,
+                  "' step='", inputStep, "' value='", value, "' data-param='", type, "' aria-label='",
+                  escapeHtml(definition.name), " als Zahl' />",
+                "<span>", escapeHtml(unit), "</span>",
+              "</span>",
+            "</div>",
+            "<input type='range' min='", definition.min, "' max='", definition.max, "' step='", inputStep,
+              "' value='", value, "' data-param='", type, "' aria-label='", escapeHtml(definition.name), " einstellen' />",
+          "</div>"
+        ].join("");
+      }
+
+      function renderControls() {
+        var context = currentContext();
+        var profile = currentProfile();
+        var presetHtml = context.presets.map(function (preset) {
+          var active = Math.abs(profile.m - preset.m) < 0.000001 && Math.abs(profile.b - preset.b) < 0.000001;
+          return "<button class='preset-button" + (active ? " active" : "") +
+            "' type='button' data-preset='" + preset.id + "'>" + escapeHtml(preset.label) + "</button>";
+        }).join("");
+        els.controlsBody.innerHTML = [
+          "<span class='section-label'>Startfälle</span>",
+          "<div class='preset-row'>", presetHtml, "</div>",
+          "<div class='control-stack'>",
+            controlMarkup(context.slope, profile.m, "m"),
+            controlMarkup(context.intercept, profile.b, "b"),
+          "</div>",
+          "<div class='formula-note'>",
+            "<strong>Gleiche mathematische Struktur</strong>",
+            "<span class='formula-font'>y = m · x + b</span> wird hier zu ",
+            "<span class='formula-font'>", notationHtml(context.formulaGeneric), "</span>.",
+            context.formulaUnits ?
+              "<span class='formula-units'><span class='formula-units-label'>Einheiten:</span> " +
+                "<span class='formula-font'>" + notationHtml(context.formulaUnits) + "</span></span>" : "",
+          "</div>"
+        ].join("");
+      }
+
+      function syncParamInputs(param) {
+        var value = currentProfile()[param];
+        els.controlsBody.querySelectorAll("[data-param='" + param + "']").forEach(function (input) {
+          input.value = value;
+        });
+        updatePresetStates();
+      }
+
+      function updatePresetStates() {
+        var context = currentContext();
+        var profile = currentProfile();
+        els.controlsBody.querySelectorAll("[data-preset]").forEach(function (button) {
+          var preset = context.presets.find(function (item) {
+            return item.id === button.getAttribute("data-preset");
+          });
+          var active = preset && Math.abs(profile.m - preset.m) < 0.000001 &&
+            Math.abs(profile.b - preset.b) < 0.000001;
+          button.classList.toggle("active", !!active);
+        });
+      }
+
+      function clearTaskFeedback() {
+        var taskState = tasksState[state.context];
+        if (taskState.feedbackClass === "success") {
+          taskState.feedback = "";
+          taskState.feedbackClass = "";
+        }
+      }
+
+      function setParameter(param, rawValue, announce, renderMode) {
+        var context = currentContext();
+        var definition = param === "m" ? context.slope : context.intercept;
+        var value = roundToStep(finite(rawValue, currentProfile()[param]), definition, fineStep(definition));
+        var changed = Math.abs(currentProfile()[param] - value) >= 0.0000001;
+        if (!changed && renderMode === "interactive") {
+          return;
+        }
+        if (changed) {
+          currentProfile()[param] = value;
+          clearTaskFeedback();
+        }
+        syncParamInputs(param);
+        if (renderMode === "interactive") {
+          if (changed) {
+            renderInteractiveValues();
+          }
+        } else {
+          renderDynamic();
+        }
+        if (announce) {
+          els.liveStatus.textContent = definition.name + " auf " +
+            withUnit(value, definition.unit, parameterDigits(definition)) + " gesetzt.";
+        }
+      }
+
+      function applyPreset(id) {
+        var preset = currentContext().presets.find(function (item) {
+          return item.id === id;
+        });
+        if (!preset) {
+          return;
+        }
+        currentProfile().m = preset.m;
+        currentProfile().b = preset.b;
+        clearTaskFeedback();
+        renderControls();
+        renderDynamic();
+        els.liveStatus.textContent = "Startfall " + preset.label + " geladen.";
+      }
+
+      function renderHeaders() {
+        var context = currentContext();
+        var profile = currentProfile();
+        els.controlsTitle.textContent = context.controlsTitle;
+        els.controlsIntro.innerHTML = notationHtml(context.controlsIntro);
+        els.graphKicker.textContent = context.kicker;
+        els.graphTitle.textContent = context.graphTitle;
+        els.graphDescription.innerHTML = notationHtml(context.graphDescription);
+        els.formulaBadge.innerHTML = formulaWithValues(context, profile);
+        els.probeLabel.innerHTML = context.x.symbolHtml + "-Wert untersuchen";
+        els.probeSlider.min = context.x.min;
+        els.probeSlider.max = context.x.max;
+        els.probeSlider.step = context.x.step;
+        els.probeSlider.value = profile.probe;
+        els.triangleToggle.setAttribute("aria-pressed", state.showTriangle ? "true" : "false");
+        els.triangleToggle.textContent = state.showTriangle ? "Steigungsdreieck aus" : "Steigungsdreieck an";
+      }
+
+      function comparisonDescription(context, saved, profile) {
+        if (!saved) {
+          return "Noch keine Vergleichsgerade gespeichert.";
+        }
+        var zeroX = withUnit(0, context.x.unit, decimalsForStep(context.x.step));
+        var sameSlope = Math.abs(saved.m - profile.m) < 0.000001;
+        var sameIntercept = Math.abs(saved.b - profile.b) < 0.000001;
+        if (sameSlope && sameIntercept) {
+          return "Vergleich und aktuelle Gerade sind deckungsgleich.";
+        }
+        if (sameSlope) {
+          return "Gleicher Wert für " + context.slope.name + " " + context.slope.symbolPlain + ": Die Geraden sind parallel.";
+        }
+        if (sameIntercept) {
+          return "Gleicher Wert für " + context.intercept.name + " " + context.intercept.symbolPlain +
+            ": Die Geraden treffen sich bei " + context.x.symbolPlain + " = " + zeroX + ".";
+        }
+        return "Gestrichelt: " + context.slope.symbolPlain + " = " +
+          withUnit(saved.m, context.slope.unit, parameterDigits(context.slope)) + ", " +
+          context.intercept.symbolPlain + " = " +
+          withUnit(saved.b, context.intercept.unit || context.y.unit, parameterDigits(context.intercept)) + ".";
+      }
+
+      function renderComparisonControls() {
+        var saved = comparisons[state.context];
+        els.saveComparison.textContent = saved ? "Vergleich aktualisieren" : "Vergleich merken";
+        els.deleteComparison.disabled = !saved;
+        els.comparisonStatus.innerHTML = notationHtml(comparisonDescription(currentContext(), saved, currentProfile()));
+      }
+
+      function renderMetrics() {
+        var context = currentContext();
+        var profile = currentProfile();
+        var result = valueAt(profile, profile.probe);
+        els.probeOutput.innerHTML = context.x.symbolHtml + " = " +
+          withUnit(profile.probe, context.x.unit, decimalsForStep(context.x.step)) + " → " +
+          context.y.symbolHtml + " = " + withUnit(result, context.y.unit, 2);
+        els.metricGrid.innerHTML = [
+          "<div class='metric'><span>", escapeHtml(context.slope.name), "</span><strong>",
+            context.slope.symbolHtml, " = ", withUnit(profile.m, context.slope.unit, parameterDigits(context.slope)), "</strong></div>",
+          "<div class='metric'><span>", escapeHtml(context.intercept.name), "</span><strong>",
+            context.intercept.symbolHtml, " = ", withUnit(profile.b, context.intercept.unit, parameterDigits(context.intercept)), "</strong></div>",
+          "<div class='metric'><span>Untersuchter Punkt</span><strong>(",
+            withUnit(profile.probe, context.x.unit, 2), " | ",
+            withUnit(result, context.y.unit, 2), ")</strong></div>"
+        ].join("");
+      }
+
+      function tickValues(min, max, step) {
+        var values = [];
+        var first = Math.ceil((min - 0.0000001) / step) * step;
+        var value;
+        for (value = first; value <= max + 0.0000001; value += step) {
+          values.push(Number(value.toFixed(8)));
+        }
+        return values;
+      }
+
+      function niceTickStep(rawStep) {
+        var safe = Math.max(Math.abs(rawStep), 0.0000001);
+        var power = Math.pow(10, Math.floor(Math.log(safe) / Math.LN10));
+        var fraction = safe / power;
+        var niceFraction = fraction <= 1 ? 1 : fraction <= 2 ? 2 : fraction <= 5 ? 5 : 10;
+        return niceFraction * power;
+      }
+
+      function fittedPlotView() {
+        var context = currentContext();
+        var profile = currentProfile();
+        var values = [0, profile.b, valueAt(profile, context.x.min), valueAt(profile, context.x.max), valueAt(profile, profile.probe)];
+        var saved = comparisons[state.context];
+        if (saved) {
+          values.push(saved.b, valueAt(saved, context.x.min), valueAt(saved, context.x.max));
+        }
+        var minimum = Math.min.apply(null, values);
+        var maximum = Math.max.apply(null, values);
+        var span = maximum - minimum;
+        if (span < 0.000001) {
+          span = Math.max(2, Math.abs(maximum) * 0.5);
+          minimum -= span / 2;
+          maximum += span / 2;
+        }
+        var padding = Math.max(span * 0.12, context.y.tick * 0.35);
+        minimum -= padding;
+        maximum += padding;
+        var tickStep = niceTickStep((maximum - minimum) / 6);
+        minimum = Math.floor(minimum / tickStep) * tickStep;
+        maximum = Math.ceil(maximum / tickStep) * tickStep;
+        if (Math.abs(maximum - minimum) < tickStep) {
+          maximum = minimum + tickStep;
+        }
+        return { yMin: minimum, yMax: maximum, tickStep: tickStep };
+      }
+
+      function animatePlotView(target) {
+        var key = state.context;
+        var view = plotViews[key];
+        var start = { yMin: view.yMin, yMax: view.yMax };
+        var startedAt = performance.now();
+        var duration = 280;
+        var reduceMotion = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+        if (state.viewAnimation) {
+          window.cancelAnimationFrame(state.viewAnimation);
+          state.viewAnimation = 0;
+        }
+        view.tickStep = target.tickStep;
+        if (reduceMotion) {
+          view.yMin = target.yMin;
+          view.yMax = target.yMax;
+          renderGraph();
+          return;
+        }
+        var animate = function (timestamp) {
+          if (state.context !== key) {
+            state.viewAnimation = 0;
+            return;
+          }
+          var progress = clamp((timestamp - startedAt) / duration, 0, 1);
+          var eased = 1 - Math.pow(1 - progress, 3);
+          view.yMin = start.yMin + (target.yMin - start.yMin) * eased;
+          view.yMax = start.yMax + (target.yMax - start.yMax) * eased;
+          renderGraph();
+          if (progress < 1) {
+            state.viewAnimation = window.requestAnimationFrame(animate);
+          } else {
+            view.yMin = target.yMin;
+            view.yMax = target.yMax;
+            state.viewAnimation = 0;
+            renderGraph();
+          }
+        };
+        state.viewAnimation = window.requestAnimationFrame(animate);
+      }
+
+      function fitPlotView() {
+        animatePlotView(fittedPlotView());
+        els.liveStatus.textContent = "Plotansicht auf Funktion und Vergleich eingepasst.";
+      }
+
+      function svgLinePath(context, profile, mapX, mapY) {
+        return "M " + mapX(context.x.min).toFixed(2) + " " + mapY(valueAt(profile, context.x.min)).toFixed(2) +
+          " L " + mapX(context.x.max).toFixed(2) + " " + mapY(valueAt(profile, context.x.max)).toFixed(2);
+      }
+
+      function renderGraph() {
+        var context = currentContext();
+        var profile = currentProfile();
+        var plotView = currentPlotView();
+        var rect = els.graphStage.getBoundingClientRect();
+        state.lastGraphWidth = Math.round(rect.width);
+        state.lastGraphHeight = Math.round(rect.height);
+        var width = Math.max(320, Math.round(rect.width || 720));
+        var height = Math.max(330, Math.round(rect.height || 430));
+        var compact = width < 500;
+        var margin = {
+          top: compact ? 26 : 30,
+          right: compact ? 18 : 26,
+          bottom: compact ? 56 : 58,
+          left: compact ? 54 : 68
+        };
+        var plotWidth = width - margin.left - margin.right;
+        var plotHeight = height - margin.top - margin.bottom;
+        var mapX = function (x) {
+          return margin.left + (x - context.x.min) / (context.x.max - context.x.min) * plotWidth;
+        };
+        var mapY = function (y) {
+          return margin.top + (plotView.yMax - y) / (plotView.yMax - plotView.yMin) * plotHeight;
+        };
+        var insideY = function (y) {
+          return y >= plotView.yMin - 0.000001 && y <= plotView.yMax + 0.000001;
+        };
+        var xTicks = tickValues(context.x.min, context.x.max, context.x.tick);
+        var yTicks = tickValues(plotView.yMin, plotView.yMax, plotView.tickStep);
+        var markup = [
+          "<title id='graphSvgTitle'>", escapeHtml(context.graphTitle), "</title>",
+          "<desc id='graphSvgDesc'>Graph von ", escapeHtml(notationAccessibleText(formulaWithValues(context, profile))),
+            ". Die Achsen zeigen ", escapeHtml(notationAccessibleText(axisLabel(context.x))), " und ",
+            escapeHtml(notationAccessibleText(axisLabel(context.y))), ".</desc>",
+          "<defs><clipPath id='lineClip'><rect x='", margin.left, "' y='", margin.top, "' width='", plotWidth,
+            "' height='", plotHeight, "' /></clipPath></defs>",
+          "<rect class='frame-line' x='", margin.left, "' y='", margin.top, "' width='", plotWidth, "' height='", plotHeight, "' />"
+        ];
+
+        xTicks.forEach(function (tick) {
+          var x = mapX(tick);
+          markup.push("<line class='grid-line' x1='", x, "' y1='", margin.top, "' x2='", x, "' y2='", margin.top + plotHeight, "' />");
+          markup.push("<text class='tick-label' x='", x, "' y='", margin.top + plotHeight + 20,
+            "' text-anchor='middle'>", escapeHtml(fmt(tick, 2)), "</text>");
+        });
+
+        yTicks.forEach(function (tick) {
+          var y = mapY(tick);
+          markup.push("<line class='grid-line' x1='", margin.left, "' y1='", y, "' x2='", margin.left + plotWidth, "' y2='", y, "' />");
+          markup.push("<text class='tick-label' x='", margin.left - 9, "' y='", y + 4,
+            "' text-anchor='end'>", escapeHtml(fmt(tick, 2)), "</text>");
+        });
+
+        if (plotView.yMin <= 0 && plotView.yMax >= 0) {
+          markup.push("<line class='axis-line' x1='", margin.left, "' y1='", mapY(0), "' x2='", margin.left + plotWidth, "' y2='", mapY(0), "' />");
+        }
+        if (context.x.min <= 0 && context.x.max >= 0) {
+          markup.push("<line class='axis-line' x1='", mapX(0), "' y1='", margin.top, "' x2='", mapX(0), "' y2='", margin.top + plotHeight, "' />");
+        }
+
+        markup.push(
+          "<text class='axis-title' x='", margin.left + plotWidth / 2, "' y='", height - 12,
+            "' text-anchor='middle'>", svgNotationMarkup(axisLabel(context.x)), "</text>",
+          "<text class='axis-title' transform='translate(16 ", margin.top + plotHeight / 2,
+            ") rotate(-90)' text-anchor='middle'>", svgNotationMarkup(axisLabel(context.y)), "</text>",
+          "<g clip-path='url(#lineClip)'>"
+        );
+
+        if (comparisons[state.context]) {
+          markup.push("<path class='comparison-line' d='", svgLinePath(context, comparisons[state.context], mapX, mapY), "' />");
+        }
+
+        markup.push("<path class='model-line' d='", svgLinePath(context, profile, mapX, mapY), "' />");
+
+        if (state.showTriangle) {
+          var triangleX0 = context.x.min <= 0 && context.x.max >= 0 ? 0 : context.x.min;
+          var triangleX1 = triangleX0 + context.triangleDx;
+          var triangleY0 = valueAt(profile, triangleX0);
+          var triangleY1 = valueAt(profile, triangleX1);
+          if (triangleX1 <= context.x.max && insideY(triangleY0) && insideY(triangleY1)) {
+            var px0 = mapX(triangleX0);
+            var px1 = mapX(triangleX1);
+            var py0 = mapY(triangleY0);
+            var py1 = mapY(triangleY1);
+            var dy = triangleY1 - triangleY0;
+            var verticalDeltaLabel = "Δ" + context.y.symbolPlain + " = " +
+              withUnit(dy, context.y.unit, 2);
+            var verticalLabelWidth = verticalDeltaLabel.length * (compact ? 6 : 6.4);
+            var verticalLabelOnRight = px1 + 12 + verticalLabelWidth <= margin.left + plotWidth - 4;
+            var verticalLabelX = verticalLabelOnRight ? px1 + 10 : px1 - 10;
+            var verticalLabelAnchor = verticalLabelOnRight ? "start" : "end";
+            var verticalLabelY = clamp((py0 + py1) / 2, margin.top + 12, margin.top + plotHeight - 12);
+            markup.push(
+              "<path class='triangle-fill' d='M ", px0, " ", py0, " L ", px1, " ", py0, " L ", px1, " ", py1, " Z' />",
+              "<path class='triangle-line' d='M ", px0, " ", py0, " L ", px1, " ", py0, " L ", px1, " ", py1, "' />",
+              "<text class='value-label' x='", (px0 + px1) / 2, "' y='", clamp(py0 + 17, margin.top + 14, margin.top + plotHeight - 5),
+                "' text-anchor='middle'>", svgNotationMarkup("Δ" + context.x.symbolPlain), " = ",
+                escapeHtml(withUnit(context.triangleDx, context.x.unit, 2)), "</text>",
+              "<text class='value-label triangle-vertical-label' x='", verticalLabelX, "' y='", verticalLabelY,
+                "' text-anchor='", verticalLabelAnchor, "' dominant-baseline='middle'>",
+                svgNotationMarkup(verticalDeltaLabel), "</text>"
+            );
+          }
+        }
+
+        var probeY = valueAt(profile, profile.probe);
+        if (insideY(probeY)) {
+          markup.push(
+            "<line class='guide-line' x1='", mapX(profile.probe), "' y1='", mapY(probeY), "' x2='", mapX(profile.probe),
+              "' y2='", margin.top + plotHeight, "' />",
+            "<line class='guide-line' x1='", margin.left, "' y1='", mapY(probeY), "' x2='", mapX(profile.probe),
+              "' y2='", mapY(probeY), "' />",
+            "<circle class='probe-dot' cx='", mapX(profile.probe), "' cy='", mapY(probeY),
+              "' r='4.5'><title>Untersuchter Funktionswert</title></circle>"
+          );
+        }
+
+        var slopeFormulaText = context.slope.symbolPlain + " = Δ" + context.y.symbolPlain +
+          " / Δ" + context.x.symbolPlain + " = " + withUnit(profile.m, context.slope.unit, 2);
+        var formulaBoxWidth = Math.min(plotWidth - 18, Math.max(54, slopeFormulaText.length * 7 + 22));
+        markup.push(
+          "<g class='slope-formula-card'>",
+            "<rect class='slope-formula-box' x='", margin.left + 9, "' y='", margin.top + 9,
+              "' width='", formulaBoxWidth, "' height='32' rx='6' />",
+            "<text class='slope-formula-label' x='", margin.left + 20, "' y='", margin.top + 30,
+              "' text-anchor='start'>", svgNotationMarkup(slopeFormulaText), "</text>",
+          "</g>"
+        );
+        markup.push("</g>");
+
+        els.lineGraph.setAttribute("viewBox", "0 0 " + width + " " + height);
+        els.lineGraph.innerHTML = markup.join("");
+        var slopeFormulaLabel = els.lineGraph.querySelector(".slope-formula-label");
+        var slopeFormulaBox = els.lineGraph.querySelector(".slope-formula-box");
+        if (slopeFormulaLabel && slopeFormulaBox && typeof slopeFormulaLabel.getComputedTextLength === "function") {
+          var fittedFormulaWidth = Math.ceil(slopeFormulaLabel.getComputedTextLength()) + 22;
+          slopeFormulaBox.setAttribute("width", Math.min(plotWidth - 18, Math.max(54, fittedFormulaWidth)));
+        }
+      }
+
+      function renderDynamic() {
+        renderHeaders();
+        renderComparisonControls();
+        renderMetrics();
+        renderInsights();
+        renderGraph();
+      }
+
+      function renderInteractiveValues() {
+        els.formulaBadge.innerHTML = formulaWithValues(currentContext(), currentProfile());
+        renderComparisonControls();
+        renderMetrics();
+        renderGraph();
+      }
+
+      function comparisonMeaning(context, profile) {
+        var saved = comparisons[state.context];
+        if (!saved) {
+          return "";
+        }
+        var sameSlope = Math.abs(saved.m - profile.m) < 0.000001;
+        var sameIntercept = Math.abs(saved.b - profile.b) < 0.000001;
+        if (sameSlope && sameIntercept) {
+          return "Die gespeicherte und die aktuelle Gerade liegen genau übereinander.";
+        }
+        if (sameSlope) {
+          return "Beide Geraden haben denselben Wert für " + context.slope.name + " " + context.slope.symbolPlain +
+            ". Ein anderer Wert für " + context.intercept.name + " " + context.intercept.symbolPlain +
+            " verschiebt die Gerade parallel.";
+        }
+        if (sameIntercept) {
+          return "Beide Geraden haben denselben Wert bei " + context.x.symbolPlain + " = " +
+            withUnit(0, context.x.unit, decimalsForStep(context.x.step)) + ", aber unterschiedliche Änderungsraten.";
+        }
+        var steeper = Math.abs(profile.m) > Math.abs(saved.m) ? "aktuelle" : "gespeicherte";
+        return "Die " + steeper + " Gerade hat den größeren Betrag von " + context.slope.symbolPlain +
+          " und ist deshalb steiler.";
+      }
+
+      function renderMeaningView() {
+        var context = currentContext();
+        var profile = currentProfile();
+        var comparisonCopy = comparisonMeaning(context, profile);
+        var unitCopy = context.slope.unit ?
+          context.slope.unit + " = " + (context.y.unit || "y-Einheit") + " pro " + (context.x.unit || "x-Einheit") :
+          "Ohne physikalische Einheiten bleibt m eine reine Änderungszahl.";
+        return [
+          "<div class='formula-bridge'>",
+            "<div class='formula-row'><span>Grundform</span><strong>y = m · x + b</strong></div>",
+            "<div class='formula-row'><span>Im Kontext</span><strong>", notationHtml(context.formulaGeneric), "</strong></div>",
+            context.formulaUnits ?
+              "<div class='formula-row units'><span>Einheiten</span><strong>" +
+                notationHtml(context.formulaUnits) + "</strong></div>" : "",
+            "<div class='formula-row'><span>Aktuell</span><strong>", formulaWithValues(context, profile), "</strong></div>",
+          "</div>",
+          "<div class='meaning-list'>",
+            "<div class='meaning-item slope'><strong>", context.slope.symbolHtml, " · ", escapeHtml(context.slope.name),
+              "</strong>", escapeHtml(slopeMeaning(context, profile)), "<br><span class='formula-font'>",
+              escapeHtml(unitCopy), "</span></div>",
+            "<div class='meaning-item intercept'><strong>", context.intercept.symbolHtml, " · ",
+              escapeHtml(context.intercept.name), "</strong>", escapeHtml(interceptMeaning(context, profile)), "</div>",
+            "<p class='model-note'><strong>Modellbereich:</strong> ", notationHtml(context.modelNote), "</p>",
+            comparisonCopy ? "<p class='comparison-note'><strong>Vergleich:</strong> " + notationHtml(comparisonCopy) + "</p>" : "",
+          "</div>"
+        ].join("");
+      }
+
+      function renderTableView() {
+        var context = currentContext();
+        var profile = currentProfile();
+        var rows = context.tableXs.map(function (x) {
+          var model = valueAt(profile, x);
+          return [
+            "<tr>",
+              "<td>", withUnit(x, context.x.unit, decimalsForStep(context.x.step)), "</td>",
+              "<td>", withUnit(model, context.y.unit, 2), "</td>",
+            "</tr>"
+          ].join("");
+        }).join("");
+        return [
+          "<table class='value-table'>",
+            "<caption class='sr-only'>Wertetabelle für ", notationHtml(context.formulaGeneric), "</caption>",
+            "<thead><tr>",
+              "<th>", context.x.symbolHtml, context.x.unit ? " [" + escapeHtml(context.x.unit) + "]" : "", "</th>",
+              "<th>", context.y.symbolHtml, context.y.unit ? " [" + escapeHtml(context.y.unit) + "]" : "", "</th>",
+            "</tr></thead>",
+            "<tbody>", rows, "</tbody>",
+          "</table>",
+          "<p class='model-note'>Die Tabelle und der Graph zeigen dieselbe lineare Zuordnung.</p>"
+        ].join("");
+      }
+
+      function renderTaskView() {
+        var context = currentContext();
+        var taskState = tasksState[state.context];
+        var task = context.tasks[taskState.index];
+        var feedback = taskState.feedback ||
+          "Stelle die Parameter links mit den Reglern ein. Prüfe anschließend deinen Versuch.";
+        return [
+          "<div class='task-meta'>",
+            "<span class='task-chip'>Auftrag ", taskState.index + 1, " / ", context.tasks.length, "</span>",
+            "<span>Beliebig viele Versuche</span>",
+          "</div>",
+          "<p class='task-prompt'>", notationHtml(task.prompt), "</p>",
+          "<div class='task-actions'>",
+            "<button class='primary-button' type='button' data-task-action='check'>Einstellung prüfen</button>",
+            "<button class='small-button' type='button' data-task-action='hint'>Tipp", taskState.hint ? " " + (taskState.hint + 1) : "", "</button>",
+            "<button class='small-button' type='button' data-task-action='next'>Nächster Auftrag</button>",
+          "</div>",
+          "<div class='task-feedback ", taskState.feedbackClass, "' aria-live='polite'>", notationHtml(feedback), "</div>"
+        ].join("");
+      }
+
+      function renderInsights() {
+        els.viewTabs.querySelectorAll("[data-view]").forEach(function (button) {
+          var active = button.getAttribute("data-view") === state.view;
+          button.setAttribute("aria-selected", active ? "true" : "false");
+          button.tabIndex = active ? 0 : -1;
+        });
+        if (state.view === "table") {
+          els.insightsBody.innerHTML = renderTableView();
+        } else if (state.view === "task") {
+          els.insightsBody.innerHTML = renderTaskView();
+        } else {
+          els.insightsBody.innerHTML = renderMeaningView();
+        }
+      }
+
+      function taskHintText(context, task, level) {
+        var zeroX = withUnit(0, context.x.unit, decimalsForStep(context.x.step));
+        if (level === 0) {
+          return "Beginne bei " + context.x.symbolPlain + " = " + zeroX + ". Dort muss " + context.y.symbolPlain + " = " +
+            withUnit(task.b, context.y.unit, decimalsForStep(context.intercept.step)) + " gelten.";
+        }
+        if (level === 1) {
+          return "Die Änderung pro Einheit auf der x-Achse ist " +
+            withUnit(task.m, context.slope.unit, decimalsForStep(context.slope.step)) + ". Stelle damit " +
+            context.slope.symbolPlain + " ein.";
+        }
+        return "Die gesuchte Einstellung ist " + context.slope.symbolPlain + " = " +
+          withUnit(task.m, context.slope.unit, decimalsForStep(context.slope.step)) + " und " +
+          context.intercept.symbolPlain + " = " +
+          withUnit(task.b, context.intercept.unit || context.y.unit, decimalsForStep(context.intercept.step)) + ".";
+      }
+
+      function showTaskHint() {
+        var context = currentContext();
+        var taskState = tasksState[state.context];
+        var task = context.tasks[taskState.index];
+        var level = Math.min(taskState.hint, 2);
+        taskState.feedback = taskHintText(context, task, level);
+        taskState.feedbackClass = "";
+        taskState.hint = Math.min(2, taskState.hint + 1);
+        renderInsights();
+      }
+
+      function checkTask() {
+        var context = currentContext();
+        var profile = currentProfile();
+        var taskState = tasksState[state.context];
+        var task = context.tasks[taskState.index];
+        var mCorrect = Math.abs(profile.m - task.m) <= context.slope.step / 3;
+        var bCorrect = Math.abs(profile.b - task.b) <= context.intercept.step / 3;
+        taskState.attempts += 1;
+        if (mCorrect && bCorrect) {
+          taskState.feedback = task.success;
+          taskState.feedbackClass = "success";
+          els.liveStatus.textContent = "Auftrag korrekt gelöst.";
+        } else {
+          taskState.feedbackClass = "error";
+          if (mCorrect) {
+            taskState.feedback = context.slope.name + " " + context.slope.symbolPlain +
+              " stimmt. Prüfe jetzt " + context.intercept.name + " " + context.intercept.symbolPlain +
+              " bei " + context.x.symbolPlain + " = " +
+              withUnit(0, context.x.unit, decimalsForStep(context.x.step)) + ".";
+          } else if (bCorrect) {
+            taskState.feedback = context.intercept.name + " " + context.intercept.symbolPlain +
+              " stimmt. Prüfe nun Richtung und Betrag von " + context.slope.symbolPlain + ".";
+          } else {
+            taskState.feedback = taskState.attempts === 1 ?
+              "Noch nicht. Trenne die Angaben: Was gilt bei " + context.x.symbolPlain + " = " +
+                withUnit(0, context.x.unit, decimalsForStep(context.x.step)) +
+                ", und wie viel ändert sich " + context.y.symbolPlain + " pro Einheit?" :
+              "Beide Parameter brauchen noch eine Anpassung. Das Steigungsdreieck und ein Tipp helfen beim Zuordnen.";
+          }
+          els.liveStatus.textContent = "Auftrag noch nicht korrekt.";
+        }
+        renderInsights();
+      }
+
+      function nextTask() {
+        var context = currentContext();
+        var taskState = tasksState[state.context];
+        taskState.index = (taskState.index + 1) % context.tasks.length;
+        taskState.hint = 0;
+        taskState.attempts = 0;
+        taskState.feedback = "";
+        taskState.feedbackClass = "";
+        renderInsights();
+      }
+
+      function quizKey(contextKey, type) {
+        return contextKey + "::" + type;
+      }
+
+      function currentQuizQuestions() {
+        var context = currentContext();
+        return state.quizType === "understanding" ? context.understanding : context.application;
+      }
+
+      function currentQuizState() {
+        var key = quizKey(state.context, state.quizType);
+        if (!quizStates[key]) {
+          quizStates[key] = { index: 0, score: 0, answered: false, selected: -1 };
+        }
+        return quizStates[key];
+      }
+
+      function resetCurrentQuiz() {
+        quizStates[quizKey(state.context, state.quizType)] = { index: 0, score: 0, answered: false, selected: -1 };
+      }
+
+      function quizVisualMarkup(visual) {
+        var width = 320;
+        var height = 132;
+        var margin = { left: 38, right: 18, top: 12, bottom: 26 };
+        var plotWidth = width - margin.left - margin.right;
+        var plotHeight = height - margin.top - margin.bottom;
+        var xMin = -2;
+        var xMax = 2;
+        var yMin = -4;
+        var yMax = 4;
+        var mapX = function (x) {
+          return margin.left + (x - xMin) / (xMax - xMin) * plotWidth;
+        };
+        var mapY = function (y) {
+          return margin.top + (yMax - y) / (yMax - yMin) * plotHeight;
+        };
+        var line = function (m, b, cssClass) {
+          return "<path class='" + cssClass + "' d='M " + mapX(xMin) + " " + mapY(m * xMin + b) +
+            " L " + mapX(xMax) + " " + mapY(m * xMax + b) + "' />";
+        };
+        var markup = [
+          "<defs><clipPath id='quizClip'><rect x='", margin.left, "' y='", margin.top, "' width='", plotWidth,
+            "' height='", plotHeight, "' /></clipPath></defs>",
+          "<rect class='frame-line' x='", margin.left, "' y='", margin.top, "' width='", plotWidth, "' height='", plotHeight, "' />"
+        ];
+        [-2, 0, 2].forEach(function (tick) {
+          markup.push("<line class='grid-line' x1='", mapX(tick), "' y1='", margin.top, "' x2='", mapX(tick), "' y2='", margin.top + plotHeight, "' />");
+        });
+        [-4, 0, 4].forEach(function (tick) {
+          markup.push("<line class='grid-line' x1='", margin.left, "' y1='", mapY(tick), "' x2='", margin.left + plotWidth, "' y2='", mapY(tick), "' />");
+        });
+        markup.push(
+          "<line class='axis-line' x1='", margin.left, "' y1='", mapY(0), "' x2='", margin.left + plotWidth, "' y2='", mapY(0), "' />",
+          "<line class='axis-line' x1='", mapX(0), "' y1='", margin.top, "' x2='", mapX(0), "' y2='", margin.top + plotHeight, "' />",
+          "<g clip-path='url(#quizClip)'>"
+        );
+        if (visual.type === "parallel") {
+          markup.push(line(visual.m, visual.b, "model-line"), line(visual.m, visual.b2, "quiz-secondary"));
+        } else if (visual.type === "compareSlope") {
+          markup.push(line(visual.m, visual.b, "model-line"), line(visual.m2, visual.b, "quiz-secondary"));
+        } else {
+          markup.push(line(visual.m, visual.b, "model-line"));
+        }
+        if (visual.type === "triangle") {
+          var x0 = 0;
+          var x1 = 1;
+          var y0 = visual.b;
+          var y1 = visual.m + visual.b;
+          markup.push("<path class='quiz-triangle' d='M ", mapX(x0), " ", mapY(y0), " L ", mapX(x1), " ", mapY(y0),
+            " L ", mapX(x1), " ", mapY(y1), " Z' />");
+        }
+        if (visual.type === "intercept") {
+          markup.push("<circle class='quiz-marker' cx='", mapX(0), "' cy='", mapY(visual.b), "' r='6' />");
+        }
+        markup.push(
+          "</g>",
+          "<text x='", width - 12, "' y='", mapY(0) - 5, "' text-anchor='end'>x</text>",
+          "<text x='", mapX(0) + 7, "' y='", margin.top + 13, "'>y</text>"
+        );
+        return markup.join("");
+      }
+
+      function renderQuizVisual(question) {
+        if (!question.visual) {
+          els.quizVisual.hidden = true;
+          els.quizVisualSvg.innerHTML = "";
+          return;
+        }
+        els.quizVisual.hidden = false;
+        els.quizVisual.setAttribute("aria-label", "Diagrammskizze zur Frage");
+        els.quizVisualSvg.setAttribute("viewBox", "0 0 320 132");
+        els.quizVisualSvg.innerHTML = quizVisualMarkup(question.visual);
+      }
+
+      function renderQuiz() {
+        var context = currentContext();
+        var questions = currentQuizQuestions();
+        var quiz = currentQuizState();
+        if (quiz.index >= questions.length) {
+          resetCurrentQuiz();
+          quiz = currentQuizState();
+        }
+        var question = questions[quiz.index];
+        var understanding = state.quizType === "understanding";
+        var variableSummary = context.slope.name + " " + context.slope.symbolPlain + ", " +
+          context.intercept.name + " " + context.intercept.symbolPlain;
+        els.quizContext.textContent = context.title;
+        els.quizTitle.textContent = understanding ? "Verständnis-Quiz" : "Anwendungsaufgaben";
+        els.quizIntro.innerHTML = notationHtml(understanding ?
+          variableSummary + ", Einheiten und Modellgrenzen deuten." :
+          "Mit " + variableSummary + " rechnen und Ergebnisse einordnen.");
+        els.quizTypePicker.querySelectorAll("[data-quiz-type]").forEach(function (button) {
+          button.setAttribute("aria-pressed", button.getAttribute("data-quiz-type") === state.quizType ? "true" : "false");
+        });
+        els.quizScore.textContent = quiz.score + " / " + questions.length;
+        els.quizCounter.textContent = "Frage " + (quiz.index + 1) + " von " + questions.length;
+        els.quizKind.textContent = question.kind;
+        els.quizQuestion.innerHTML = notationHtml(question.prompt);
+        renderQuizVisual(question);
+
+        var letters = ["A", "B", "C"];
+        els.quizAnswers.innerHTML = question.answers.map(function (answer, index) {
+          var cssClass = "answer-button";
+          if (quiz.answered && index === question.correct) {
+            cssClass += " correct";
+          } else if (quiz.answered && index === quiz.selected) {
+            cssClass += " wrong";
+          }
+          return "<button class='" + cssClass + "' type='button' data-answer='" + index + "'" +
+            (quiz.answered ? " disabled" : "") + "><span class='answer-letter'>" + letters[index] +
+            "</span><span>" + notationHtml(answer) + "</span></button>";
+        }).join("");
+
+        var progress = (quiz.index + (quiz.answered ? 1 : 0)) / questions.length * 100;
+        els.quizProgress.style.width = progress + "%";
+        els.quizProgressTrack.setAttribute("aria-valuenow", String(Math.round(progress)));
+        if (quiz.answered) {
+          var correct = quiz.selected === question.correct;
+          var complete = quiz.index === questions.length - 1;
+          els.quizFeedback.className = "quiz-feedback " + (correct ? "success" : "error");
+          els.quizFeedback.innerHTML = notationHtml((correct ? "Richtig. " : "Nicht ganz. ") + question.explanation +
+            (complete ? " Runde abgeschlossen: " + quiz.score + " von " + questions.length + " richtig." : ""));
+          els.nextQuestion.disabled = false;
+          els.nextQuestion.textContent = complete ? "Neue Runde starten" : "Nächste Frage";
+        } else {
+          els.quizFeedback.className = "quiz-feedback";
+          els.quizFeedback.textContent = understanding ?
+            "Entscheide zuerst selbst. Danach wird die zugrunde liegende Idee erklärt." :
+            "Wähle das passende Ergebnis. Danach folgt der kurze Rechenweg.";
+          els.nextQuestion.disabled = true;
+          els.nextQuestion.textContent = "Nächste Frage";
+        }
+      }
+
+      function answerQuiz(index) {
+        var quiz = currentQuizState();
+        if (quiz.answered) {
+          return;
+        }
+        var question = currentQuizQuestions()[quiz.index];
+        quiz.selected = index;
+        quiz.answered = true;
+        if (index === question.correct) {
+          quiz.score += 1;
+        }
+        renderQuiz();
+        els.nextQuestion.focus();
+      }
+
+      function nextQuizQuestion() {
+        var questions = currentQuizQuestions();
+        var quiz = currentQuizState();
+        if (!quiz.answered) {
+          return;
+        }
+        if (quiz.index >= questions.length - 1) {
+          resetCurrentQuiz();
+        } else {
+          quiz.index += 1;
+          quiz.answered = false;
+          quiz.selected = -1;
+        }
+        renderQuiz();
+        var firstAnswer = els.quizAnswers.querySelector("[data-answer]");
+        if (firstAnswer) {
+          firstAnswer.focus();
+        }
+      }
+
+      function selectContext(key, focusButton) {
+        if (!contexts[key]) {
+          return;
+        }
+        if (state.viewAnimation) {
+          window.cancelAnimationFrame(state.viewAnimation);
+          state.viewAnimation = 0;
+        }
+        state.context = key;
+        state.drag = null;
+        els.contextPicker.querySelectorAll("[data-context]").forEach(function (button) {
+          var active = button.getAttribute("data-context") === key;
+          button.setAttribute("aria-checked", active ? "true" : "false");
+          button.tabIndex = active ? 0 : -1;
+        });
+        renderControls();
+        renderDynamic();
+        renderQuiz();
+        document.title = "Lineare Funktionen · " + currentContext().title;
+        try {
+          var url = new URL(window.location.href);
+          url.searchParams.set("kontext", key);
+          window.history.replaceState(null, "", url.toString());
+        } catch (error) {
+          /* Lokale Dateiansicht kann URL-Änderungen einschränken. */
+        }
+        var activeButton = els.contextPicker.querySelector("[data-context='" + key + "']");
+        if (activeButton) {
+          activeButton.scrollIntoView({ block: "nearest", inline: "nearest" });
+          if (focusButton) {
+            activeButton.focus();
+          }
+        }
+        els.liveStatus.textContent = "Kontext " + currentContext().title + " gewählt.";
+      }
+
+      function graphGeometry() {
+        var context = currentContext();
+        var plotView = currentPlotView();
+        var rect = els.graphStage.getBoundingClientRect();
+        var width = Math.max(320, Math.round(rect.width || 720));
+        var height = Math.max(330, Math.round(rect.height || 430));
+        var compact = width < 500;
+        var margin = {
+          top: compact ? 26 : 30,
+          right: compact ? 18 : 26,
+          bottom: compact ? 56 : 58,
+          left: compact ? 54 : 68
+        };
+        return {
+          rect: rect,
+          width: width,
+          height: height,
+          margin: margin,
+          plotWidth: width - margin.left - margin.right,
+          plotHeight: height - margin.top - margin.bottom,
+          yFromClient: function (clientY) {
+            var svgY = (clientY - rect.top) / Math.max(1, rect.height) * height;
+            var ratio = (svgY - margin.top) / Math.max(1, height - margin.top - margin.bottom);
+            return plotView.yMax - ratio * (plotView.yMax - plotView.yMin);
+          }
+        };
+      }
+
+      function beginGraphDrag(event) {
+        var handle = event.target.closest("[data-handle]");
+        if (!handle) {
+          return;
+        }
+        event.preventDefault();
+        if (state.viewAnimation) {
+          window.cancelAnimationFrame(state.viewAnimation);
+          state.viewAnimation = 0;
+        }
+        state.drag = {
+          handle: handle.getAttribute("data-handle"),
+          pointerId: event.pointerId,
+          geometry: graphGeometry(),
+          clientY: event.clientY,
+          frame: 0
+        };
+        els.lineGraph.setPointerCapture(event.pointerId);
+        els.lineGraph.closest(".graph-panel").classList.add("is-dragging");
+        document.body.style.userSelect = "none";
+      }
+
+      function applyGraphDragFrame() {
+        if (!state.drag) {
+          return;
+        }
+        state.drag.frame = 0;
+        var context = currentContext();
+        var profile = currentProfile();
+        var y = state.drag.geometry.yFromClient(state.drag.clientY);
+        if (state.drag.handle === "b") {
+          setParameter("b", y, false, "interactive");
+        } else {
+          setParameter("m", (y - profile.b) / context.handleDx, false, "interactive");
+        }
+      }
+
+      function moveGraphDrag(event) {
+        if (!state.drag || event.pointerId !== state.drag.pointerId) {
+          return;
+        }
+        event.preventDefault();
+        state.drag.clientY = event.clientY;
+        if (!state.drag.frame) {
+          state.drag.frame = window.requestAnimationFrame(applyGraphDragFrame);
+        }
+      }
+
+      function endGraphDrag(event) {
+        if (!state.drag || (event.pointerId !== undefined && event.pointerId !== state.drag.pointerId)) {
+          return;
+        }
+        if (state.drag.frame) {
+          window.cancelAnimationFrame(state.drag.frame);
+          state.drag.frame = 0;
+          applyGraphDragFrame();
+        }
+        var handle = state.drag.handle;
+        var pointerId = state.drag.pointerId;
+        state.drag = null;
+        if (els.lineGraph.hasPointerCapture(pointerId)) {
+          els.lineGraph.releasePointerCapture(pointerId);
+        }
+        els.lineGraph.closest(".graph-panel").classList.remove("is-dragging");
+        document.body.style.userSelect = "";
+        var definition = handle === "m" ? currentContext().slope : currentContext().intercept;
+        renderDynamic();
+        if (state.pendingGraphResize) {
+          state.pendingGraphResize = false;
+          renderGraph();
+        }
+        els.liveStatus.textContent = definition.name + " auf " +
+          withUnit(currentProfile()[handle], definition.unit, parameterDigits(definition)) + " gesetzt.";
+      }
+
+      function focusGraphHandle(handle) {
+        window.requestAnimationFrame(function () {
+          var target = els.lineGraph.querySelector("[data-handle='" + handle + "']");
+          if (target) {
+            target.focus();
+          }
+        });
+      }
+
+      function handleGraphKeyboard(event) {
+        var target = event.target.closest("[data-handle]");
+        if (!target) {
+          return;
+        }
+        var handle = target.getAttribute("data-handle");
+        var definition = handle === "m" ? currentContext().slope : currentContext().intercept;
+        var value = currentProfile()[handle];
+        var multiplier = event.shiftKey ? 5 : 1;
+        if (event.key === "ArrowUp" || event.key === "ArrowRight") {
+          value += definition.step * multiplier;
+        } else if (event.key === "ArrowDown" || event.key === "ArrowLeft") {
+          value -= definition.step * multiplier;
+        } else if (event.key === "Home") {
+          value = definition.min;
+        } else if (event.key === "End") {
+          value = definition.max;
+        } else {
+          return;
+        }
+        event.preventDefault();
+        setParameter(handle, value, true);
+        focusGraphHandle(handle);
+      }
+
+      function handleContextKeyboard(event) {
+        if (["ArrowRight", "ArrowDown", "ArrowLeft", "ArrowUp", "Home", "End"].indexOf(event.key) === -1) {
+          return;
+        }
+        var buttons = Array.from(els.contextPicker.querySelectorAll("[data-context]"));
+        var current = event.target.closest("[data-context]");
+        if (!current) {
+          return;
+        }
+        event.preventDefault();
+        var index = buttons.indexOf(current);
+        if (event.key === "Home") {
+          index = 0;
+        } else if (event.key === "End") {
+          index = buttons.length - 1;
+        } else {
+          var direction = event.key === "ArrowRight" || event.key === "ArrowDown" ? 1 : -1;
+          index = (index + direction + buttons.length) % buttons.length;
+        }
+        selectContext(buttons[index].getAttribute("data-context"), true);
+      }
+
+      function handleViewKeyboard(event) {
+        if (["ArrowRight", "ArrowLeft", "Home", "End"].indexOf(event.key) === -1) {
+          return;
+        }
+        var buttons = Array.from(els.viewTabs.querySelectorAll("[data-view]"));
+        var current = event.target.closest("[data-view]");
+        if (!current) {
+          return;
+        }
+        event.preventDefault();
+        var index = buttons.indexOf(current);
+        if (event.key === "Home") {
+          index = 0;
+        } else if (event.key === "End") {
+          index = buttons.length - 1;
+        } else {
+          index = (index + (event.key === "ArrowRight" ? 1 : -1) + buttons.length) % buttons.length;
+        }
+        state.view = buttons[index].getAttribute("data-view");
+        renderInsights();
+        buttons[index].focus();
+      }
+
+      function bindEvents() {
+        els.contextPicker.addEventListener("click", function (event) {
+          var button = event.target.closest("[data-context]");
+          if (button) {
+            selectContext(button.getAttribute("data-context"), false);
+          }
+        });
+        els.contextPicker.addEventListener("keydown", handleContextKeyboard);
+
+        els.controlsBody.addEventListener("input", function (event) {
+          if (event.target.matches("[data-param]")) {
+            if (event.target.value === "" || event.target.value === "-") {
+              return;
+            }
+            setParameter(
+              event.target.getAttribute("data-param"),
+              Number(String(event.target.value).replace(",", ".")),
+              false,
+              "interactive"
+            );
+          }
+        });
+
+        els.controlsBody.addEventListener("change", function (event) {
+          if (event.target.matches("[data-param]")) {
+            setParameter(event.target.getAttribute("data-param"), Number(String(event.target.value).replace(",", ".")), true);
+          }
+        });
+
+        els.controlsBody.addEventListener("click", function (event) {
+          var preset = event.target.closest("[data-preset]");
+          if (preset) {
+            applyPreset(preset.getAttribute("data-preset"));
+          }
+        });
+
+        els.triangleToggle.addEventListener("click", function () {
+          state.showTriangle = !state.showTriangle;
+          renderHeaders();
+          renderGraph();
+          els.liveStatus.textContent = state.showTriangle ? "Steigungsdreieck eingeblendet." : "Steigungsdreieck ausgeblendet.";
+        });
+
+        els.fitPlot.addEventListener("click", fitPlotView);
+
+        els.saveComparison.addEventListener("click", function () {
+          comparisons[state.context] = { m: currentProfile().m, b: currentProfile().b };
+          renderComparisonControls();
+          renderGraph();
+          renderInsights();
+          els.liveStatus.textContent = "Aktuelle Gerade als Vergleich gespeichert.";
+        });
+
+        els.deleteComparison.addEventListener("click", function () {
+          delete comparisons[state.context];
+          renderComparisonControls();
+          renderGraph();
+          renderInsights();
+          els.liveStatus.textContent = "Vergleichsgerade gelöscht.";
+        });
+
+        els.probeSlider.addEventListener("input", function () {
+          currentProfile().probe = roundToStep(Number(els.probeSlider.value), currentContext().x);
+          renderMetrics();
+          renderGraph();
+        });
+
+        els.lineGraph.addEventListener("pointerdown", beginGraphDrag);
+        els.lineGraph.addEventListener("keydown", handleGraphKeyboard);
+        window.addEventListener("pointermove", moveGraphDrag, { passive: false });
+        window.addEventListener("pointerup", endGraphDrag);
+        window.addEventListener("pointercancel", endGraphDrag);
+
+        els.viewTabs.addEventListener("click", function (event) {
+          var button = event.target.closest("[data-view]");
+          if (button) {
+            state.view = button.getAttribute("data-view");
+            renderInsights();
+          }
+        });
+        els.viewTabs.addEventListener("keydown", handleViewKeyboard);
+
+        els.insightsBody.addEventListener("click", function (event) {
+          var action = event.target.closest("[data-task-action]");
+          if (!action) {
+            return;
+          }
+          if (action.getAttribute("data-task-action") === "check") {
+            checkTask();
+          } else if (action.getAttribute("data-task-action") === "hint") {
+            showTaskHint();
+          } else {
+            nextTask();
+          }
+        });
+
+        els.quizTypePicker.addEventListener("click", function (event) {
+          var button = event.target.closest("[data-quiz-type]");
+          if (!button) {
+            return;
+          }
+          state.quizType = button.getAttribute("data-quiz-type");
+          renderQuiz();
+          button.focus();
+        });
+
+        els.quizAnswers.addEventListener("click", function (event) {
+          var button = event.target.closest("[data-answer]");
+          if (button) {
+            answerQuiz(Number(button.getAttribute("data-answer")));
+          }
+        });
+        els.nextQuestion.addEventListener("click", nextQuizQuestion);
+
+        window.addEventListener("resize", function () {
+          scheduleGraphResize();
+        });
+      }
+
+      function scheduleGraphResize() {
+        var rect = els.graphStage.getBoundingClientRect();
+        var width = Math.round(rect.width);
+        var height = Math.round(rect.height);
+        if (width <= 0 || height <= 0 ||
+            (width === state.lastGraphWidth && height === state.lastGraphHeight)) {
+          return;
+        }
+        if (state.drag) {
+          state.pendingGraphResize = true;
+          return;
+        }
+        if (!state.resizeFrame) {
+          state.resizeFrame = window.requestAnimationFrame(function () {
+            state.resizeFrame = 0;
+            renderGraph();
+          });
+        }
+      }
+
+      function initialContext() {
+        try {
+          var requested = new URL(window.location.href).searchParams.get("kontext");
+          return contexts[requested] ? requested : "math";
+        } catch (error) {
+          return "math";
+        }
+      }
+
+      bindEvents();
+      selectContext(initialContext(), false);
+      if (window.ResizeObserver) {
+        new ResizeObserver(function () {
+          scheduleGraphResize();
+        }).observe(els.graphStage);
+      }
+    }());
+  </script>
+</body>
+</html>
