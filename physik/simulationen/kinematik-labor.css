@@ -768,6 +768,10 @@
       cursor: pointer;
     }
 
+    .analysis-toggle[hidden] {
+      display: none;
+    }
+
     .analysis-toggle:hover {
       border-color: rgba(99, 184, 135, 0.78);
       background: #f3fbf6;

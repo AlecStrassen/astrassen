@@ -99,6 +99,8 @@
         lastPaint: 0,
         quizType: "understanding",
         analysisHelpers: false,
+        analysisSlope: false,
+        analysisArea: false,
         meetingRevealed: false
       };
 
@@ -148,6 +150,8 @@
         metricGrid: document.getElementById("metricGrid"),
         plotsGrid: document.getElementById("plotsGrid"),
         analysisToggle: null,
+        analysisSlopeToggle: null,
+        analysisAreaToggle: null,
         comparisonSave: null,
         comparisonDelete: null,
         comparisonSummary: null,
@@ -303,8 +307,21 @@
         return state.mode + "|" + JSON.stringify(currentProfile());
       }
 
+      function analysisSlopeEnabled() {
+        return state.mode === "accelerated" ? state.analysisSlope : state.analysisHelpers;
+      }
+
+      function analysisAreaEnabled() {
+        return state.mode === "accelerated" ? state.analysisArea : state.analysisHelpers;
+      }
+
+      function analysisEnabled() {
+        return analysisSlopeEnabled() || analysisAreaEnabled();
+      }
+
       function plotSignature(plotId) {
-        return motionSignature() + "|" + plotId + "|analysis:" + (state.analysisHelpers ? "1" : "0") +
+        return motionSignature() + "|" + plotId + "|slope:" + (analysisSlopeEnabled() ? "1" : "0") +
+          "|area:" + (analysisAreaEnabled() ? "1" : "0") +
           "|meeting:" + (state.meetingRevealed ? "1" : "0") + "|comparison:" + comparisonSignature();
       }
 
@@ -373,6 +390,16 @@
           els.analysisToggle.setAttribute("aria-controls", "plotsGrid");
         }
         actions.insertBefore(els.analysisToggle, actions.firstChild);
+        ["analysisSlopeToggle", "analysisAreaToggle"].forEach(function (id) {
+          els[id] = document.createElement("button");
+          els[id].id = id;
+          els[id].className = "analysis-toggle";
+          els[id].type = "button";
+          els[id].setAttribute("aria-controls", "plotsGrid");
+          actions.appendChild(els[id]);
+        });
+        els.analysisSlopeToggle.title = "Steigungsdreieck im v–t-Diagramm und Tangente im x–t-Diagramm";
+        els.analysisAreaToggle.title = "Fläche unter dem v–t-Graphen: Ortsänderung Δx";
 
         els.comparisonSave = document.getElementById("comparisonSave");
         if (!els.comparisonSave) {
@@ -426,6 +453,14 @@
         if (!els.analysisToggle) {
           return;
         }
+        var separate = state.mode === "accelerated";
+        els.analysisToggle.hidden = separate;
+        els.analysisSlopeToggle.hidden = !separate;
+        els.analysisAreaToggle.hidden = !separate;
+        els.analysisSlopeToggle.setAttribute("aria-pressed", state.analysisSlope ? "true" : "false");
+        els.analysisAreaToggle.setAttribute("aria-pressed", state.analysisArea ? "true" : "false");
+        els.analysisSlopeToggle.textContent = "Steigungsdreieck: " + (state.analysisSlope ? "Ein" : "Aus");
+        els.analysisAreaToggle.textContent = "Fläche: " + (state.analysisArea ? "Ein" : "Aus");
         els.analysisToggle.setAttribute("aria-pressed", state.analysisHelpers ? "true" : "false");
         els.analysisToggle.setAttribute(
           "aria-label",
@@ -433,6 +468,19 @@
         );
         els.analysisToggle.textContent = state.analysisHelpers ?
           "Analysehilfen: Ein" : "Analysehilfen: Aus";
+      }
+
+      function toggleAcceleratedAnalysis(kind) {
+        if (state.mode !== "accelerated") {
+          return;
+        }
+        state[kind] = !state[kind];
+        plotCaches = {};
+        updateAnalysisToggle();
+        renderDynamic();
+        els.simulationStatus.textContent =
+          "Steigungsdreieck und Tangente " + (state.analysisSlope ? "eingeblendet" : "ausgeblendet") +
+          "; Fläche " + (state.analysisArea ? "eingeblendet." : "ausgeblendet.");
       }
 
       function toggleAnalysisHelpers() {
@@ -800,6 +848,7 @@
       }
 
       function renderMode() {
+        updateAnalysisToggle();
         var meta = modeMeta[state.mode];
         els.controlsTitle.textContent = state.mode === "encounter" ? "Zwei Bewegungen festlegen" : "Bewegung festlegen";
         els.controlsIntro.textContent = meta.controls;
@@ -1447,7 +1496,7 @@
               value: function (time) { return positionAt(id, time); }
             };
           });
-          if (!state.analysisHelpers) {
+          if (!analysisSlopeEnabled()) {
             config.summary = state.mode === "single" ?
               "Beobachte, wie sich x in gleichen Zeitabschnitten verändert." :
               state.mode === "encounter" ?
@@ -1474,7 +1523,13 @@
               value: function (time) { return velocityAt(id, time); }
             };
           });
-          if (!state.analysisHelpers) {
+          if (state.mode === "accelerated") {
+            config.summary = state.analysisSlope && state.analysisArea ?
+              "Die Steigung der Geraden ist die Beschleunigung a; die Fläche entspricht Δx." :
+              state.analysisSlope ? "Die Steigung der Geraden ist die Beschleunigung a." :
+              state.analysisArea ? "Die vorzeichenbehaftete Fläche entspricht der Ortsänderung Δx." :
+              "Beobachte, wie sich v in gleichen Zeitabschnitten verändert.";
+          } else if (!state.analysisHelpers) {
             config.summary = state.mode === "single" ?
               "Vergleiche die Höhe der Linie mit der eingestellten Geschwindigkeit." :
               state.mode === "encounter" ?
@@ -1528,7 +1583,7 @@
             color: COLORS.cyanDark,
             value: function () { return accelerationAt(); }
           }];
-          config.summary = state.analysisHelpers ?
+          config.summary = analysisEnabled() ?
             "Eine waagrechte Linie zeigt: a ist konstant." :
             "Vergleiche die Linie mit dem eingestellten Wert von a.";
         }
@@ -1695,7 +1750,7 @@
           markup += "</g>";
         }
 
-        if (state.analysisHelpers && (state.mode === "single" || state.mode === "accelerated") &&
+        if (analysisAreaEnabled() && (state.mode === "single" || state.mode === "accelerated") &&
             plotId === "velocity") {
           markup += "<g id='plotAreaAid-velocity' class='plot-analysis-aid' aria-hidden='true' visibility='hidden'>" +
             "<g id='plotAreaShapes-velocity' clip-path='url(#" + clipId + ")'></g>" +
@@ -1725,7 +1780,7 @@
             (top + 36) + "' fill='#2f6f4d' font-size='10.5' font-weight='950'></text></g>";
         }
 
-        var showSlopeAid = state.analysisHelpers &&
+        var showSlopeAid = analysisSlopeEnabled() &&
           ((state.mode === "single" && plotId === "position") ||
             (state.mode === "accelerated" && plotId === "velocity"));
         if (showSlopeAid) {
@@ -1744,7 +1799,7 @@
             "<text id='plotSlopeSummary2-" + plotId + "' x='" + (aidBoxX + 8) + "' y='" + (top + 36) + "' fill='#2f6f4d' font-size='10.5' font-weight='950'></text></g>";
         }
 
-        if (state.analysisHelpers && state.mode === "accelerated" && plotId === "position") {
+        if (analysisSlopeEnabled() && state.mode === "accelerated" && plotId === "position") {
           markup += "<g id='plotTangentAid-position' class='plot-analysis-aid' aria-hidden='true'>" +
             "<line id='plotTangentLine-position' clip-path='url(#" + clipId + ")' stroke='" + COLORS.green +
             "' stroke-width='2.5' stroke-dasharray='8 5' />" +
@@ -1785,10 +1840,15 @@
           plotAria += ". Analysehilfe mit Steigungsdreieck für Geschwindigkeit.";
         } else if (state.analysisHelpers && state.mode === "single" && plotId === "velocity") {
           plotAria += ". Analysehilfe mit schattierter Fläche für die Ortsänderung.";
-        } else if (state.analysisHelpers && state.mode === "accelerated" && plotId === "position") {
+        } else if (analysisSlopeEnabled() && state.mode === "accelerated" && plotId === "position") {
           plotAria += ". Analysehilfe mit Tangente für die momentane Geschwindigkeit.";
-        } else if (state.analysisHelpers && state.mode === "accelerated" && plotId === "velocity") {
-          plotAria += ". Analysehilfe mit Steigungsdreieck für Beschleunigung und schattierter Fläche für Ortsänderung.";
+        } else if (state.mode === "accelerated" && plotId === "velocity") {
+          if (state.analysisSlope) {
+            plotAria += ". Analysehilfe mit Steigungsdreieck für Beschleunigung.";
+          }
+          if (state.analysisArea) {
+            plotAria += ". Analysehilfe mit schattierter Fläche für die Ortsänderung.";
+          }
         } else if (state.analysisHelpers && state.mode === "encounter" && plotId === "position") {
           plotAria += ". Analysehilfe mit dem aktuellen Abstand zwischen beiden Objekten.";
         } else if (state.analysisHelpers && state.mode === "encounter" && plotId === "velocity") {
@@ -2030,7 +2090,7 @@
       }
 
       function updatePlotAnalysis(plotId, cache) {
-        if (!state.analysisHelpers || !cache || !cache.analysis) {
+        if (!analysisEnabled() || !cache || !cache.analysis) {
           return;
         }
         updateSlopeAnalysis(plotId, cache);
@@ -2883,6 +2943,12 @@
         if (els.analysisToggle) {
           els.analysisToggle.addEventListener("click", toggleAnalysisHelpers);
         }
+        els.analysisSlopeToggle.addEventListener("click", function () {
+          toggleAcceleratedAnalysis("analysisSlope");
+        });
+        els.analysisAreaToggle.addEventListener("click", function () {
+          toggleAcceleratedAnalysis("analysisArea");
+        });
         if (els.comparisonSave) {
           els.comparisonSave.addEventListener("click", saveComparisonMeasurement);
         }
