@@ -1191,6 +1191,10 @@
           function triangleLabel(text,x,y,anchor,kind) {
             parts.push(label(text,x,y,{class:kind,'text-anchor':anchor,fill:green,'font-size':12,'stroke-width':5,'stroke-opacity':0.94}));
           }
+          // Short labels stay attached to their legs without switching sides.
+          triangleLabel('Δ'+(c.x.symbolPlain || 'x'),(p0+p1)/2,q0+18,'middle','slope-dx-label');
+          var sideLabel='Δ'+(c.y.symbolPlain || 'y');
+          triangleLabel(sideLabel,Math.min(p1+9,width-12-sideLabel.length*8),(q0+q1)/2+4,'start','slope-dy-label');
           triangleLabel('Δ'+(c.x.symbolPlain || 'x')+' = '+unitValue(dx,c.x.unit),left,height-27,'start','slope-dx');
           triangleLabel('Δ'+(c.y.symbolPlain || 'y')+' = '+unitValue(dy,c.y.unit),left,height-10,'start','slope-dy');
         }
