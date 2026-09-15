@@ -8,7 +8,7 @@
   <title>Lineare Funktionen · Ein geführtes Experiment</title>
   <link rel="icon" href="../../favicon.svg" type="image/svg+xml">
   <style>:root{--paper:#f8f9f6;--ink:#203b34;--muted:#697870;--line:#e0e6df;--green:#247963;--green-light:#eaf3ee;--amber:#b77730;--white:#fff;font-family:Inter,"Segoe UI",system-ui,sans-serif;color:var(--ink);background:var(--paper);font-synthesis:none}
-*{box-sizing:border-box}body{margin:0}button,input,select{font:inherit}button{cursor:pointer;color:inherit}a{color:inherit}button:disabled{cursor:default;opacity:.45}[hidden]{display:none!important}button:focus-visible,a:focus-visible,select:focus-visible,input:focus-visible{outline:3px solid #75ad9b;outline-offset:4px}button{touch-action:manipulation}h1,h2,p{margin:0}i{font-family:Georgia,serif}sub{font-size:.68em}.shell{width:min(1320px,calc(100% - 64px));margin:auto;padding:24px 0 16px}.page-header{display:flex;justify-content:space-between;align-items:center;gap:20px;padding-bottom:22px}.eyebrow{font-size:10px;letter-spacing:.13em;text-transform:uppercase;font-weight:700;color:var(--muted)}h1{font-size:27px;letter-spacing:-.8px;font-weight:650;margin-top:5px}.back-link{font-size:12px;text-decoration:none;color:var(--muted)}.back-link:hover{text-decoration:underline}.steps{display:grid;grid-template-columns:repeat(4,1fr);border-top:1px solid var(--line);border-bottom:1px solid var(--line);margin-bottom:26px}.steps button{display:flex;align-items:center;gap:11px;border:0;border-bottom:2px solid transparent;background:none;padding:15px 8px;font-size:13px;text-align:left;color:var(--muted)}.step-number{display:grid;place-items:center;width:25px;height:25px;border:1px solid #cdd7ce;border-radius:50%;font-size:11px;font-weight:600}.steps button[aria-current=step]{border-bottom-color:var(--green);color:var(--green);font-weight:650}.steps button[aria-current=step] .step-number{background:var(--green);border-color:var(--green);color:white}.steps button.done:not([aria-current=step]) .step-number{background:var(--green-light);border-color:transparent;color:var(--green)}.experiment{display:grid;grid-template-columns:292px minmax(0,1fr);gap:38px;min-height:490px;height:clamp(480px,calc(100dvh - 240px),690px)}.guide{display:flex;flex-direction:column;min-height:0;padding:9px 0 2px}.guide-content{overflow-y:auto;scrollbar-width:thin;padding:0 6px 5px 0;flex:1}.guide h2{font-weight:600;font-size:25px;line-height:1.18;letter-spacing:-.7px;margin-top:12px;outline:none}.instruction{font-size:15px;line-height:1.55;margin-top:17px}.observation{color:var(--muted);font-size:13px;line-height:1.55;margin-top:9px}.parameters{margin-top:24px;display:grid;gap:24px}.parameter-label{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:9px}.parameter-label label{font-size:13px;font-weight:600}.parameter-label i{font-size:19px;margin-left:4px}.parameter-m i{color:var(--green)}.parameter-b i{color:var(--amber)}input[type=number]{width:79px;border:1px solid var(--line);border-radius:7px;background:white;padding:6px 5px 6px 9px;font-size:16px;font-variant-numeric:tabular-nums;color:var(--ink)}input[type=range]{width:100%;accent-color:var(--green);height:20px;display:block;margin:0;cursor:pointer}.parameter-b input[type=range]{accent-color:var(--amber)}input:disabled{opacity:.45;cursor:default}.range-limits{display:flex;justify-content:space-between;font-size:10px;color:var(--muted);margin-top:4px}.guide-footer{padding:17px 6px 0 0}.readiness{font-size:12px;color:var(--muted);min-height:18px;margin-bottom:9px}.primary{background:var(--green);border:1px solid var(--green);border-radius:8px;color:white;width:100%;min-height:43px;padding:11px 16px;font-weight:600;font-size:13px;display:flex;justify-content:space-between;align-items:center;gap:14px}.primary:hover:not(:disabled){background:#195e4c}.primary:disabled{background:#e7ece5;color:#839187;border-color:#e7ece5;opacity:1}.next-hint{font-size:11px;color:var(--muted);margin-top:9px;line-height:1.4}.text-button{border:0;padding:0;background:transparent;text-decoration:none;font-size:11px;color:var(--muted)}.text-button:hover{text-decoration:underline;color:var(--green)}#restartButton{margin-top:14px}.answers{display:grid;gap:8px;margin-top:22px}.answers button{text-align:left;background:white;border:1px solid var(--line);border-radius:8px;padding:11px 13px;font-size:13px;line-height:1.4}.answers button:hover:not(:disabled){border-color:var(--green)}.answers button[aria-pressed=true]{border-color:var(--green);background:var(--green-light)}.answers button.wrong{border-color:#b87e57;background:#faf0e8}.answers button:disabled{opacity:1}.feedback{border-left:3px solid var(--green);padding:10px 0 10px 13px;font-size:13px;line-height:1.55;margin-top:18px;background:transparent}.feedback.retry{border-color:var(--amber)}.graph-section{min-width:0;min-height:0;background:white;border:1px solid var(--line);border-radius:12px;display:flex;flex-direction:column;overflow:hidden}.graph-header{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:21px 27px 5px}.equation{font:26px/1.5 Georgia,"Times New Roman",serif;letter-spacing:.1px;margin-top:4px;color:#344d43}.equation .active-m{color:var(--green);background:#edf5ef;border-radius:4px;padding:0 3px}.equation .active-b{color:var(--amber);background:#fbf1e3;border-radius:4px;padding:0 3px}.fixed-note{font-size:11px;color:var(--muted);white-space:nowrap}.graph-stage{flex:1;min-height:260px;position:relative}.graph-stage svg{display:block;width:100%;height:100%;touch-action:none}#lineGraph [data-param]{cursor:ns-resize}#lineGraph [data-param]:focus-visible{outline:none}#lineGraph [data-param]:focus-visible .handle-ring{stroke:#172d26;stroke-width:3}.graph-tools{display:flex;gap:7px;flex-wrap:wrap;padding:3px 24px 9px}.graph-tools button{border:1px solid var(--line);border-radius:6px;padding:6px 9px;font-size:11px;background:white}.graph-tools button[aria-pressed=true]{border-color:var(--green);color:var(--green);background:var(--green-light)}.graph-note{color:var(--muted);font-size:11px;padding:5px 26px 15px;line-height:1.4}.values-panel{border-top:1px solid var(--line);margin:0 26px 8px;padding-top:9px}.probe-control{display:flex;align-items:center;gap:12px;font-size:11px}.probe-control input{flex:1;min-width:35px}.probe-control output{font-variant-numeric:tabular-nums;white-space:nowrap;color:var(--green);font-weight:600}table{width:100%;border-collapse:collapse;font-size:11px;margin-top:7px}th,td{text-align:center;border-top:1px solid #eef1ec;padding:4px 7px;font-variant-numeric:tabular-nums}th{text-align:left;color:var(--muted);font-weight:500}.page-footer{display:flex;align-items:center;justify-content:space-between;padding-top:15px;font-size:11px;color:#7a887f;gap:15px}.free-selectors{display:grid;gap:6px;margin-top:18px}.free-selectors label{font-size:11px;color:var(--muted)}select{width:100%;border:1px solid var(--line);border-radius:7px;background:white;padding:8px;color:var(--ink);font-size:12px}.free-selectors label:not(:first-child){margin-top:6px}.model-note{font-size:11px;line-height:1.5;color:var(--muted);margin-top:16px}.sr-only{position:absolute;width:1px;height:1px;padding:0;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+*{box-sizing:border-box}body{margin:0}button,input,select{font:inherit}button{cursor:pointer;color:inherit}a{color:inherit}button:disabled{cursor:default;opacity:.45}[hidden]{display:none!important}button:focus-visible,a:focus-visible,select:focus-visible,input:focus-visible{outline:3px solid #75ad9b;outline-offset:4px}button{touch-action:manipulation}h1,h2,p{margin:0}i{font-family:Georgia,serif}sub{font-size:.68em}.shell{width:min(1320px,calc(100% - 64px));margin:auto;padding:24px 0 16px}.page-header{display:flex;justify-content:space-between;align-items:center;gap:20px;padding-bottom:22px}.eyebrow{font-size:10px;letter-spacing:.13em;text-transform:uppercase;font-weight:700;color:var(--muted)}h1{font-size:27px;letter-spacing:-.8px;font-weight:650;margin-top:5px}.back-link{font-size:12px;text-decoration:none;color:var(--muted)}.back-link:hover{text-decoration:underline}.steps{display:grid;grid-template-columns:repeat(4,1fr);border-top:1px solid var(--line);border-bottom:1px solid var(--line);margin-bottom:26px}.steps button{display:flex;align-items:center;gap:11px;border:0;border-bottom:2px solid transparent;background:none;padding:15px 8px;font-size:13px;text-align:left;color:var(--muted)}.step-number{display:grid;place-items:center;width:25px;height:25px;border:1px solid #cdd7ce;border-radius:50%;font-size:11px;font-weight:600}.steps button[aria-current=step]{border-bottom-color:var(--green);color:var(--green);font-weight:650}.steps button[aria-current=step] .step-number{background:var(--green);border-color:var(--green);color:white}.steps button.done:not([aria-current=step]) .step-number{background:var(--green-light);border-color:transparent;color:var(--green)}.experiment{display:grid;grid-template-columns:292px minmax(0,1fr);gap:38px;min-height:490px;height:clamp(480px,calc(100dvh - 240px),690px)}.guide{display:flex;flex-direction:column;min-height:0;padding:9px 0 2px}.guide-content{overflow-y:auto;scrollbar-width:thin;padding:0 6px 5px 0;flex:1}.guide h2{font-weight:600;font-size:25px;line-height:1.18;letter-spacing:-.7px;margin-top:12px;outline:none}.instruction{font-size:15px;line-height:1.55;margin-top:17px}.observation{color:var(--muted);font-size:13px;line-height:1.55;margin-top:9px}.parameters{margin-top:24px;display:grid;gap:24px}.parameter-label{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:9px}.parameter-label label{font-size:13px;font-weight:600}.parameter-label i{font-size:19px;margin-left:4px}.parameter-m i{color:var(--green)}.parameter-b i{color:var(--amber)}input[type=number]{width:79px;border:1px solid var(--line);border-radius:7px;background:white;padding:6px 5px 6px 9px;font-size:16px;font-variant-numeric:tabular-nums;color:var(--ink)}input[type=number][readonly]{appearance:textfield}input[type=number][readonly]::-webkit-inner-spin-button,input[type=number][readonly]::-webkit-outer-spin-button{-webkit-appearance:none;margin:0}input[type=range]{width:100%;accent-color:var(--green);height:20px;display:block;margin:0;cursor:pointer}.parameter-b input[type=range]{accent-color:var(--amber)}input:disabled{opacity:.45;cursor:default}.range-limits{display:flex;justify-content:space-between;font-size:10px;color:var(--muted);margin-top:4px}.guide-footer{padding:17px 6px 0 0}.readiness{font-size:12px;color:var(--muted);min-height:18px;margin-bottom:9px}.primary{background:var(--green);border:1px solid var(--green);border-radius:8px;color:white;width:100%;min-height:43px;padding:11px 16px;font-weight:600;font-size:13px;display:flex;justify-content:space-between;align-items:center;gap:14px}.primary:hover:not(:disabled){background:#195e4c}.primary:disabled{background:#e7ece5;color:#839187;border-color:#e7ece5;opacity:1}.next-hint{font-size:11px;color:var(--muted);margin-top:9px;line-height:1.4}.text-button{border:0;padding:0;background:transparent;text-decoration:none;font-size:11px;color:var(--muted)}.text-button:hover{text-decoration:underline;color:var(--green)}#restartButton{margin-top:14px}.answers{display:grid;gap:8px;margin-top:22px}.answers button{text-align:left;background:white;border:1px solid var(--line);border-radius:8px;padding:11px 13px;font-size:13px;line-height:1.4}.answers button:hover:not(:disabled){border-color:var(--green)}.answers button[aria-pressed=true]{border-color:var(--green);background:var(--green-light)}.answers button.wrong{border-color:#b87e57;background:#faf0e8}.answers button:disabled{opacity:1}.feedback{border-left:3px solid var(--green);padding:10px 0 10px 13px;font-size:13px;line-height:1.55;margin-top:18px;background:transparent}.feedback.retry{border-color:var(--amber)}.graph-section{min-width:0;min-height:0;background:white;border:1px solid var(--line);border-radius:12px;display:flex;flex-direction:column;overflow:hidden}.graph-header{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:21px 27px 5px}.equation{font:26px/1.5 Georgia,"Times New Roman",serif;letter-spacing:.1px;margin-top:4px;color:#344d43}.equation .active-m{color:var(--green);background:#edf5ef;border-radius:4px;padding:0 3px}.equation .active-b{color:var(--amber);background:#fbf1e3;border-radius:4px;padding:0 3px}.fixed-note{font-size:11px;color:var(--muted);white-space:nowrap}.graph-stage{flex:1;min-height:260px;position:relative}.graph-stage svg{display:block;width:100%;height:100%}.graph-tools{display:flex;gap:7px;flex-wrap:wrap;padding:3px 24px 9px}.graph-tools button{border:1px solid var(--line);border-radius:6px;padding:6px 9px;font-size:11px;background:white}.graph-tools button[aria-pressed=true]{border-color:var(--green);color:var(--green);background:var(--green-light)}.graph-note{color:var(--muted);font-size:11px;padding:5px 26px 15px;line-height:1.4}.values-panel{border-top:1px solid var(--line);margin:0 26px 8px;padding-top:9px}.probe-control{display:flex;align-items:center;gap:12px;font-size:11px}.probe-control input{flex:1;min-width:35px}.probe-control output{font-variant-numeric:tabular-nums;white-space:nowrap;color:var(--green);font-weight:600}table{width:100%;border-collapse:collapse;font-size:11px;margin-top:7px}th,td{text-align:center;border-top:1px solid #eef1ec;padding:4px 7px;font-variant-numeric:tabular-nums}th{text-align:left;color:var(--muted);font-weight:500}.page-footer{display:flex;align-items:center;justify-content:space-between;padding-top:15px;font-size:11px;color:#7a887f;gap:15px}.free-selectors{display:grid;gap:6px;margin-top:18px}.free-selectors label{font-size:11px;color:var(--muted)}select{width:100%;border:1px solid var(--line);border-radius:7px;background:white;padding:8px;color:var(--ink);font-size:12px}.free-selectors label:not(:first-child){margin-top:6px}.model-note{font-size:11px;line-height:1.5;color:var(--muted);margin-top:16px}.sr-only{position:absolute;width:1px;height:1px;padding:0;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
 @media(min-width:1000px) and (max-height:760px){.shell{padding-top:16px}.page-header{padding-bottom:16px}.steps{margin-bottom:19px}.experiment{height:calc(100dvh - 215px);min-height:465px}.guide h2{font-size:23px;margin-top:8px}.instruction{margin-top:12px}.parameters{margin-top:19px;gap:18px}.graph-header{padding-top:16px}.guide-footer{padding-top:12px}.answers{margin-top:16px;gap:6px}.answers button{padding:8px 11px}.feedback{margin-top:12px;padding-top:8px;padding-bottom:8px}}
 @media(max-width:1050px){.shell{width:calc(100% - 40px)}.experiment{grid-template-columns:260px minmax(0,1fr);gap:24px}.equation{font-size:23px}.graph-header{padding-left:20px;padding-right:20px}.fixed-note{max-width:110px;white-space:normal;text-align:right}}
 @media(max-width:760px){.shell{width:calc(100% - 28px);padding-top:17px}.page-header{padding-bottom:17px}h1{font-size:23px}.eyebrow{font-size:9px}.back-link{font-size:11px}.steps{margin-bottom:18px}.steps button{flex-direction:column;gap:7px;font-size:10px;padding:11px 2px;text-align:center}.step-number{width:23px;height:23px}.experiment{height:auto;min-height:0;display:flex;flex-direction:column;gap:18px}.guide{display:contents}.guide-content{overflow:visible;padding:0}.guide h2{font-size:24px;margin-top:8px}.instruction{margin-top:10px}.observation{margin-top:5px}.parameters{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:20px;margin-top:18px}.parameter-label{flex-wrap:wrap;gap:7px}.parameter-label label{flex-basis:100%;min-height:26px}.parameters:has(.parameter[hidden]){grid-template-columns:1fr}.parameters:has(.parameter[hidden]) .parameter-label{flex-wrap:nowrap}.parameters:has(.parameter[hidden]) .parameter-label label{flex-basis:auto;min-height:0}.graph-section{height:420px;order:1}.guide-footer{order:2;padding:0}.graph-stage{min-height:220px}.graph-header{padding:16px 16px 0}.graph-note{padding:4px 16px 12px}.graph-tools{padding-left:16px;padding-right:16px}.values-panel{margin-left:16px;margin-right:16px}.page-footer{margin-top:10px;align-items:flex-start}.page-footer span{max-width:47%}.page-footer button{max-width:47%;text-align:right}.answers{margin-top:16px}.free-selectors{grid-template-columns:1fr 1fr;gap:6px 12px}.free-selectors label{grid-row:1}.free-selectors label:not(:first-child){margin-top:0}.free-selectors select{grid-row:2}.feedback{margin-top:12px}.model-note{margin-top:12px}}
@@ -41,12 +41,12 @@
         </div>
         <div id="parameters" class="parameters">
           <div id="mControl" class="parameter parameter-m">
-            <div class="parameter-label"><label id="mLabel" for="mRange">Steigung <i>m</i></label><input id="mNumber" type="number" aria-label="Wert der Steigung m" inputmode="decimal"></div>
+            <div class="parameter-label"><label id="mLabel" for="mRange">Steigung <i>m</i></label><input id="mNumber" type="number" aria-label="Wert der Steigung m" readonly tabindex="-1"></div>
             <input id="mRange" type="range" aria-labelledby="mLabel">
             <div class="range-limits" aria-hidden="true"><span id="mMin"></span><span id="mMax"></span></div>
           </div>
           <div id="bControl" class="parameter parameter-b" hidden>
-            <div class="parameter-label"><label id="bLabel" for="bRange">Achsenabschnitt <i>b</i></label><input id="bNumber" type="number" aria-label="Wert des Achsenabschnitts b" inputmode="decimal"></div>
+            <div class="parameter-label"><label id="bLabel" for="bRange">Achsenabschnitt <i>b</i></label><input id="bNumber" type="number" aria-label="Wert des Achsenabschnitts b" readonly tabindex="-1"></div>
             <input id="bRange" type="range" aria-labelledby="bLabel">
             <div class="range-limits" aria-hidden="true"><span id="bMin"></span><span id="bMax"></span></div>
           </div>
@@ -75,7 +75,7 @@
         <div class="probe-control"><label id="probeLabel" for="probeRange">x</label><input id="probeRange" type="range"><output id="probeValue"></output></div>
         <table><caption class="sr-only">Wertetabelle der aktuellen Funktion</caption><tbody id="valueRows"></tbody></table>
       </section>
-      <p class="graph-note" id="graphNote">Bewege den Regler oder den grünen Punkt im Graphen.</p>
+      <p class="graph-note" id="graphNote">Bewege den Regler und beobachte das Steigungsdreieck.</p>
     </section>
   </div>
   <footer class="page-footer"><span id="footerCopy">Erst verändern. Dann verstehen.</span><button id="freeButton" class="text-button" type="button">Direkt frei experimentieren ↗</button></footer>
@@ -1118,14 +1118,13 @@
     ]
   }
 };</script>
-<script>/* Standalone SVG renderer. Optional CSS: [data-param]{cursor:ns-resize;outline:none}
-   [data-param]:focus-visible .handle-ring{stroke:#172d26;stroke-width:3} */
+<script>/* SVG graph controlled by the parameter sliders. */
 (function () {
   'use strict';
   var serial = 0;
-  window.createLinearGraph = function (svg, onParameter) {
-    var model, geometry, drag = null, clipId = 'linear-plot-' + (++serial);
-    var green = '#247963', amber = '#b77730';
+  window.createLinearGraph = function (svg) {
+    var model, clipId = 'linear-plot-' + (++serial);
+    var green = '#247963';
     var escape = function (s) { return String(s).replace(/[&<>"']/g, function (c) { return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); };
     var clamp = function (v, low, high) { return Math.max(low, Math.min(high, v)); };
     var number = function (v) { return (Math.abs(v) < 0.000001 ? 0 : +v.toFixed(2)).toLocaleString('de-CH'); };
@@ -1133,8 +1132,7 @@
     var tag = function (name, attrs, content) {
       return '<' + name + ' ' + Object.keys(attrs).map(function (key) { return key + '="' + escape(attrs[key]) + '"'; }).join(' ') + '>' + (content || '') + '</' + name + '>';
     };
-    svg.style.touchAction = 'none';
-    svg.setAttribute('role', 'group');
+    svg.setAttribute('role', 'img');
     svg.setAttribute('aria-label', 'Interaktiver Graph einer linearen Funktion');
 
     function render(next) {
@@ -1145,7 +1143,6 @@
       var X = function (x) { return left + (x - xMin) / (xMax - xMin) * (right - left); };
       var Y = function (y) { return bottom - (y - yMin) / (yMax - yMin) * (bottom - top); };
       var zeroX = X(clamp(0, xMin, xMax)), zeroY = Y(clamp(0, yMin, yMax));
-      var focus = svg.contains(document.activeElement) && document.activeElement.getAttribute('data-param');
       var parts = [tag('defs', {}, tag('clipPath', {id:clipId}, tag('rect', {x:left,y:top,width:right-left,height:bottom-top})))];
       var line = function (x1,y1,x2,y2,style) { return tag('line', Object.assign({x1:x1,y1:y1,x2:x2,y2:y2,fill:'none'},style)); };
       var label = function (text,x,y,attrs) { return tag('text', Object.assign({x:x,y:y,fill:'#54605b','font-family':'inherit','font-size':14,'paint-order':'stroke',stroke:'white','stroke-width':4,'stroke-linejoin':'round'},attrs),escape(text)); };
@@ -1196,82 +1193,15 @@
         if (py>=yMin && py<=yMax) {
           parts.push(line(X(px),zeroY,X(px),Y(py),{stroke:'#687970','stroke-width':1.3,'stroke-dasharray':'3 4'}));
           parts.push(line(zeroX,Y(py),X(px),Y(py),{stroke:'#687970','stroke-width':1.3,'stroke-dasharray':'3 4'}));
-          parts.push(tag('circle',{cx:X(px),cy:Y(py),r:4,fill:green}));
           var pointText='('+unitValue(px,c.x.unit)+' | '+unitValue(py,c.y.unit)+')';
           var textRight=X(px)<(left+right)/2, textWidth=Math.min(right-left-16,pointText.length*7.6);
           var textX=textRight?clamp(X(px)+10,left+8,right-8-textWidth):clamp(X(px)-10,left+8+textWidth,right-8);
           parts.push(label(pointText,textX,clamp(Y(py)-13,top+18,bottom-6),{'text-anchor':textRight?'start':'end',fill:'#35433c'}));
         }
       }
-      var maxDx=(xMax-xMin)*0.42, preferred=clamp(c.handleDx || 1,0.001,maxDx);
-      var handleX=drag && drag.param==='m' ? drag.dx : preferred;
-      if (!drag && Math.abs(model.m)>1e-8) {
-        var limit=(model.m>0 ? yMax-model.b : model.b-yMin)*0.88/Math.abs(model.m);
-        handleX=Math.min(handleX,Math.max(0.001,limit));
-      }
-      handleX=clamp(handleX,xMin,xMax);
-      geometry={left:left,right:right,top:top,bottom:bottom,width:width,height:height,xMin:xMin,xMax:xMax,yMin:yMin,yMax:yMax,handleX:handleX};
-      function handle(param,x,y,color,range) {
-        if (y<yMin || y>yMax || x<xMin || x>xMax) return;
-        var value=model[param], active=model.activeParameter===param;
-        var children=tag('title',{},escape((range.name || (param==='m'?'Steigung':'Achsenabschnitt'))+' verändern: ziehen oder Pfeiltasten'));
-        children+=tag('circle',{cx:0,cy:0,r:20,fill:'transparent'});
-        children+=tag('circle',{class:'handle-ring',cx:0,cy:0,r:active?10:8,fill:'white',stroke:color,'stroke-width':active?3:2});
-        children+=tag('circle',{cx:0,cy:0,r:3,fill:color});
-        parts.push(tag('g',{transform:'translate('+X(x)+' '+Y(y)+')',role:'slider',tabindex:0,'data-param':param,'aria-label':(range.name || param)+' '+range.symbolPlain,'aria-orientation':'vertical','aria-valuenow':value,'aria-valuemin':range.min,'aria-valuemax':range.max,'aria-valuetext':unitValue(value,range.unit),style:'cursor:ns-resize'},children));
-      }
-      if (model.allowB) handle('b',0,model.b,amber,c.intercept);
-      else if (model.interceptMark && model.b>=yMin && model.b<=yMax) parts.push(tag('circle',{cx:X(0),cy:Y(model.b),r:5,fill:amber,stroke:'white','stroke-width':2}));
-      if (model.allowM) handle('m',handleX,model.m*handleX+model.b,green,c.slope);
       svg.setAttribute('viewBox','0 0 '+width+' '+height);
       svg.innerHTML=parts.join('');
-      if (focus) { var replacement=svg.querySelector('[data-param="'+focus+'"]'); if (replacement) replacement.focus({preventScroll:true}); }
     }
-    function localPoint(event) {
-      var matrix=svg.getScreenCTM();
-      if (matrix && typeof svg.createSVGPoint==='function') {
-        var point=svg.createSVGPoint(); point.x=event.clientX; point.y=event.clientY;
-        return point.matrixTransform(matrix.inverse());
-      }
-      var box=svg.getBoundingClientRect();
-      return {x:(event.clientX-box.left)*geometry.width/box.width,y:(event.clientY-box.top)*geometry.height/box.height};
-    }
-    function graphY(event) { var p=localPoint(event); return geometry.yMax-(p.y-geometry.top)/(geometry.bottom-geometry.top)*(geometry.yMax-geometry.yMin); }
-    function update(param,value,fine) {
-      var range=param==='m'?model.context.slope:model.context.intercept, step=range.step/(fine?10:1);
-      value=range.min+Math.round((value-range.min)/step)*step;
-      onParameter(param,+clamp(value,range.min,range.max).toFixed(8));
-    }
-    svg.addEventListener('pointerdown',function (event) {
-      var target=event.target.closest('[data-param]');
-      if (!target || !model || event.button!==0) return;
-      var param=target.getAttribute('data-param');
-      drag={param:param,id:event.pointerId,dx:geometry.handleX,offset:graphY(event)-(param==='m'?model.m*geometry.handleX+model.b:model.b)};
-      target.focus({preventScroll:true});
-      svg.setPointerCapture(event.pointerId); event.preventDefault();
-    });
-    svg.addEventListener('pointermove',function (event) {
-      if (!drag || event.pointerId!==drag.id) return;
-      var value=graphY(event)-drag.offset;
-      update(drag.param,drag.param==='m'?(value-model.b)/drag.dx:value,event.shiftKey);
-    });
-    function finish(event) {
-      if (!drag || event.pointerId!==drag.id) return;
-      drag=null;
-      if (svg.hasPointerCapture(event.pointerId)) svg.releasePointerCapture(event.pointerId);
-      if (model) render(model);
-    }
-    svg.addEventListener('pointerup',finish);
-    svg.addEventListener('pointercancel',finish);
-    svg.addEventListener('lostpointercapture',function () { drag=null; });
-    svg.addEventListener('keydown',function (event) {
-      var target=event.target.closest('[data-param]');
-      if (!target || !model) return;
-      var param=target.getAttribute('data-param'), range=param==='m'?model.context.slope:model.context.intercept;
-      var direction={ArrowUp:1,ArrowRight:1,ArrowDown:-1,ArrowLeft:-1}[event.key];
-      if (direction) { event.preventDefault(); update(param,model[param]+direction*range.step/(event.shiftKey?10:1),event.shiftKey); }
-      else if (event.key==='Home' || event.key==='End') { event.preventDefault(); update(param,event.key==='Home'?range.min:range.max,false); }
-    });
     return {render:render};
   };
 })();</script>
@@ -1290,7 +1220,7 @@
   const context = () => contexts[state.context];
   const near = (a,b) => Math.abs(a-b)<0.0001;
   const valueAt = x => state.m*x+state.b;
-  const graph = window.createLinearGraph($("lineGraph"), (key,value) => setParameter(key,value));
+  const graph = window.createLinearGraph($("lineGraph"));
   function resetView(){ const y=context().y; view={yMin:y.min,yMax:y.max,tickStep:y.tick}; }
   function permissions(){
     if(state.free) return {m:state.activity!=="quiz",b:state.activity!=="quiz"};
@@ -1311,7 +1241,7 @@
   function enterStep(step,focus=true){
     state.step=step;state.phase=0;state.free=false;state.context="math";state.changed=false;state.negative=false;
     state.m=step===3?-1:1;state.b=step===3?1:0;state.active=step===1?"b":"m";
-    state.triangle=false;state.values=false;state.probe=2;state.comparison=null;clearAnswer();resetView();render();
+    state.triangle=step===0;state.values=false;state.probe=2;state.comparison=null;clearAnswer();resetView();render();
     if(focus)$("guideTitle").focus();
   }
   function enterFree(key="math"){
@@ -1394,7 +1324,7 @@
     const q=question();
     if(q)return {label:state.solved?"Kurz erklärt":"Deine Vermutung",title:state.step===0?"Was hast du entdeckt?":state.step===1?"Verschoben — und sonst?":state.step===2?"Lies deinen Graphen.":"Erst vorhersagen.",instruction:q.prompt,observe:state.step===3?"b bleibt gleich. Wähle zuerst — dann vergleichen wir.":"Wähle die Aussage, die zu deiner Beobachtung passt.",button:["Weiter zum Achsenabschnitt","Beide Parameter verbinden","Jetzt selbst anwenden","Selbst eine Gerade einstellen"][state.step],hint:["Danach: Was verändert b?","Danach: m und b zusammenspielen lassen.","Danach: kurze Vorhersagen und Aufträge.","Danach: zwei eigene Geraden einstellen."][state.step],ready:state.solved?"Deine Beobachtung ist geprüft.":"Wähle deine Vermutung."};
     if(state.step===0&&state.phase===0)return {label:"Verändern & beobachten",title:"Was verändert m?",instruction:"Verändere m — auch zu einem negativen Wert.",observe:"Beobachte die Gerade. Was bleibt gleich, was verändert sich?",button:"Weiter beobachten",hint:"Danach: der besondere Fall m = 0.",ready:state.negative?"Positives und negatives m gesehen.":"Probiere auch einen negativen Wert."};
-    if(state.step===0)return {label:"Ein besonderer Fall",title:"Setze m auf null.",instruction:"Stelle m = 0 ein. Du kannst die Zahl auch direkt eingeben.",observe:"Beobachte, wie die Gerade jetzt verläuft.",button:"Meine Vermutung prüfen",hint:"Danach: deine Beobachtung in Worte fassen.",ready:near(state.m,0)?"m = 0 ist eingestellt.":"Stelle die Steigung auf 0."};
+    if(state.step===0)return {label:"Ein besonderer Fall",title:"Setze m auf null.",instruction:"Stelle mit dem Regler m = 0 ein.",observe:"Beobachte, wie die Gerade jetzt verläuft.",button:"Meine Vermutung prüfen",hint:"Danach: deine Beobachtung in Worte fassen.",ready:near(state.m,0)?"m = 0 ist eingestellt.":"Stelle die Steigung auf 0."};
     if(state.step===1)return {label:"Verändern & beobachten",title:"Was verändert b?",instruction:"Verändere b nach oben und nach unten.",observe:"Beobachte besonders den Schnittpunkt mit der y-Achse.",button:"Meine Vermutung prüfen",hint:"Danach: Was ist gleich geblieben?",ready:state.changed?"Vergleiche die Lage der Geraden.":"Bewege zuerst den Regler für b."};
     if(state.step===2)return {label:"Beide Parameter",title:"Baue deine Gerade.",instruction:"Stelle m = 2 und b = 1 ein.",observe:"Vergleiche die Werte mit der Gleichung über dem Graphen.",button:"Einen Wert vorhersagen",hint:"Danach: Welcher y-Wert gehört zu x = 2?",ready:ready()?"Beide Werte passen.":"Gesucht: m = 2 und b = 1."};
     if(state.phase<3)return {label:"Auftrag "+state.phase+" von 2",title:"Jetzt bist du dran.",instruction:currentTask().prompt,observe:"Verändere m und b. Prüfe, wenn deine Gerade passt.",button:state.solved?(state.phase===1?"Nächster Auftrag":"Experiment abschliessen"):"Gerade prüfen",hint:state.phase===1?"Danach: eine fallende Gerade.":"Danach: frei weiterforschen.",ready:""};
@@ -1441,19 +1371,19 @@
     $("valueRows").innerHTML="<tr><th scope='row'>"+notation(c.x.symbolPlain)+(c.x.unit?" / "+escape(c.x.unit):"")+"</th>"+c.tableXs.map(x=>"<td>"+fmt(x)+"</td>").join("")+"</tr><tr><th scope='row'>"+notation(c.y.symbolPlain)+(c.y.unit?" / "+escape(c.y.unit):"")+"</th>"+c.tableXs.map(x=>"<td>"+fmt(valueAt(x))+"</td>").join("")+"</tr>";
   }
   function renderPlot(){
-    const allow=permissions(),tools=canUseTools();
-    graph.render({m:state.m,b:state.b,context:context(),view,triangle:tools&&state.triangle,probe:tools&&state.values?state.probe:null,comparison:state.comparison,allowM:allow.m,allowB:allow.b,activeParameter:state.active,interceptMark:state.step===1||state.step===2||state.free});
+    const tools=canUseTools();
+    graph.render({m:state.m,b:state.b,context:context(),view,triangle:(!state.free&&state.step===0||tools)&&state.triangle,probe:tools&&state.values?state.probe:null,comparison:state.comparison});
   }
   function render(){
     renderGuide();renderParameters();renderEquation();
-    const tools=canUseTools();$("graphTools").hidden=!tools;
+    const tools=canUseTools();$("graphTools").hidden=!(tools||!state.free&&state.step===0);$("valuesToggle").hidden=!tools;
     $("triangleToggle").setAttribute("aria-pressed",String(state.triangle));$("valuesToggle").setAttribute("aria-pressed",String(state.values));
     $("comparisonToggle").hidden=!state.free||state.activity==="quiz";$("fitButton").hidden=!state.free;
     $("comparisonToggle").setAttribute("aria-pressed",String(!!state.comparison));$("comparisonToggle").textContent=state.comparison?"Vergleich entfernen":"Gerade merken";
-    $("graphNote").textContent=state.comparison?"Gestrichelt: die Vergleichsgerade. Die Achsenskalierung bleibt gleich.":state.free?"Regler und Punkte verändern dieselbe Gerade. Pfeiltasten bewegen den fokussierten Punkt.":state.step===0?"Bewege den Regler oder den grünen Punkt im Graphen.":state.step===1?"Der orange Punkt liegt auf der y-Achse.":"Grün: Steigung m. Orange: Achsenabschnitt b.";
+    $("graphNote").textContent=state.comparison?"Gestrichelt: die Vergleichsgerade. Die Achsenskalierung bleibt gleich.":state.free?"Verändere die Werte mit den Reglern.":state.step===0?"Bewege den Regler und beobachte das Steigungsdreieck.":state.step===1?"Beobachte den Schnittpunkt mit der y-Achse.":"Grün: Steigung m. Orange: Achsenabschnitt b.";
     renderValues();renderPlot();
   }
-  for(const key of ["m","b"]){$(key+"Range").addEventListener("input",event=>setParameter(key,event.target.value));$(key+"Number").addEventListener("input",event=>{if(event.target.value.trim()!==""&&Number.isFinite(event.target.valueAsNumber))setParameter(key,event.target.valueAsNumber);});$(key+"Number").addEventListener("change",()=>renderParameters(true));}
+  for(const key of ["m","b"])$(key+"Range").addEventListener("input",event=>setParameter(key,event.target.value));
   document.querySelectorAll("[data-step]").forEach(button=>button.addEventListener("click",()=>enterStep(Number(button.dataset.step))));
   $("answers").addEventListener("click",event=>{const button=event.target.closest("[data-answer]");if(button)answer(Number(button.dataset.answer));});
   $("nextButton").addEventListener("click",next);$("freeButton").addEventListener("click",()=>enterFree());$("restartButton").addEventListener("click",()=>{state.completed=[false,false,false,false];enterStep(0);});
