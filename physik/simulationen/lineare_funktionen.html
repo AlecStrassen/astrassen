@@ -1176,15 +1176,21 @@
           visibleMin=Math.max(xMin,Math.min((yMin+yPad-model.b)/model.m,(yMax-yPad-model.b)/model.m));
           visibleMax=Math.min(xMax,Math.max((yMin+yPad-model.b)/model.m,(yMax-yPad-model.b)/model.m));
         }
-        var tx=clamp(0,visibleMin,visibleMax), dx=Math.min(c.triangleDx || (xMax-xMin)/4,visibleMax-tx,(xMax-xMin)*0.45);
-        if (dx<0.05*(xMax-xMin)) { dx=Math.min(c.triangleDx || (xMax-xMin)/4,visibleMax-visibleMin); tx=visibleMin; }
+        var span=visibleMax-visibleMin, dx=Math.min(c.triangleDx || (xMax-xMin)/4,span*0.6,(xMax-xMin)*0.45);
+        var offset=(xMax-xMin)/8, tx=clamp(offset,visibleMin,visibleMax-dx);
+        // Keep both endpoints on the line; prefer a base away from the x-axis.
+        var alternative=clamp(-offset-dx,visibleMin,visibleMax-dx);
+        if (Math.abs(model.m*tx+model.b)<(yMax-yMin)*0.06 && Math.abs(model.m*alternative+model.b)>Math.abs(model.m*tx+model.b)) tx=alternative;
         var ty=model.m*tx+model.b, dy=model.m*dx;
         if (dx>0 && ty>=yMin && ty<=yMax) {
           var p0=X(tx),p1=X(tx+dx),q0=Y(ty),q1=Y(ty+dy);
+          parts.push(tag('path',{class:'slope-area',d:'M '+p0+' '+q0+' H '+p1+' V '+q1+' Z',fill:green,'fill-opacity':0.14,'pointer-events':'none'}));
           parts.push(tag('path',{d:'M '+p0+' '+q0+' H '+p1+' V '+q1,fill:'none',stroke:green,'stroke-width':2,'stroke-dasharray':'5 4'}));
-          parts.push(label('Δ'+(c.x.symbolPlain || 'x')+' = '+unitValue(dx,c.x.unit),(p0+p1)/2,clamp(q0+(dy>=0?22:-13),top+16,bottom-4),{'text-anchor':'middle',fill:green}));
+          var dxLabelY=clamp(q0+(dy>=0?22:-13),top+16,bottom-4);
+          if (Math.abs(dxLabelY-zeroY)<18) dxLabelY=clamp(zeroY+(dy>=0?22:-22),top+16,bottom-4);
+          parts.push(label('Δ'+(c.x.symbolPlain || 'x')+' = '+unitValue(dx,c.x.unit),(p0+p1)/2,dxLabelY,{'text-anchor':'middle',fill:green}));
           var deltaLabel='Δ'+(c.y.symbolPlain || 'y')+' = '+unitValue(dy,c.y.unit);
-          var putLeft=p1>right-130;
+          var putLeft=p1>right-(deltaLabel.length*7.6+18);
           parts.push(label(deltaLabel,p1+(putLeft?-10:10),clamp((q0+q1)/2+5,top+16,bottom-4),{'text-anchor':putLeft?'end':'start',fill:green}));
         }
       }
