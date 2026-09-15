@@ -1138,7 +1138,7 @@
     function render(next) {
       model = next;
       var c = model.context, width = Math.max(320, svg.clientWidth || 760), height = Math.max(260, svg.clientHeight || 440);
-      var left = 58, right = width - 25, top = 35, bottom = height - 47;
+      var left = 58, right = width - 25, top = 35, bottom = height - 65;
       var xMin = c.x.min, xMax = c.x.max, yMin = model.view.yMin, yMax = model.view.yMax;
       var X = function (x) { return left + (x - xMin) / (xMax - xMin) * (right - left); };
       var Y = function (y) { return bottom - (y - yMin) / (yMax - yMin) * (bottom - top); };
@@ -1171,27 +1171,28 @@
       parts.push(tag('g', {'clip-path':'url(#'+clipId+')'},curves.join('')));
 
       if (model.triangle) {
-        var yPad=(yMax-yMin)*0.06, visibleMin=xMin, visibleMax=xMax;
+        // Keep a preferred anchor and move continuously within the visible line segment.
+        var xSpan=xMax-xMin, ySpan=yMax-yMin;
+        var yPad=ySpan*Math.min(0.12,28/(bottom-top));
+        var visibleMin=xMin+xSpan*0.035, visibleMax=xMax-xSpan*0.035;
         if (Math.abs(model.m)>1e-8) {
-          visibleMin=Math.max(xMin,Math.min((yMin+yPad-model.b)/model.m,(yMax-yPad-model.b)/model.m));
-          visibleMax=Math.min(xMax,Math.max((yMin+yPad-model.b)/model.m,(yMax-yPad-model.b)/model.m));
+          visibleMin=Math.max(visibleMin,Math.min((yMin+yPad-model.b)/model.m,(yMax-yPad-model.b)/model.m));
+          visibleMax=Math.min(visibleMax,Math.max((yMin+yPad-model.b)/model.m,(yMax-yPad-model.b)/model.m));
         }
-        var span=visibleMax-visibleMin, dx=Math.min(c.triangleDx || (xMax-xMin)/4,span*0.6,(xMax-xMin)*0.45);
-        var offset=(xMax-xMin)/8, tx=clamp(offset,visibleMin,visibleMax-dx);
-        // Keep both endpoints on the line; prefer a base away from the x-axis.
-        var alternative=clamp(-offset-dx,visibleMin,visibleMax-dx);
-        if (Math.abs(model.m*tx+model.b)<(yMax-yMin)*0.06 && Math.abs(model.m*alternative+model.b)>Math.abs(model.m*tx+model.b)) tx=alternative;
+        var span=visibleMax-visibleMin;
+        var dx=Math.min(c.triangleDx || xSpan/4,xSpan/6,span*0.6);
+        var tx=clamp(xMin+xSpan*0.625,visibleMin,visibleMax-dx);
         var ty=model.m*tx+model.b, dy=model.m*dx;
         if (dx>0 && ty>=yMin && ty<=yMax) {
           var p0=X(tx),p1=X(tx+dx),q0=Y(ty),q1=Y(ty+dy);
           parts.push(tag('path',{class:'slope-area',d:'M '+p0+' '+q0+' H '+p1+' V '+q1+' Z',fill:green,'fill-opacity':0.14,'pointer-events':'none'}));
-          parts.push(tag('path',{d:'M '+p0+' '+q0+' H '+p1+' V '+q1,fill:'none',stroke:green,'stroke-width':2,'stroke-dasharray':'5 4'}));
-          var dxLabelY=clamp(q0+(dy>=0?22:-13),top+16,bottom-4);
-          if (Math.abs(dxLabelY-zeroY)<18) dxLabelY=clamp(zeroY+(dy>=0?22:-22),top+16,bottom-4);
-          parts.push(label('Δ'+(c.x.symbolPlain || 'x')+' = '+unitValue(dx,c.x.unit),(p0+p1)/2,dxLabelY,{'text-anchor':'middle',fill:green}));
-          var deltaLabel='Δ'+(c.y.symbolPlain || 'y')+' = '+unitValue(dy,c.y.unit);
-          var putLeft=p1>right-(deltaLabel.length*7.6+18);
-          parts.push(label(deltaLabel,p1+(putLeft?-10:10),clamp((q0+q1)/2+5,top+16,bottom-4),{'text-anchor':putLeft?'end':'start',fill:green}));
+          parts.push(tag('path',{class:'slope-legs',d:'M '+p0+' '+q0+' H '+p1+' V '+q1,fill:'none',stroke:green,'stroke-width':2,'stroke-dasharray':'5 4'}));
+          // A fixed readout stays clear of the axes and does not jump with the slope.
+          function triangleLabel(text,x,y,anchor,kind) {
+            parts.push(label(text,x,y,{class:kind,'text-anchor':anchor,fill:green,'font-size':12,'stroke-width':5,'stroke-opacity':0.94}));
+          }
+          triangleLabel('Δ'+(c.x.symbolPlain || 'x')+' = '+unitValue(dx,c.x.unit),left,height-27,'start','slope-dx');
+          triangleLabel('Δ'+(c.y.symbolPlain || 'y')+' = '+unitValue(dy,c.y.unit),left,height-10,'start','slope-dy');
         }
       }
       if (model.probe !== null && model.probe !== undefined) {
@@ -1216,7 +1217,7 @@
   const contexts = window.LINEAR_CONTEXTS;
   const $ = id => document.getElementById(id);
   const state = { step:0, phase:0, free:false, context:"math", activity:"explore", m:1, b:0,
-    changed:false, negative:false, solved:false, choice:null, message:"", retry:false,
+    changed:false, negative:false, prediction:null, solved:false, choice:null, message:"", retry:false,
     triangle:false, values:false, probe:2, comparison:null, active:"m", task:0, quiz:0, completed:[false,false,false,false] };
   const profiles = Object.fromEntries(Object.entries(contexts).map(([key,c]) => [key,{m:c.slope.value,b:c.intercept.value}]));
   let view, answerKey = "", resizeFrame = 0;
@@ -1230,7 +1231,7 @@
   function resetView(){ const y=context().y; view={yMin:y.min,yMax:y.max,tickStep:y.tick}; }
   function permissions(){
     if(state.free) return {m:state.activity!=="quiz",b:state.activity!=="quiz"};
-    if(state.step===0) return {m:state.phase<2,b:false};
+    if(state.step===0) return {m:state.phase===0||state.phase===2,b:false};
     if(state.step===1) return {m:false,b:state.phase===0};
     if(state.step===2) return {m:state.phase===0,b:state.phase===0};
     return {m:state.phase===1||state.phase===2,b:state.phase===1||state.phase===2};
@@ -1238,14 +1239,14 @@
   function canUseTools(){return state.free || (state.step===2 && state.solved) || (state.step===3 && state.phase>0 && state.phase<3);}
   function ready(){
     if(state.free) return state.activity!=="quiz"||state.solved;
-    if(state.step===0) return state.phase===0?state.negative:state.phase===1?near(state.m,0):state.solved;
+    if(state.step===0) return state.phase===0?state.negative:state.phase===1?state.prediction!==null:state.phase===2?near(state.m,0):true;
     if(state.step===1) return state.phase===0?state.changed:state.solved;
     if(state.step===2) return state.phase===0?near(state.m,2)&&near(state.b,1):state.solved;
     return state.phase===0?state.solved:true;
   }
   function clearAnswer(){state.choice=null;state.solved=false;state.message="";state.retry=false;answerKey="";}
   function enterStep(step,focus=true){
-    state.step=step;state.phase=0;state.free=false;state.context="math";state.changed=false;state.negative=false;
+    state.step=step;state.phase=0;state.prediction=null;state.free=false;state.context="math";state.changed=false;state.negative=false;
     state.m=step===3?-1:1;state.b=step===3?1:0;state.active=step===1?"b":"m";
     state.triangle=step===0;state.values=false;state.probe=2;state.comparison=null;clearAnswer();resetView();render();
     if(focus)$("guideTitle").focus();
@@ -1269,7 +1270,7 @@
   }
   function question(){
     if(state.free){if(state.activity!=="quiz")return null;const qs=[...context().understanding,...context().application];return qs[state.quiz%qs.length];}
-    if(state.step===0&&state.phase===2)return {prompt:"Wie verläuft die Gerade bei m = 0?",answers:["Waagrecht","Senkrecht","Sie fällt."],correct:0,explanation:"m bestimmt die Steigung: positiv → steigend, negativ → fallend, null → waagrecht."};
+    if(state.step===0&&state.phase===1)return {prompt:"Wie verläuft die Gerade bei m = 0?",answers:["Waagrecht","Senkrecht","Sie fällt."],correct:0,explanation:"m bestimmt die Steigung: positiv → steigend, negativ → fallend, null → waagrecht."};
     if(state.step===1&&state.phase===1)return {prompt:"Was bleibt beim Verändern von b gleich?",answers:["Die Steigung","Der Schnittpunkt mit der y-Achse","Alle y-Werte"],correct:0,explanation:"b verschiebt die Gerade parallel. Bei x = 0 gilt y = b: Dort schneidet sie die y-Achse."};
     if(state.step===2&&state.phase===1)return {prompt:"Du hast m = 2 und b = 1 eingestellt. Welcher y-Wert gehört zu x = 2?",answers:["3","5","7"],correct:1,explanation:"y = 2 · 2 + 1 = 5. Prüfe den Punkt (2 | 5) und die Wertetabelle am Graphen."};
     if(state.step===3&&state.phase===0)return {prompt:"Die Gerade fällt mit m = −1. Welcher Wert macht sie steiler, weiterhin fallend?",answers:["m = −3","m = −0,5","m = 0"],correct:0,explanation:"Für die Steilheit zählt |m|: 3 ist grösser als 1. Das Minuszeichen bedeutet weiterhin: fallend."};
@@ -1278,6 +1279,9 @@
   function currentTask(){return context().tasks[state.free?state.task%context().tasks.length:state.phase-1];}
   function answer(index){
     const q=question();if(!q||state.solved)return;
+    if(!state.free&&state.step===0&&state.phase===1){
+      state.prediction=index;state.choice=index;state.message="Vermutung gespeichert. Probiere es jetzt aus.";state.retry=false;render();return;
+    }
     state.choice=index;state.solved=index===q.correct;state.retry=!state.solved;
     state.message=state.solved?q.explanation:"Noch nicht. Schau dir den Graphen und die Frage nochmals an.";
     if(state.solved&&!state.free&&state.step===2){state.values=true;state.probe=2;}
@@ -1297,6 +1301,15 @@
       else if(state.activity==="quiz"){state.quiz++;clearAnswer();prepareQuiz();render();}
       else {$("activitySelect").value="task";setActivity("task");}
       return;
+    }
+    if(state.step===0){
+      if(state.phase===3){state.completed[0]=true;enterStep(1);return;}
+      state.phase++;clearAnswer();
+      if(state.phase===3){
+        state.solved=true;
+        state.message=(state.prediction===0?"Deine Vermutung stimmt. ":"Deine Vermutung hat sich nicht bestätigt. ")+"Bei m = 0 bleibt y gleich: Die Gerade ist waagrecht. Auch im Steigungsdreieck ist die Höhendifferenz null.";
+      }
+      render();$("guideTitle").focus();return;
     }
     if(state.step<3){
       const finalPhase=state.step===0?2:1;
@@ -1327,6 +1340,9 @@
       if(state.activity==="quiz")return {label:"Vermutung & Rückmeldung",title:question().kind,instruction:question().prompt,observe:"Wähle deine Antwort. Danach folgt die kurze Erklärung.",button:"Nächste Quizfrage",hint:"Du kannst jederzeit zum Experimentieren zurückkehren.",ready:state.solved?"Antwort geprüft.":"Wähle eine Antwort."};
       return {label:"Weiterforschen",title:"Deine eigene Gerade",instruction:"Verändere beide Parameter und beobachte den Zusammenhang.",observe:state.context==="math"?"Was ändert sich, wenn du nur einen Wert veränderst?":"Achte jetzt auch auf die Grössen und Einheiten der Achsen.",button:"Einen Auftrag versuchen",hint:"Kontext, Tabelle und Vergleich sind jetzt frei wählbar.",ready:""};
     }
+    if(state.step===0&&state.phase===1)return {label:"Zuerst vermuten",title:"Was passiert bei m = 0?",instruction:"Wie wird die Gerade verlaufen? Wähle deine Vermutung, bevor du m auf null stellst.",observe:"Der Graph zeigt noch deinen bisherigen Wert.",button:"Vermutung ausprobieren",hint:"Danach: mit dem Regler m = 0 einstellen.",ready:state.prediction===null?"Wähle eine Vermutung.":"Deine Vermutung ist gespeichert."};
+    if(state.step===0&&state.phase===2)return {label:"Jetzt ausprobieren",title:"Prüfe deine Vermutung.",instruction:"Stelle mit dem Regler m = 0 ein.",observe:"Deine Vermutung: "+["Die Gerade wird waagrecht.","Die Gerade wird senkrecht.","Die Gerade wird fallen."][state.prediction],button:"Mit meiner Vermutung vergleichen",hint:"Beobachte die Gerade und die Höhendifferenz.",ready:near(state.m,0)?"m = 0 ist eingestellt.":"Stelle die Steigung auf 0."};
+    if(state.step===0&&state.phase===3)return {label:"Beobachtung vergleichen",title:"Was zeigt der Graph?",instruction:"Vergleiche die waagrechte Gerade mit deiner Vermutung.",observe:"",button:"Weiter zum Achsenabschnitt",hint:"Danach: Was verändert b?",ready:"Vermutung überprüft."};
     const q=question();
     if(q)return {label:state.solved?"Kurz erklärt":"Deine Vermutung",title:state.step===0?"Was hast du entdeckt?":state.step===1?"Verschoben — und sonst?":state.step===2?"Lies deinen Graphen.":"Erst vorhersagen.",instruction:q.prompt,observe:state.step===3?"b bleibt gleich. Wähle zuerst — dann vergleichen wir.":"Wähle die Aussage, die zu deiner Beobachtung passt.",button:["Weiter zum Achsenabschnitt","Beide Parameter verbinden","Jetzt selbst anwenden","Selbst eine Gerade einstellen"][state.step],hint:["Danach: Was verändert b?","Danach: m und b zusammenspielen lassen.","Danach: kurze Vorhersagen und Aufträge.","Danach: zwei eigene Geraden einstellen."][state.step],ready:state.solved?"Deine Beobachtung ist geprüft.":"Wähle deine Vermutung."};
     if(state.step===0&&state.phase===0)return {label:"Verändern & beobachten",title:"Was verändert m?",instruction:"Verändere m — auch zu einem negativen Wert.",observe:"Beobachte die Gerade. Was bleibt gleich, was verändert sich?",button:"Weiter beobachten",hint:"Danach: der besondere Fall m = 0.",ready:state.negative?"Positives und negatives m gesehen.":"Probiere auch einen negativen Wert."};
